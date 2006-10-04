@@ -1,0 +1,25 @@
+The modnlp suite is distributed under the GNU General Public
+License. See COPYING for details.
+
+modnlp aims to be fully compatible with the GNU Classpath
+(http://www.gnu.org/software/classpath/). The indexer (modnlp-idx) and
+text categorisation (modnlp-tc) have been tested on kaffe (v1.1.5),
+and partially tested on sablevm (v1.1.6), jamvm (v1.3), with the
+gnu.regexp package. modnlp also runs on Sun's JDK version 1.4 or
+greater.
+
+This directory contains:
+
+ o the source code (src/) with documentatioon (doc/)
+
+ o the gnu-regexp library (see lib/GNUREGEXP-LICENSE) and the
+   Berkeley database library (lib/je.jar; see JE-LICENSE) 
+
+ o some test data (./data/) consisting of xml files annotated
+   according to the tec guidelines, files for text categorisation 
+   etc
+
+To compile, follow the instructions in the INSTALL file.
+
+
+-- S. Luz (luzs@cs.tcd.ie)

@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: 1.3.0 (Sun Microsystems Inc.)
+Class-Path: ../lib/je.jar ../lib/MinML2.jar ../lib/idx.jar
+Main-Class: modnlp.tec.client.Browser

@@ -1,0 +1,35 @@
+;; Object semantic.cache
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "semantic.cache"
+  :tables (list 
+    (semanticdb-table "Tokenizer.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.parser" package nil nil [1 19]) ("java.util.StringTokenizer" include nil nil [20 53]) ("Tokenizer" type (typemodifiers ("public") :superclasses "StringTokenizer" :members (("SEPTKARR" variable (typemodifiers ("public" "static") :type "char[]") (reparse-symbol class_member_declaration) [234 1192]) ("SEPTOKEN" variable (typemodifiers ("public" "static") :type "String") (reparse-symbol class_member_declaration) [1195 1248]) ("Tokenizer" function (typemodifiers ("public") :arguments (("text" variable (:type "String") (reparse-symbol formal_parameters) [1270 1281]))) (reparse-symbol class_member_declaration) [1252 1421]) ("fixType" function (typemodifiers ("public" "static") :arguments (("type" variable (:type "String") (reparse-symbol formal_parameters) [1601 1612])) :type "String") (reparse-symbol class_member_declaration) [1572 1850])) :type "class") nil [183 1853]))
+    :file "Tokenizer.java"
+    :pointmax 1854
+    :unmatched-syntax 'nil
+    )
+    (semanticdb-table "BasicParser.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.parser" package nil nil [101 119]) ("java.io.*" include nil nil [120 137]) ("java.util.Enumeration" include nil nil [138 167]) ("java.util.Arrays" include nil nil [168 192]) ("org.xml.sax.Parser" include nil nil [193 219]) ("org.xml.sax.DocumentHandler" include nil nil [220 255]) ("org.xml.sax.ErrorHandler" include nil nil [256 288]) ("org.xml.sax.helpers.ParserFactory" include nil nil [289 330]) ("org.xml.sax.InputSource" include nil nil [331 362]) ("BasicParser" type (typemodifiers ("public") :members (("document" variable (:type "String") (reparse-symbol class_member_declaration) [916 939]) ("parser" variable (typemodifiers ("static") :type "Parser") (reparse-symbol class_member_declaration) [942 970]) ("handler" variable (typemodifiers ("static") :type "BasicHandler") (reparse-symbol class_member_declaration) [1021 1070]) ("BasicParser" function (typemodifiers ("public")) (reparse-symbol class_member_declaration) [1130 1175]) ("setParser" function (throws ("Exception") typemodifiers ("public" "static") :type "void") (reparse-symbol class_member_declaration) [1314 1541]) ("parseNews" function (throws ("Exception") typemodifiers ("public" "static") :arguments (("filename" variable (:type "String") (reparse-symbol formal_parameters) [1576 1591])) :type "void") (reparse-symbol class_member_declaration) [1545 1788]) ("main" function (typemodifiers ("public" "static") :arguments (("args" variable (:type "String[]") (reparse-symbol formal_parameters) [1817 1830])) :type "void") (reparse-symbol class_member_declaration) [1793 2106])) :type "class") nil [885 2108]))
+    :file "BasicParser.java"
+    :pointmax 2110
+    :unmatched-syntax 'nil
+    )
+    (semanticdb-table "NewsParser.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.parser" package nil nil [1 19]) ("tc.dstruct.*" include nil (dependency-file none) [20 40]) ("NewsParser" type (:typemodifiers ("public") :superclasses "Parser" :members (("parse" function (:typemodifiers ("public") :type "void") (reparse-symbol class_member_declaration) [401 721]) ("main" function (:typemodifiers ("public" "static") :arguments (("args" variable (:type "String[]") (reparse-symbol formal_parameters) [802 815])) :type "void") (reparse-symbol class_member_declaration) [778 1123])) :type "class") nil [290 1128]))
+    :file "NewsParser.java"
+    :pointmax 1130
+    )
+   (semanticdb-table "Parser.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.parser" package nil nil [1 19]) ("tc.dstruct.*" include nil nil [20 40]) ("java.io.*" include nil nil [41 58]) ("Parser" type (:typemodifiers ("public") :members (("filename" variable (:type "String") (reparse-symbol class_member_declaration) [478 501]) ("parsedCorpus" variable (:type "ParsedCorpus") (reparse-symbol class_member_declaration) [504 537]) ("Parser" function (:constructor-flag t :typemodifiers ("public")) (reparse-symbol class_member_declaration) [851 872]) ("setFilename" function (:typemodifiers ("public") :arguments (("fn" variable (:type "String") (reparse-symbol formal_parameters) [950 959])) :type "void") (reparse-symbol class_member_declaration) [925 989]) ("getParsedCorpus" function (:typemodifiers ("public") :type "ParsedCorpus") (reparse-symbol class_member_declaration) [1059 1173]) ("parse" function (:typemodifiers ("public") :type "void") (reparse-symbol class_member_declaration) [1488 2079])) :type "class") nil [453 2109]))
+    :file "Parser.java"
+    :pointmax 2110
+    )
+   )
+  :file "semantic.cache"
+  :semantic-tag-version "2.0beta1"
+  :semanticdb-version "2.0beta1"
+  )

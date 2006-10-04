@@ -1,0 +1,7 @@
+modnlp.tc.classify
+modnlp.tc.dstruct
+modnlp.tc.evaluation
+modnlp.tc.induction
+modnlp.tc.parser
+modnlp.tc.tsr
+modnlp.tc.util
