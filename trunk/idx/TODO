@@ -1,0 +1,2 @@
+* use JE transactions to guarantee atomicity in
+  Dictionary.addToDictionary() and Dictionary.removeFromDictionary().

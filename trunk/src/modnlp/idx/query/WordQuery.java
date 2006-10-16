@@ -33,35 +33,10 @@ import java.util.*;
 public class WordQuery {
   
   public static final String QSEPTOKEN = "+[]";
-  public static char[] SEPTKARR = {' ',
-																	 '|',
-																	 '\'',
-																	 '`',
-																	 '"',
-																	 '-',
-																	 '_',
-																	 (new String(",")).charAt(0),
-																	 (new String(".")).charAt(0),
-																	 '?',
-																	 '!',
-																	 (new String(";")).charAt(0),
-																	 ':',
-																	 '<',
-																	 '>',
-																	 '{',
-																	 '}',
-																	 '[',
-																	 ']',
-																	 '=',
-																	 '+',
-																	 '/',
-																	 '\\',
-																	 '%',
-																	 '$',
-																	 '*',
-																	 '&',
-																	 '(',
-																	 ')' };
+  public static char[] SEPTKARR 
+    = {' ', '|', '\'','`','"','-','_',(new String(",")).charAt(0),
+       (new String(".")).charAt(0),'?','!',(new String(";")).charAt(0),':',
+       '<','>','{','}','[',']','=','+','/','\\','%','$','*','&','(',')' };
   public static String SEPTOKEN = new String(SEPTKARR);
 
   private String originalQuery;
@@ -76,6 +51,7 @@ public class WordQuery {
 
   private boolean justKeyword = false;
   private boolean caseSensitive = false;
+  
   private String [] queryArray;
   private int [] intervArray;
   private WordForms keywordforms;
@@ -124,6 +100,10 @@ public class WordQuery {
     queryArray = new String[qsize];
     intervArray = new int[qsize];
 
+    // after parseQuery() queryArray will contain the keywords [kw1,
+    // kw2, ..., kwn] and interv array the admissible gaps between kw1
+    // and all other keywords (def.: gap between kw1 and kw1 = -1),
+    // [-1, gap(kw1,kw2), ..., gap(kw1,kwn)]
     parseQuery(query);
 
     keywordforms = dict.getLeastFrequentWord(queryArray, cs);

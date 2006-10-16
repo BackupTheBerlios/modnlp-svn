@@ -29,12 +29,12 @@ public class DictProperties extends java.util.Properties{
 
   public static String PROP_FNAME = "dictionary.properties";
   String envHome = "/tmp/tec/index/";   // a very unsafe default;
-  String wPosTableName = "poindex.db";  // word -> [pos1, pos2, ...] (no longer used; each data file now creates its own wPosTabe)
   String wFilTableName = "wfindex.db";  // word -> [fileno1, fileno2, ...]
   String caseTableName = "caindex.db";  // canonicalform -> [form1, form2, ...]
   String freqTableName = "fqtable.db";  // word -> noofoccurrences
   String fileTableName = "fitable.db";  // fileno -> fileuri
-  String corpusDir = "/tmp/tec/corpus/"; // the default directory for relative fileTableNames 
+  String tPosTableName = "tptable.db";  // fileno -> [offset1, offset2, ...]
+  String corpusDir = ""; // the default directory for relative fileTableNames 
 
 	public DictProperties () 
 	{
@@ -46,11 +46,11 @@ public class DictProperties extends java.util.Properties{
        //FileInputStream fis = new FileInputStream(new File("tecli.properties"));
       this.load(fis);
       envHome = getProperty("dictionaty.environment.home");
-      wPosTableName = getProperty("wposition.table.name");
       wFilTableName = getProperty("wfile.table.name");
       caseTableName = getProperty("case.table.name");
       freqTableName = getProperty("frequency.table.name");
       fileTableName = getProperty("file.table.name");
+      tPosTableName = getProperty("tpos.table.name");
       corpusDir = getProperty("corpus.data.directory");
     }
     catch (Exception e) {
@@ -63,8 +63,8 @@ public class DictProperties extends java.util.Properties{
     return envHome;
   }
 
-  public String getWPosTableName () {
-    return wPosTableName;
+  public String getTPosTableName () {
+    return tPosTableName;
   }
 
   public String getWFilTableName () {

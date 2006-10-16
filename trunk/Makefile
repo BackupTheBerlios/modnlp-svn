@@ -45,3 +45,6 @@ dist: docs clean
 	cp -aL --parents $(DISTFILES) $(DISTDIR)
 	tar cfvz /tmp/$(DISTDIR).tar.gz  --exclude-from=exclude.txt $(DISTDIR)
 	rm -rf $(DISTDIR)
+
+nosvn: clean
+	tar cfvz /tmp/modnlp.tgz --exclude-from=exclude.txt .
