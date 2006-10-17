@@ -38,4 +38,8 @@ public class IntegerSet extends LinkedHashSet {
     return sb.toString();
   }
 
+  public boolean contains (int pos) {
+    return contains(new Integer(pos));
+  }
+
 }

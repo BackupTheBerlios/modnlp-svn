@@ -42,9 +42,9 @@ public class Query {
       if (args[0].equals("-f")){ // freq list
         d.printSortedFreqList(new java.io.PrintWriter(System.out));
       }
-      else { // query
-        BufferedReader cline 
-          = new BufferedReader(new InputStreamReader(System.in));
+      else if (args[0].equals("-q")) { // interactive query
+          BufferedReader cline 
+            = new BufferedReader(new InputStreamReader(System.in));
         System.out.print("Enter query or press <ENTER> to quit.\n> ");
         String req = cline.readLine();
         while ( ! req.equalsIgnoreCase("") ) {          
@@ -54,6 +54,13 @@ public class Query {
           System.out.flush();
           req = cline.readLine();
         }
+      }
+      else if (args[0].equals("-l")) { // one-off query
+        String req = args[1];
+        System.err.println("No. of concordances for "+req+": ");
+        d.printCorcordances(new WordQuery(req,d,false), 50, 
+                            true, new java.io.PrintWriter(System.out));
+        System.out.flush();
       }
       d.close();
     } // end try
@@ -73,6 +80,7 @@ public class Query {
     System.err.println("\tprint modnlp.idx.Dictionary tables to stdout");
     System.err.println("\tOptions:");
     System.err.println("\t\t-f       print frequency list");
-    System.err.println("\t\t-q QUERY query dictionary");
+    System.err.println("\t\t-q       interactive query");
+    System.err.println("\t\t-l QUERY query dictionary and quit.");
   }
 }

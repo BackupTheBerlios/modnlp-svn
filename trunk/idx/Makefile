@@ -4,17 +4,24 @@ LIBSPATH=$(TOPDIR)lib/gnu-regexp-1.1.4.jar:$(TOPDIR)lib/je.jar
 LIBS=$(subst :, ,$(LIBSPATH))
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
-SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
+SOURCES=$(SOURCEDIR)modnlp/idx/MakeTECIndex.java \
+	$(SOURCEDIR)modnlp/idx/ConsumerQuery.java \
+	$(SOURCEDIR)modnlp/idx/Dump.java \
+	$(SOURCEDIR)modnlp/idx/Query.java \
+	$(SOURCEDIR)modnlp/idx/RemoveFileFromIndex.java \
+	$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/util/LogStream.java \
 	$(SOURCEDIR)modnlp/util/Tokeniser.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusList.java \
   $(SOURCEDIR)modnlp/dstruct/StringSet.java \
 	$(SOURCEDIR)modnlp/dstruct/WordForms.java \
+	$(SOURCEDIR)modnlp/dstruct/WordFrequencyPair.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusFile.java \
 	$(SOURCEDIR)modnlp/dstruct/IntegerSet.java \
 	$(SOURCEDIR)modnlp/dstruct/StringSet.java \
 	$(SOURCEDIR)modnlp/dstruct/PositionSet.java \
 	$(SOURCEDIR)modnlp/dstruct/TokenMap.java \
+	$(SOURCEDIR)modnlp/dstruct/IntOffsetArray.java \
 	$(SOURCEDIR)modnlp/idx/database/AlreadyIndexedException.java \
   $(SOURCEDIR)modnlp/idx/database/CaseTable.java \
 	$(SOURCEDIR)modnlp/idx/database/DescIntComparator.java \
@@ -24,22 +31,21 @@ SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/idx/database/FreqKeyCreator.java \
 	$(SOURCEDIR)modnlp/idx/database/FreqTable.java \
 	$(SOURCEDIR)modnlp/idx/database/IntegerSetBinding.java \
+	$(SOURCEDIR)modnlp/idx/database/IntOffsetArrayBinding.java \
 	$(SOURCEDIR)modnlp/idx/database/NotIndexedException.java \
 	$(SOURCEDIR)modnlp/idx/database/StringIntKey.java \
 	$(SOURCEDIR)modnlp/idx/database/StringIntKeyBinding.java \
 	$(SOURCEDIR)modnlp/idx/database/StringSetBinding.java \
 	$(SOURCEDIR)modnlp/idx/database/Table.java \
+	$(SOURCEDIR)modnlp/idx/database/TPosTable.java \
 	$(SOURCEDIR)modnlp/idx/database/WordFileTable.java \
 	$(SOURCEDIR)modnlp/idx/database/WordPositionTable.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserGNU.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserRegex.java \
 	$(SOURCEDIR)modnlp/idx/query/WordQuery.java \
-	$(SOURCEDIR)modnlp/idx/query/WordQueryException.java \
-	$(SOURCEDIR)modnlp/idx/ConsumerQuery.java \
-	$(SOURCEDIR)modnlp/idx/Dump.java \
-	$(SOURCEDIR)modnlp/idx/MakeTECIndex.java \
-	$(SOURCEDIR)modnlp/idx/Query.java \
-	$(SOURCEDIR)modnlp/idx/RemoveFileFromIndex.java 
+	$(SOURCEDIR)modnlp/idx/query/Horizon.java \
+	$(SOURCEDIR)modnlp/idx/query/PrepContextQuery.java \
+	$(SOURCEDIR)modnlp/idx/query/WordQueryException.java
 TARGETS=$(subst .java,.class,$(SOURCES))
 JARREDS=$(subst $(SOURCEDIR),,$(TARGETS))
 DISTDIR:=idx-`cat VERSION`
@@ -50,19 +56,20 @@ DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt 
 JAVA=java
 JAVAC=javac
 JAR=jar
-JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH) -Dfile.encoding=ISO8859_1 
 JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 
 #VPATH=$(SOURCEDIR)
 
 .PHONY: build jar test docs dist
 
+
+build: $(TARGETS)
+
 all: build jar test dist
 
 %.class: %.java
-		$(JAVAC) $(JAVAFLAGS) $?
-
-build: $(TARGETS)
+		$(JAVAC) $(JAVACFLAGS) $?
 
 clean:
 	find . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f

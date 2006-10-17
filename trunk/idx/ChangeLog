@@ -1,3 +1,19 @@
+2006-08-17  S. Luz  <luzs@cs.tcd.ie>
+
+	* Dictionary.java, WordQuery.java: Added positional index table
+	TPosTable.java, which stores the byte offset of each token in a
+	file. TPosTable.java enables Dictionary to search for n-grams with
+	intervening contexts completely off-line (i.e. without having to
+	read or download the original text file). This is done through
+	Dictionary.matchConcordance(). Note that
+	WordQuery.matchConcordance() (which does on-line search) is no
+	longer used by Dictionary and will be deprecated in future
+	releases. Created classes Horizon.java, which store the
+	specification of allowable words (and their file offsets) to the
+	left or right of the main (least frequent) keyword, and and
+	PrepContextQuery.java which stores left and right Horizons
+	pre-compiled for a specific file.
+
 2006-08-22  S. Luz  <luzs@cs.tcd.ie>
 
 	* (modnlp) Ready for SVN.

@@ -1,0 +1,16 @@
+* use JE transactions to guarantee atomicity in
+  Dictionary.addToDictionary() and Dictionary.removeFromDictionary().
+
+* modnlp.idx.query.WordQuery.matchConcordance() really belongs in
+  modnlp.idx.database.Dictionary. Check potential backward compat
+  problems in tec-server and deprecate WordQuery.matchConcordance() in
+  favour of Dictionary.matchConcordance().
+
+* In fact, much (perhaps most) of the functionality in
+  modnlp.idx.query.WordQuery should be moved into
+  modnlp.idx.database.Dictionary. Ideally, Dictionary should handle
+  the functionality currently implemented in
+  modnlp.idx.query.WordQuery.matchConcordance() and auxiliary methods,
+  leaving only query parsing and related methods for WordQuery. This
+  hasn't been done yet to preserve backward compatibility with
+  tec-server

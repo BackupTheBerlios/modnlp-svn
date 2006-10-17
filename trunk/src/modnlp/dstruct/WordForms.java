@@ -30,8 +30,9 @@ import java.util.Collection;
 */
 public class WordForms extends Vector {
 
+  // keyword stores the canonical (unexpanded) form of this set of words
   String keyword;
-  
+
 
   public WordForms (String key) {
     super();

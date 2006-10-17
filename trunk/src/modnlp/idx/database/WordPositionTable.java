@@ -37,7 +37,7 @@ import com.sleepycat.je.LockMode;
  *  <pre>  
  *       KEY      |  DATA
  *   -------------|-------------------
- *   word  fileno |  [pos1, pos2, ...]
+ *   word   |  [pos1, pos2, ...]
  *  </pre>
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
@@ -48,6 +48,14 @@ public class WordPositionTable extends Table {
 
   public WordPositionTable (Environment env, String fn, boolean write) {
     super(env,fn,write);
+  }
+
+  public int getFileIDNumber () {
+    try {
+      return (new Integer(database.getDatabaseName())).intValue();      
+    } catch (DatabaseException e) {
+      return -1;
+    }
   }
 
   public void put(String sik, IntegerSet set) {
@@ -119,7 +127,6 @@ public class WordPositionTable extends Table {
     }
     return set;
   }
-
 
   public void dump () {
     try {

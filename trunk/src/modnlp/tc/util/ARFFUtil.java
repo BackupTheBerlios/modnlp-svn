@@ -36,80 +36,8 @@ import java.util.Iterator;
  * @version <font size=-1>$Id: ARFFUtil.java,v 1.1.1.1 2005/05/26 13:59:30 amaral Exp $</font>
  * @see  http://www.cs.waikato.ac.nz/~ml/weka/index.html the weka toolkit for data mining.
 */
-public class ARFFUtil {
+public class ARFFUtil extends PrintUtil {
 
-
-  public static String toString(boolean[] ba){
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < ba.length ; i++)
-      sb.append(ba[i]+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
-
-  public static String toString(int[] ba){
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < ba.length ; i++)
-      sb.append(ba[i]+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
-
-  public static String toString(long[] ba){
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < ba.length ; i++)
-      sb.append(ba[i]+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
-
-  public static String toString(double[] ba){
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < ba.length ; i++)
-      sb.append(ba[i]+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
-
-  public static String toString(String[] ba){
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < ba.length ; i++)
-      sb.append(ba[i]+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
-
-  public static String toString(WordFrequencyPair[] wfp){
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < wfp.length ; i++)
-      sb.append(wfp[i].getWord()+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
-
-  public static String toString(Vector v){
-    StringBuffer sb = new StringBuffer();
-    for (Enumeration e = v.elements() ; e.hasMoreElements() ;)
-      sb.append((String)e.nextElement()+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
-
-  public static String toString(Set v){
-    StringBuffer sb = new StringBuffer();
-    for (Iterator e = v.iterator() ; e.hasNext() ;)
-      sb.append((String)e.next()+",");
-    if (sb.length() < 1)
-      return "";
-    return sb.substring(0,sb.length()-1);
-  }
 
   /**
    * Convert a <code>TCInvertedIndex</code> into an ARFF file for

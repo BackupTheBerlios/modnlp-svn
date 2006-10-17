@@ -19,6 +19,7 @@ package modnlp.idx.query;
 
 import modnlp.dstruct.WordForms;
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.database.WordPositionTable;
 
 import java.util.StringTokenizer;
 import java.util.*;
@@ -52,20 +53,31 @@ public class WordQuery {
   private boolean justKeyword = false;
   private boolean caseSensitive = false;
   
+  // Array of keywords: [k1, k2, k3, ..., kn]
   private String [] queryArray;
+  // Array of max allowed intervening words between k1 and ki
+  // [-1, i1, i2, i3, ..., in], where:
+  //   i1 = max allowed intervening words between k1 and k1
+  //   i2 = max allowed intervening words between k1 and k2
+  // ...
   private int [] intervArray;
+  private WordForms[] wformsArray;
   private WordForms keywordforms;
+  private Dictionary dictionary;
 
   /**
    * Creates a new <code>WordQuery</code> instance based on a query
    * string, to be processed against dict. The query expression can be expressed in the following syntax: 
    *
-   * <center><code>word_1[+[[no_of_intervening_words]]word_2...].</code></center>
+   * <center><code>k_1[+[i_1]]k_2+[i_2]+k_3+...+[i_{n-1}]k_n].</code></center>
    *
    * where <code>word_i</code> can be a single keyword or a
    * (Unix-style) wildcard (e.g.  <code>test*</code> will retrive all
    * words wich start with <code>test</code> (e.g. <code>test</code>,
-   * <code>tests</code>, <code>testament</code>, etc).
+   * <code>tests</code>, <code>testament</code>,
+   * etc). <code>i_n</code> denotes the maximum number of
+   * intervening words between <code>k_{n+1}</code> and
+   * <code>k_1</code>.
    *
    * <p> The syntax also allows you to specify sequences of key words,
    * and/or wildcards, and the maximum number of intervening words you
@@ -86,6 +98,16 @@ public class WordQuery {
    * entering <code>know+before*</code> will find <code>...know before...</code>, 
    * <code>...know beforehand</code>, etc.
    *
+   *
+   * N.B.: much (perhaps most) of the functionality in this class
+   * should really be moved into
+   * modnlp.idx.database.Dictionary. Ideally, Dictionary should handle
+   * the functionality currently implemented in
+   * modnlp.idx.query.WordQuery.matchConcordance() and auxiliary
+   * methods, leaving only query parsing and related methods for
+   * WordQuery. This hasn't been done yet to preserve backward
+   * compatibility with tec-server
+   * 
    * @param query a <code>String</code> The query string
    * @param dict a <code>Dictionary</code> the top-level index accessor class
    * @param cs a <code>boolean</code> if true, the query is case sensitive.
@@ -107,45 +129,135 @@ public class WordQuery {
     parseQuery(query);
 
     keywordforms = dict.getLeastFrequentWord(queryArray, cs);
-    keyword = keywordforms == null? "" : keywordforms.getKeyword();
+    if ( keywordforms == null)
+      keyword = "";
+    else {
+      keyword = keywordforms.getKeyword();
+      wformsArray = new WordForms[queryArray.length];
+      for (int i = 0; i < queryArray.length ; i++)
+        wformsArray[i] = dict.getWordForms(queryArray[i],cs);
+    }
+
+      
+    Horizon a = getLeftHorizon();
+    Horizon b = getRightHorizon();
+
+    // at this point all words/wildcard will have been expanded and their
+    // expanded forms stored in wformsArray
+
+
+    //dictionary = dict;
+
+
+    /*
+    System.err.println(modnlp.util.PrintUtil.toString(intervArray)+" kw="+keyword);
+    Horizon a = getLeftHorizon();
+    Horizon b = getRightHorizon();
+
+    if (a != null){
+      System.err.println("LIA= ["+modnlp.util.PrintUtil.toString(a.getHorizonArray())+"]");
+      System.err.println("LWA= ["+modnlp.util.PrintUtil.toString(a.getWordArray())+"]");
+      System.err.println("MLH= "+a.getMaxSearchHorizon());
+    }
+    else 
+      System.err.println("null");
+
+    if (b != null){
+      System.err.println("RIA= ["+modnlp.util.PrintUtil.toString(b.getHorizonArray())+"]");
+      System.err.println("RWA= ["+modnlp.util.PrintUtil.toString(b.getWordArray())+"]");
+      System.err.println("MRH= "+b.getMaxSearchHorizon());
+    }
+    else 
+      System.err.println("null");
+    */
 
   }
 
-  public WordForms getWordForms(){
+  public WordForms getKeyWordForms(){
     return keywordforms;
   }
 
-  private String[] getLHSMatch (String [] qa, String sw) {
-    String [] lhsMatch = new String[1];
-    String [] aux = new String[qa.length-1];
-    for (int i = 0 ; i < qa.length ; i++){
-      if ( qa[i].equals(sw) ) {
-        lhsMatch = new String[i];
-        for (int j = 0; j < i; j++)
-          lhsMatch[j] = aux[j];
-        return lhsMatch;
-      }
-      aux[i] = qa[i];
-    }
-    return lhsMatch;
+  public WordForms[] getWFormsArray(){
+    return wformsArray;
   }
 
-  private String[] getRHSMatch (String [] qa, String sw) {
-    String [] rhsMatch =  new String[1];
-    String [] aux = new String[qa.length-1];
-    boolean passk = false;
+ /**
+   * Get a <code>Horizon</code> object conaining the maximum distances
+   * allowed in this query between the main keyword and the keywords
+   * to the right of it in the query expression.
+   *
+   * @return a <code>Horizon</code> object or <code>null</code> if 1
+   * or less keywords.
+   */
+  public Horizon getRightHorizon(){
+    // if single keyword or zero-frequency keyword, return null
+    if (intervArray.length == 1 || keywordforms == null ) 
+      return null;
+
     int j = 0;
-    for (int i = 0 ; i < qa.length ; i++){
-      if (  qa[i].equals(sw) && !passk ) {
-        passk = true;
-        rhsMatch = new String[qa.length-(i+1)];
-        continue;
-      }
-      if ( passk )
-        rhsMatch[j++] = qa[i];
+    int l2 = intervArray.length - 1;
+    while (  j < intervArray.length && !queryArray[j].equals(keyword) )
+      {j++;} // j = index kw
+    int lria =  intervArray.length - (j+1);
+    if (lria == 0)  // kw is rightmost word
+      return null;
+    int [] ria = new int[lria];
+    WordForms[] wfa = new WordForms[lria];
+    int distok1 = intervArray[j];
+    for (int i = 1; i <= ria.length; i++) {
+      ria[i-1] = intervArray[i+j]-distok1;
+      wfa[i-1] = wformsArray[i+j];
     }
-    return rhsMatch;
+    return new Horizon(ria, wfa, ria[ria.length-1]);
   }
+
+  /**
+   * Get a <code>Horizon</code> object conaining the maximum distances
+   * allowed in this query between the main keyword and the keywords
+   * to the left of it in the query expression.
+   *
+   * @return a <code>Horizon</code> object or <code>null</code> if 1
+   * or less keywords in query.
+   */
+  public Horizon getLeftHorizon(){
+    // if single keyword or zero-frequency keyword, return null
+    if (intervArray.length == 1 || keywordforms == null ) 
+      return null;
+    int[] aux = new int[intervArray.length-1];
+
+    int j = 0;
+    for (int i = 0; i < intervArray.length; i++) {
+      if (intervArray[i] < 0)
+        continue;
+      aux[i-1] = intervArray[i];
+      if ( queryArray[i].equals(keyword) ){
+        j = i;
+        break;
+      }
+    }
+    if (j == 0)
+      return null;
+    int [] lia = new int[j];
+    WordForms[] wfa = new WordForms[j];
+    int k = j-1;
+    int distok1 = aux[k];
+    lia[k] = distok1+1;  // we need to look distok1 + 1 words back (the 1 includes k1) 
+    for (int i = 0; i < k; i++){
+      lia[k-(i+1)] = distok1 - aux[i];
+      wfa[i] = wformsArray[k-i];
+    }
+    wfa[k] = wformsArray[0];
+    return new Horizon(lia, wfa, lia[k]);
+    /*    lia[0] = distok1+1;  // we need to look distok1 + 1 words back (the 1 includes k1) 
+    for (int i = 0; i < k; i++){
+      lia[i+1] = distok1 - aux[i];
+      wfa[i] = wformsArray[i];
+    }
+    wfa[k] = wformsArray[k];
+    return new Horizon(lia, wfa, lia[0]);
+    */
+  }
+
 
   public static boolean isWildcard(String key) {
     return ( key.lastIndexOf('*') > -1 );
@@ -154,8 +266,6 @@ public class WordQuery {
   public static String getWildcardsLHS (String key) {
     return key.substring(0,  key.lastIndexOf('*'));
   }
-
-
 
   public String getKeyword () {
     return keyword;
@@ -169,6 +279,20 @@ public class WordQuery {
     return justKeyword;
   }
 
+  /**
+   * <code>matchConcordance</code> match <code>cline</code> against
+   * this query (represented after <code>parseQuery()</code> by
+   * <code>queryArray</code> and <code>intervArray</code>)
+   *
+   * NB: this method really belongs in <code>Dictionary</code>. TO DO:
+   * Check potential backward compat problems in tec-server and
+   * deprecate WordQuery.matchConcordance() in favour of
+   * Dictionary.matchConcordance().
+   *
+   * @param cline a <code>String</code> value
+   * @param ctx an <code>int</code> value
+   * @return <code>true</code> if cline matches, false otherwise.
+   */
   public boolean matchConcordance (String cline, int ctx)
   {
     if ( justKeyword ) {
@@ -234,6 +358,38 @@ public class WordQuery {
       if ( w.equals(queryArray[i]) )
         return intervArray[i];
     return -1;
+  }
+
+  private String[] getLHSMatch (String [] qa, String sw) {
+    String [] lhsMatch = new String[1];
+    String [] aux = new String[qa.length-1];
+    for (int i = 0 ; i < qa.length ; i++){
+      if ( qa[i].equals(sw) ) {
+        lhsMatch = new String[i];
+        for (int j = 0; j < i; j++)
+          lhsMatch[j] = aux[j];
+        return lhsMatch;
+      }
+      aux[i] = qa[i];
+    }
+    return lhsMatch;
+  }
+
+  private String[] getRHSMatch (String [] qa, String sw) {
+    String [] rhsMatch =  new String[1];
+    String [] aux = new String[qa.length-1];
+    boolean passk = false;
+    int j = 0;
+    for (int i = 0 ; i < qa.length ; i++){
+      if (  qa[i].equals(sw) && !passk ) {
+        passk = true;
+        rhsMatch = new String[qa.length-(i+1)];
+        continue;
+      }
+      if ( passk )
+        rhsMatch[j++] = qa[i];
+    }
+    return rhsMatch;
   }
 
   private boolean partialMatchConcordance(String [] sca) {

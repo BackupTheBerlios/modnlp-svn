@@ -17,6 +17,13 @@
 */
 package modnlp.util;
 
+import modnlp.dstruct.WordFrequencyPair;
+
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
+
 /**
  *   Print and display utilities for the command line interface
  *
@@ -28,6 +35,79 @@ package modnlp.util;
 public class PrintUtil {
 
   private static int prevsize = 0;
+
+
+  public static String toString(boolean[] ba){
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < ba.length ; i++)
+      sb.append(ba[i]+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
+  public static String toString(int[] ba){
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < ba.length ; i++)
+      sb.append(ba[i]+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
+  public static String toString(long[] ba){
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < ba.length ; i++)
+      sb.append(ba[i]+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
+  public static String toString(double[] ba){
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < ba.length ; i++)
+      sb.append(ba[i]+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
+  public static String toString(String[] ba){
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < ba.length ; i++)
+      sb.append(ba[i]+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
+  public static String toString(WordFrequencyPair[] wfp){
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < wfp.length ; i++)
+      sb.append(wfp[i].getWord()+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
+  public static String toString(Vector v){
+    StringBuffer sb = new StringBuffer();
+    for (Enumeration e = v.elements() ; e.hasMoreElements() ;)
+      sb.append((String)e.nextElement()+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
+  public static String toString(Set v){
+    StringBuffer sb = new StringBuffer();
+    for (Iterator e = v.iterator() ; e.hasNext() ;)
+      sb.append((String)e.next()+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
 
   public static void resetCounter ()
   {

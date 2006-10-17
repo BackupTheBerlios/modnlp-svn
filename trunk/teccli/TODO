@@ -1,3 +1,5 @@
+* Write a proper Makefile, including only the files for distribution
+  with teccli (i.e. tec/client/...)
 
 * Re-activate plugins; implement JE-based subcorpus selection to
   replace SQL server on tec-server

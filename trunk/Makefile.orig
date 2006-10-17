@@ -8,34 +8,27 @@ SOURCES:= $(shell find $(SOURCEDIR) -name *.java)
 TARGETS=$(subst .java,.class,$(SOURCES))
 JARREDS=$(subst $(SOURCEDIR),,$(TARGETS))
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`
-SUBPACKAGES=idx tc teccli tecser web
 DISTDIR:=modnlp-`cat VERSION`
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
-	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SUBPACKAGES)
+	$(LIBS) $(DOCS) $(DATA) $(SOURCES) 
 #JAVA=jamvm
 #JAVAC=jikes-classpath
 JAVA=java
-JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 JAVAC=javac
-## uncomment the next line and modify JAVAFLAGS below o include
-## -bootclasspath if you'd rather use jikes 
-#JAVAC=jikes
-JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
-#JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH) -bootclasspath /System/Library/Frameworks/JavaVM.framework/Classes/classes.jar -g -O -depend +E
 JAR=jar
-
+JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 
 #VPATH=$(SOURCEDIR)
 
 .PHONY: build jar test docs dist
 
-build: $(TARGETS)
-
 all: build jar test dist
 
-
 %.class: %.java
-		$(JAVAC) $(JAVACFLAGS) $?
+		$(JAVAC) $(JAVAFLAGS) $?
+
+build: $(TARGETS)
 
 clean:
 	find . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f
@@ -52,6 +45,3 @@ dist: docs clean
 	cp -aL --parents $(DISTFILES) $(DISTDIR)
 	tar cfvz /tmp/$(DISTDIR).tar.gz  --exclude-from=exclude.txt $(DISTDIR)
 	rm -rf $(DISTDIR)
-
-nosvn: clean
-	tar cfvz /tmp/modnlp.tgz --exclude-from=exclude.txt .

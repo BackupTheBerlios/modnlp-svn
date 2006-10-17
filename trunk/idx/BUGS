@@ -1,0 +1,7 @@
+* 
+
+* modnlp.idx.database.FreqTable: setting the secondary database's
+  comparator to custom modnlp.idx.database.DescIntComparator
+  sometimes causes JE to throw a null pointer exception.
+  (fixed: implmented comparison directly on bytes which greatly sped
+  things up)

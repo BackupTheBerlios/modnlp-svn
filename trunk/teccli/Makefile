@@ -10,7 +10,7 @@ TARGETS=$(subst .java,.class,$(SOURCES))
 JARREDS=modnlp/tec/client/*.class	modnlp/tec/client/icons \
 	modnlp/tec/client/help tecli.properties
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`
-DISTDIR:=modnlp-teccli-`cat VERSION`
+DISTDIR:=teccli-`cat VERSION`
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
 	$(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)tecli.properties* \
 	$(SOURCEDIR)modnlp/tec/client $(SOURCEDIR)$(MANIFEST) $(SOURCEDIR)modnlp/tec/prj.el
@@ -20,19 +20,19 @@ JAVA=java
 JAVAC=javac
 JAR=jar
 JARFLAGS= cvmf $(MANIFEST)
-JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH) -Dfile.encoding=ISO8859_1
 JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 
 #VPATH=$(SOURCEDIR)
 
 .PHONY: build jar test docs dist
 
+build: $(TARGETS)
+
 all: build jar test 
 
 %.class: %.java
-		$(JAVAC) $(JAVAFLAGS) $?
-
-build: $(TARGETS)
+		$(JAVAC) $(JAVACFLAGS) $?
 
 clean:
 	find . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f
@@ -42,6 +42,10 @@ jar: $(TARGETS)
 
 docs: $(TARGETS)
 	javadoc -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp.tec.client 
+
+test: $(TARGETS)
+	@echo "Running stand-alone browser (/tmp/tec/index must have been created by idx)..."
+	$(JAVA) $(JAVAFLAGS) modnlp.tec.client.Browser -standalone 
 
 dist: docs
 	rm -rf $(DISTDIR)

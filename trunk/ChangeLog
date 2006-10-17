@@ -1,0 +1,9 @@
+2006-08-23  S. Luz  <luzs@cs.tcd.ie>
+
+	* idx/Makefile, tc/Makefile, tec/Makefile (modnlp): tidied up
+	make files; tested sub-package builds.	
+
+2006-08-22  S. Luz  <luzs@cs.tcd.ie>
+
+	* ChangeLog (modnlp): added changelog.
+
