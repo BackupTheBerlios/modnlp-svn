@@ -56,7 +56,10 @@ public class Dump {
 
 
   public static void usage() {
-    System.err.println("\nUSAGE: modnlp.idx.Dump ");
-    System.err.println("\tprint all modnlp.idx.Dictionary tables to stdout");
+    System.err.println("\nUSAGE: Dump ");
+    System.err.println("\tprint modnlp.idx.Dictionary tables to stdout");
+    System.err.println("\tOptions:");
+    System.err.println("\t\t-f       print frequency list");
+    System.err.println("\t\t-q QUERY query dictionary");
   }
 }

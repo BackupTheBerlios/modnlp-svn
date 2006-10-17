@@ -79,6 +79,7 @@ public class TokeniserGNU extends Tokeniser {
       }
       String text = new String(tx);
       System.out.println("tokenising \n-->"+text+"<--");
+      System.out.println(System.setProperty("file.encoding", "8859_1"));
       RE bwre = new RE(bigWordRegexp,RESyntax.RE_CHAR_CLASSES);
       RE wre = new RE(wordRegexp,RESyntax.RE_CHAR_CLASSES);
       

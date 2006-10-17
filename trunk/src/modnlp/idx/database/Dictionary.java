@@ -17,15 +17,12 @@
 */
 package modnlp.idx.database;
 
-import modnlp.idx.query.WordQuery;
-
 import modnlp.util.LogStream;
-import modnlp.util.PrintUtil;
 import modnlp.dstruct.WordForms;
 import modnlp.dstruct.CorpusFile;
 import modnlp.dstruct.IntegerSet;
+import modnlp.idx.query.WordQuery;
 import modnlp.dstruct.TokenMap;
-import modnlp.dstruct.IntOffsetArray;
 
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
@@ -35,10 +32,8 @@ import com.sleepycat.je.DatabaseEntry;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.Vector;
 /**
  *  Mediate access to all databases (called Dictionary for
@@ -53,17 +48,13 @@ public class Dictionary {
   public static DictProperties dictProps = new DictProperties();
   LogStream logf;
   // main tables 
-  // WordPositionTable wPosTable;          // word -> [pos1, pos2, ...]  
-  // (one table per fileno; to appear as local variables)
+  //WordPositionTable wPosTable;          // word -> [pos1, pos2, ...]  
+   // (one table per fileno; to appear as local variables)
   WordFileTable wFilTable;       // word -> [fileno1, fileno2, ...]
   CaseTable caseTable;           // canonicalform -> [form1, form2, ...]
   FreqTable freqTable;           // word -> noofoccurrences
   FileTable fileTable;           // fileno -> filenameOrUri
-  TPosTable tposTable;           // fileno -> (offset) positions of each token in file
   Environment environment;
-
-  protected boolean verbose = false; 
-
 
   /**
    * Open a new <code>Dictionary</code> in read-only mode.
@@ -105,9 +96,6 @@ public class Dictionary {
       fileTable = new FileTable(environment, 
                                 dictProps.getFileTableName(), 
                                 write);
-      tposTable = new TPosTable(environment, 
-                                dictProps.getTPosTableName(), 
-                                write);
       
     } catch (Exception e) {
       logf.logMsg("Error opening Dictionaries: "+e);
@@ -118,10 +106,6 @@ public class Dictionary {
   /**
    * Add each token in tm (extracted from fou) to the index
    *
-   * N.B.: currently, addToDictionary operations aren't atomic; if the
-   * program crashes the index could be left in an inconsistent
-   * state. In future, implement it using JE transactions
-   *
    * @param tm a <code>TokenMap</code>: multiset of tokens
    * @param fou a <code>String</code>: the file whose <code>TokenMap</code> is tm 
    * @exception AlreadyIndexedException if an error occurs
@@ -130,8 +114,6 @@ public class Dictionary {
     throws AlreadyIndexedException 
   {
     // check if file already exists in corpus; if so, quit and warn user
-    NumberFormat nf = NumberFormat.getInstance();
-    nf.setMaximumFractionDigits(4);
     int founo = fileTable.getKey(fou);
     if (founo >= 0) { // file has already been indexed
       logf.logMsg("Dictionary: file or URI already indexed "+fou);
@@ -143,15 +125,8 @@ public class Dictionary {
     WordPositionTable wPosTable = new WordPositionTable(environment, 
                                       ""+founo,
                                       true);
-    // store sorted set of positions (worst-case for basic operations
-    // O(ln(n)) which should be better than storing in a vector and
-    // standard merge sorting, which is O(n^2 ln(n))) [SL: run tests to check that]
-    TreeSet poss = new TreeSet();
-    int ct = 1;
     for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
 			{
-        if (verbose)
-          PrintUtil.printNoMove("Indexing ...",ct++);
         Map.Entry kv = (Map.Entry) e.next();
         String word = (String)kv.getKey();
         caseTable.put(word);
@@ -160,37 +135,10 @@ public class Dictionary {
         IntegerSet set = (IntegerSet) kv.getValue();
         wPosTable.put(word, set);
         freqTable.put(word,set.size());
-        poss.addAll(set);
       }
-    if (verbose)
-      PrintUtil.donePrinting();
     wPosTable.close();
-    //System.err.println(poss);
-    int [] posa = new int[poss.size()];
-    int i = 0;
-    for (Iterator e = poss.iterator(); e.hasNext() ;)
-      posa[i++] = ((Integer) e.next()).intValue();
-    tposTable.put(founo,new IntOffsetArray(posa));
-    System.out.println("Cumulative compression ratio = "+
-                       nf.format(tposTable.getCompressionRatio())+
-                       " (read "+nf.format(tposTable.getBytesReceived())+
-                       " and wrote "+
-                       nf.format(tposTable.getBytesWritten())+" bytes)");
-    //tposTable.dump();
   }
   
-
-  /**
-   * <code>removeFromDictionary</code> de-indexes file or URL
-   * <code>fou</code>
-   *
-   * N.B.: currently, removeFromDictionary operations aren't atomic;
-   * if the program crashes the index could be left in an inconsistent
-   * state. In future, implement it using JE transactions
-   *
-   * @param fou a <code>String</code> value
-   * @exception NotIndexedException if an error occurs
-   */
   public void removeFromDictionary(String fou) 
     throws NotIndexedException 
   {
@@ -208,7 +156,6 @@ public class Dictionary {
 			{
         Map.Entry kv = (Map.Entry) e.next();
         String word = (String)kv.getKey();
-        tposTable.remove(founo);
         wFilTable.remove(word,founo);
         IntegerSet set = (IntegerSet) kv.getValue();
         if (freqTable.remove(word,set.size()) == 0)
@@ -394,10 +341,7 @@ public class Dictionary {
     caseTable.dump();
     System.out.println("===========\n FreqTable:\n===========");
     freqTable.dump();
-    System.out.println("===========\n FileTable:\n===========");
     fileTable.dump();
-    System.out.println("===========\n TPosTable:\n===========");
-    tposTable.dump();
     int fnos [] = fileTable.getKeys();
     for (int i = 0 ; i < fnos.length; i++){
       System.out.println("===========\n WordPositionTable for "+
@@ -412,7 +356,6 @@ public class Dictionary {
 
   public void close () {
     try {
-      tposTable.close();
       freqTable.close();
       wFilTable.close();
       //wPosTable.close();
@@ -426,14 +369,6 @@ public class Dictionary {
 
   public void finalize () {
     close();
-  }
-
-  public boolean getVerbose() {
-    return verbose;
-  }
-
-  public void setVerbose(boolean v) {
-    verbose = v;
   }
 
 }

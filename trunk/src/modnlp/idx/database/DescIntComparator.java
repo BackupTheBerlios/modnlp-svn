@@ -33,34 +33,28 @@ public class DescIntComparator implements Comparator{
   /**
    * Compare two objects for sorting in descending order.  Should
    * return negative if d2 < d1, positive if d2 > d1, and 0
-   * otherwise. Objects d1, d2 will be arrays of unsigned bytes.
+   * otherwise.
    *
    * @param d1 an <code>Object</code> value
    * @param d2 an <code>Object</code> value
    * @return an <code>int</code> value
    */
   public int compare(Object d1, Object d2) {
-    
-    byte[] key2 = (byte[])d1;
-    byte[] key1 = (byte[])d2;
+    /*
+    String s1 = null; String s2 = null;
+      byte[] b1 = (byte[])d1;
+        byte[] b2 = (byte[])d2;
+        
+        s1 = new DatabaseEntry(b1);
+        s2 = new DatabaseEntry(b2);
+    */
+        
+    int a = IntegerBinding.entryToInt( new DatabaseEntry((byte[])d1));
+    int b = IntegerBinding.entryToInt( new DatabaseEntry((byte[])d2));
 
-    int a1Len = key1.length;
-    int a2Len = key2.length;
+    return (b - a);
     
-    int limit = Math.min(a1Len, a2Len);
-
-    for (int i = 0; i < limit; i++) {
-	    byte b1 = key1[i];
-	    byte b2 = key2[i];
-	    if (b1 == b2) {
-        continue;
-	    } 
-      else {
-        /* Bytes are signed, so convert to shorts so that
-           we effectively do an unsigned byte comparison. */
-        return (b1 & 0xff) - (b2 & 0xff);
-	    }
-    }
-    return (a1Len - a2Len);
   }
+
+
 }

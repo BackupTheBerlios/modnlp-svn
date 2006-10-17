@@ -38,11 +38,9 @@ public class MakeTECIndex {
 
 
   public static void main(String[] args) {
-    System.out.println(System.setProperty("file.encoding", "ISO8859_1"));
     Dictionary d = null;
     try {
       d = new Dictionary(true); 
-      d.setVerbose(verbose);
       // MakeTECIndex mti = new MakeTECIndex();
       CorpusList clist =  new CorpusList(args[0]);
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {

@@ -953,8 +953,7 @@ public class Browser extends JFrame
           f.standAlone = true;
           f.dictionary = new Dictionary();
           String u = f.dictionary.getCorpusDir();
-          if (!u.equals(""))
-            u = u.substring(0,u.lastIndexOf('/', u.length()-1))+"/headers/";
+          u = u.substring(0,u.lastIndexOf('/', u.length()-1))+"/headers/";
           f.preferenceFrame.setHeaderBaseURL(u);
         }
         else

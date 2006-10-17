@@ -62,8 +62,6 @@ public class FreqTable extends Table {
       sc.setReadOnly(!write);
       sc.setAllowCreate(write);
       sc.setSortedDuplicates(true);
-      // setting the comparator sometimes causes je to throw a null pointer exception
-      // investigate why,
       sc.setBtreeComparator(DescIntComparator.class);
       String scname = "secfqtable.db";
       freqKeyDatabase = env.openSecondaryDatabase(null, 
