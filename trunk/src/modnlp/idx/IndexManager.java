@@ -42,14 +42,14 @@ public class IndexManager {
   Dictionary dict;
   CorpusList clist;
   IndexManagerUI imui;
+  IndexingThread indexingThread;
 
   public IndexManager () {
     imui = new IndexManagerUI(this);
-    imui.setCurrentDir(props.getProperty("last.datafile.dir"));
   }
 
   public void chooseNewCorpus(){
-    CorpusChooser ncc = new CorpusChooser(props.getProperty("last.datafile.dir"));
+    CorpusChooser ncc = new CorpusChooser(props.getProperty("last.index.dir"));
     int r;
     while (!((r = ncc.showChooseCorpus()) == CorpusChooser.APPROVE_OPTION ||
              (r != CorpusChooser.CANCEL_OPTION && dict != null)) ) 
@@ -59,48 +59,22 @@ public class IndexManager {
     if (r == CorpusChooser.CANCEL_OPTION)
       return;
     String cdir = ncc.getSelectedFile().toString();
-    props.setProperty("last.datafile.dir", cdir);
-    imui.setTitle("IndexManager: operating on index at "+cdir);
+    props.setProperty("last.index.dir", cdir);
     DictProperties dp = new DictProperties(cdir);
     if (dict != null)
       dict.close();
     dict = new Dictionary(true,dp);
+    imui.setCurrentDir(dp.getProperty("last.datafile.dir"));
+    imui.setTitle("IndexManager: operating on index at "+cdir);
+    imui.print("\n----- Selected corpus: "+cdir+" ------\n");
+    imui.setCorpusListData(dict.getIndexedFileNames());
     dict.setVerbose(verbose);
   }
 
   public void indexSelectedFiles (File[] files) {
-    CorpusList clist = new CorpusList(files);
-    props.setProperty("last.datafile.dir", files[0].getParent());
-    for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
-      String fname = (String)e.nextElement();
-      try {
-        TokeniserRegex tkr = new TokeniserRegex(new File(fname));
-        // if (verbose) {
-        imui.print("\n----- Processing: "+fname+" ------\n");
-        tkr.setVerbose(true);
-        //}
-        if (dict.indexed(fname)){
-          throw new AlreadyIndexedException(fname);
-        }
-        imui.print("-- Tokenising ...\n");
-        tkr.tokenise();
-        TokenMap tm = tkr.getTokenMap();
-        //System.err.print(tm.toString());
-        imui.print("-- Indexing ...\n");
-        dict.setVerbose(true);
-        dict.addToDictionary(tm, fname);
-        imui.print("-- Done.\n");
-      }
-      catch (AlreadyIndexedException ex){
-        imui.print("Warning: "+ex+"\n");
-        imui.print("Ignoring this entry.\n");
-      }
-      catch (java.io.IOException ex){
-        imui.print("IO Error processing file "+fname+": "+ex+"\n");
-        imui.print("Indexing stopped.\n");
-        return;
-      }
-    }
+    dict.getDictProps().setProperty("last.datafile.dir", files[0].getParent());
+    indexingThread = new IndexingThread(new CorpusList(files));
+    indexingThread.start();
   }
 
   public void exit(int c)
@@ -144,4 +118,48 @@ public class IndexManager {
     System.err.println("\nUSAGE: IndexManager ");
     System.err.println("\ttGUI for index maintainance");
   }
+  
+  class IndexingThread extends Thread {
+    CorpusList clist;
+    public IndexingThread(CorpusList cl) {
+      super("Indexing thread");
+      clist = cl;
+    }
+        
+    public void run() {
+      for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
+        String fname = (String)e.nextElement();
+        try {
+          TokeniserRegex tkr = new TokeniserRegex(new File(fname));
+          // if (verbose) {
+          imui.print("\n----- Processing: "+fname+" ------\n");
+          tkr.setVerbose(false);
+          //}
+          if (dict.indexed(fname)){
+            throw new AlreadyIndexedException(fname);
+          }
+          imui.print("-- Tokenising ...\n");
+          tkr.tokenise();
+          TokenMap tm = tkr.getTokenMap();
+          //System.err.print(tm.toString());
+          imui.print("-- Indexing ...\n");
+          dict.setVerbose(false);
+          dict.addToDictionary(tm, fname);
+          imui.print("-- Done.\n");
+        }
+        catch (AlreadyIndexedException ex){
+          imui.print("Warning: "+ex+"\n");
+          imui.print("Ignoring this entry.\n");
+        }
+        catch (java.io.IOException ex){
+          imui.print("IO Error processing file "+fname+": "+ex+"\n");
+          imui.print("Indexing stopped.\n");
+          return;
+        }
+      }
+
+    }
+  }
+
+
 }

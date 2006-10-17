@@ -19,11 +19,14 @@ package modnlp.idx.gui;
 
 import modnlp.idx.IndexManager;
 
-import javax.swing.JFrame;
 import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JPanel;
+import javax.swing.DefaultComboBoxModel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -57,11 +60,11 @@ public class IndexManagerUI extends JFrame
   public IndexManagerUI (IndexManager p) {
    super("Corpus and index manager");
    parent = p;
-   textArea = new JTextArea(); //(30,80);
+   textArea = new JTextArea(40,80);
    textArea.setLineWrap(true);
    textArea.setWrapStyleWord(true);
    JScrollPane scrollPane = new JScrollPane(textArea);
-   scrollPane.setPreferredSize(new Dimension(600, 600));
+   scrollPane.setPreferredSize(new Dimension(600, 300));
    dismissButton.addActionListener(this);
    loadButton.setToolTipText("Select a set of files for indexing");
    loadButton.addActionListener(this);
@@ -77,16 +80,27 @@ public class IndexManagerUI extends JFrame
    pa.add(dismissButton);
    //pa.add(validateCheckBox);
    getContentPane().add(pa, BorderLayout.NORTH);
-   JPanel spa = new JPanel();
-   spa.add(new JLabel("Indexing log"), BorderLayout.NORTH);
-   spa.add(scrollPane, BorderLayout.SOUTH);
+   JPanel spa = new JPanel(new BorderLayout());
+   spa.add(new JLabel(" Indexing log:"), BorderLayout.NORTH);
+   spa.add(scrollPane, BorderLayout.CENTER);
+   spa.add(new JLabel("      "), BorderLayout.SOUTH);
+
    getContentPane().add(spa, BorderLayout.CENTER);
-   JPanel lpa = new JPanel();
-   lpa.add(new JLabel("Currently indexed files"), BorderLayout.NORTH);
-   corpusList = new JList(p.getIndexedCorpusList());
-   lpa.add(corpusList, BorderLayout.CENTER);
+
+   JPanel lpa = new JPanel(new BorderLayout());
+   lpa.add(new JLabel(" Currently indexed files"), BorderLayout.NORTH);
+   corpusList = new JList();
+   //corpusList.setVisibleRowCount(7);
+   JScrollPane clsp = new JScrollPane(corpusList);
+   
+   clsp.setPreferredSize(new Dimension(600,150));
+   lpa.add(clsp, BorderLayout.CENTER);
    lpa.add(deindexButton, BorderLayout.SOUTH);
    getContentPane().add(lpa, BorderLayout.SOUTH);
+  }
+
+  public void setCorpusListData(String [] ifn) {
+    corpusList.setModel(new DefaultComboBoxModel(ifn));
   }
 
   public void actionPerformed(ActionEvent evt)
