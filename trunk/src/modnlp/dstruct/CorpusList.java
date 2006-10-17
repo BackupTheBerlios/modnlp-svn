@@ -19,6 +19,7 @@ package modnlp.dstruct;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 /**
@@ -50,4 +51,17 @@ public class CorpusList extends  Vector
       e.printStackTrace();
     }
   }
+
+  public CorpusList (File[] flist) 
+  {
+    super();
+    for (int i = 0; i < flist.length; i++) {
+      this.add(flist[i].toString());
+    }
+  }
+
+
 }
+
+
+

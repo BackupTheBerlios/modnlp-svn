@@ -145,5 +145,27 @@ public class FileTable extends Table {
     return keys;
   }
 
+  public String [] getFileNames () {
+    String [] names = null;
+    try {
+      StatsConfig stc = new StatsConfig();  // stc.setFast(true);
+      BtreeStats dbs = (BtreeStats)database.getStats(stc);
+      names = new String[(int)dbs.getLeafNodeCount()];
+      Cursor c = database.openCursor(null, null);
+      DatabaseEntry key = new DatabaseEntry();
+      DatabaseEntry data = new DatabaseEntry();
+      int i = 0;
+      while (c.getNext(key, data, LockMode.DEFAULT) == 
+             OperationStatus.SUCCESS) {
+        names[i++] = StringBinding.entryToString(data);
+      }
+      c.close();
+    }
+    catch (DatabaseException e) {
+      logf.logMsg("Error accessing FileTable" + e);
+    }
+    return names;
+  }
+
 
 }

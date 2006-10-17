@@ -52,7 +52,7 @@ import java.util.Vector;
 */
 public class Dictionary {
 
-  public static DictProperties dictProps = new DictProperties();
+  DictProperties dictProps;
   LogStream logf;
   // main tables 
   // WordPositionTable wPosTable;          // word -> [pos1, pos2, ...]  
@@ -68,24 +68,52 @@ public class Dictionary {
 
 
   /**
-   * Open a new <code>Dictionary</code> in read-only mode.
+   * Open a new <code>Dictionary</code> in read-only mode with default
+   * DictProperties ("dictionary.properties" in current directory or,
+   * failing that, hardcoded defaults).
    *
    */
   public Dictionary(){
+    dictProps = new DictProperties();
     init(false);
   }
 
+  /**
+   * Open a new <code>Dictionary</code> in read-only mode with 
+   * DictProperties dp.
+   *
+   */
+  public Dictionary(DictProperties dp){
+    dictProps = dp;
+    init(false);
+  }
 
   /**
    * Open a new <code>Dictionary</code>.
    *
    * @param write a <code>boolean</code> value: false opens the
    * dictionary in read-only mode; true opens it for writing (enabling
-   * creation of new tables)
+   * creation of new tables). Use default DictProperties
+   * ("dictionary.properties" in current directory or, failing that,
+   * hardcoded defaults).
    */
   public Dictionary (boolean write){
+    dictProps = new DictProperties();
     init(write);
   }
+
+  /**
+   * Open a new <code>Dictionary</code>.
+   *
+   * @param write a <code>boolean</code> value: false opens the
+   * dictionary in read-only mode; true opens it for writing (enabling
+   * creation of new tables). Use default DictProperties dp.
+   */
+  public Dictionary (boolean write, DictProperties dp){
+    dictProps = dp;
+    init(write);
+  }
+
 
   public void init (boolean write){
     try {
@@ -147,7 +175,8 @@ public class Dictionary {
                                       true);
     // store sorted set of positions (worst-case for basic operations
     // O(ln(n)) which should be better than storing in a vector and
-    // standard merge sorting, which is O(n^2 ln(n))) [SL: run tests to check that]
+    // standard merge sorting, which is O(n^2 ln(n))) 
+    // [SL: run tests to check that's really the case]
     TreeSet poss = new TreeSet();
     int ct = 1;
     for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
@@ -232,6 +261,10 @@ public class Dictionary {
       return true;
     else 
       return false;
+  }
+
+  public String [] getIndexedFileNames () {
+    return fileTable.getFileNames();
   }
 
   // kwa elements can also be wildcards (e.g. "test*", matching "test", "tested", etc)
@@ -525,6 +558,10 @@ public class Dictionary {
       wPosTable.dump();
       wPosTable.close();
     }
+  }
+
+  public DictProperties getDictProps() {
+    return dictProps;
   }
 
   public void close () {
