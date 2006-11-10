@@ -60,6 +60,13 @@ public class CorpusList extends  Vector
     }
   }
 
+  public CorpusList (Object[] flist) 
+  {
+    super();
+    for (int i = 0; i < flist.length; i++) {
+      this.add(flist[i].toString());
+    }
+  }
 
 }
 

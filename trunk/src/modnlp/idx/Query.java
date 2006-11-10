@@ -18,6 +18,7 @@
 package modnlp.idx;
 
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.database.DictProperties;
 import modnlp.idx.query.WordQuery;
 
 import java.io.InputStreamReader;
@@ -38,11 +39,11 @@ public class Query {
   public static void main(String[] args) {
     Dictionary d = null;
     try {
-      d = new Dictionary(false);
-      if (args[0].equals("-f")){ // freq list
+      d = new Dictionary(new DictProperties(args[0]));
+      if (args[1].equals("-f")){ // freq list
         d.printSortedFreqList(new java.io.PrintWriter(System.out));
       }
-      else if (args[0].equals("-q")) { // interactive query
+      else if (args[1].equals("-q")) { // interactive query
           BufferedReader cline 
             = new BufferedReader(new InputStreamReader(System.in));
         System.out.print("Enter query or press <ENTER> to quit.\n> ");
@@ -55,8 +56,8 @@ public class Query {
           req = cline.readLine();
         }
       }
-      else if (args[0].equals("-l")) { // one-off query
-        String req = args[1];
+      else if (args[1].equals("-l")) { // one-off query
+        String req = args[2];
         System.err.println("No. of concordances for "+req+": ");
         d.printCorcordances(new WordQuery(req,d,false), 50, 
                             true, new java.io.PrintWriter(System.out));
@@ -76,7 +77,7 @@ public class Query {
 
 
   public static void usage() {
-    System.err.println("\nUSAGE: Query ");
+    System.err.println("\nUSAGE: Query corpus-directory options");
     System.err.println("\tprint modnlp.idx.Dictionary tables to stdout");
     System.err.println("\tOptions:");
     System.err.println("\t\t-f       print frequency list");

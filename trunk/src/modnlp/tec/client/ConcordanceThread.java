@@ -181,14 +181,26 @@ public class ConcordanceThread
     }
     catch (java.io.IOException e){
       parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
+			if (noFound > 0) {
+				parent.updateStatusLabel(" Returned "+
+                                 noActuallyFound+
+                                 " lines matching your query");
+				fireListSizeEvent(noFound);
+        fireDisplayEvent(0);
+        parent.displayConcord();
+      }
       stop();
     }
     catch (NullPointerException e){
       parent.updateStatusLabel("  ConcordanceThread error: "+e);
+      fireDisplayEvent(0);
+      parent.displayConcord();
       stop();
     }
     catch (sun.applet.AppletSecurityException e){
       parent.updateStatusLabel(" **** TRANSFER INTERRUPTED: SERVER NOT RESPONDING *****");
+      fireDisplayEvent(0);
+      parent.displayConcord();
       stop();
     }
   }

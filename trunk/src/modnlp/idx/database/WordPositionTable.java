@@ -92,7 +92,7 @@ public class WordPositionTable extends Table {
       }
       c.close();
       String founo = database.getDatabaseName();
-      database.close();
+      close();
       environment.removeDatabase(null,founo);
     }
     catch (DeadlockException e) {

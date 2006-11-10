@@ -15,10 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-package modnlp.tec.client;
+package modnlp.tec.client.gui;
+
+import modnlp.tec.client.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.LayoutManager;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
@@ -41,19 +44,24 @@ public class PreferPanel extends JFrame
 	implements  ActionListener, ItemListener, DefaultManager 
 {
 
-  private final String COTXBT = "Concordance context ";
-  private final String EXTXBT = "File extract context ";
+  private static final String COTXBT = "Concordance context ";
+  private static final String EXTXBT = "File extract context ";
   private static String [] fseltab = {"10", "12","14","16","18"};
   private static  int FSELMAX = Array.getLength(fseltab);
+  public int maxContext = 130;
+  public int maxExtrCtx = 600;
+
   private JPanel set1 = new JPanel();
   private JPanel set2 = new JPanel();
+
   private JComboBox  fontsel;
 	private Vector defaultListeners = new Vector ();
-  private String HIDESGML = "Show markup along with text";
-  private JTextField context;
-  private JTextField extrctx;
+  private String HIDESGML = "";//"Show markup along with text";
+  private JTextField context = new JTextField(""+(maxContext/2)+"",3);
+  private JTextField extrctx = new JTextField(""+(maxExtrCtx/2)+"",3);
   private JTextField httpProxyField = new JTextField();
   private JTextField headerBaseField = new JTextField();
+  private JTextField headersDirField = new JTextField();
   private String httpProxy = null;
   private JComboBox sortctx = new JComboBox();
   public static final int SCTXMAX = 6;
@@ -61,12 +69,14 @@ public class PreferPanel extends JFrame
   public int sortContextHorizon = 1;
   public JCheckBox ckbSGML = new JCheckBox(HIDESGML);
   public String stSGML = "no";
-  public int maxContext = 130;
-  public int maxExtrCtx = 600;
   public Browser targFrame;
 	JButton applyButton = new JButton("Apply");
 	JButton cancelButton = new JButton("Cancel");
 	JButton doneButton = new JButton("Done");
+  JLabel COTXBTLabel = new JLabel(COTXBT);
+  JLabel EXTXBTLabel = new JLabel(EXTXBT);
+  String maxContextLabel = "Number of characters (maximum "+maxContext+")";
+  String maxExtrCtxLabel = "Number of characters (maximum "+maxExtrCtx+")";
 
   /** Set up layout and display
    * @param mother The frame to be repainted when preferences change
@@ -75,47 +85,55 @@ public class PreferPanel extends JFrame
     super();
 
     targFrame = mother;
-    //setLayout(new GridLayout(9,2));
+
+    JPanel title = new JPanel();
+    title.add(new JLabel("Preferences:"));
     JPanel prefer = new JPanel();
     JPanel ctrl = new JPanel();
-    JPanel set3 = new JPanel();
-    JPanel set4 = new JPanel();
-    JPanel set5 = new JPanel();
-    JPanel set6 = new JPanel();
-    JPanel set6a = new JPanel();
-    JPanel set7 = new JPanel();
-    JPanel set8 = new JPanel();
-    prefer.setLayout(new BoxLayout(prefer, BoxLayout.Y_AXIS));
 
-    resetContext();
-    resetExtrCtx();
+    prefer.setLayout(new GridLayout(8,2,2,2));
 
-    set3.add(ckbSGML);
+    // row 1
+    prefer.add(COTXBTLabel);
+    prefer.add(context);
+    context.setToolTipText(maxContextLabel);
+
+    // row 2
+    prefer.add(EXTXBTLabel);
+    prefer.add(extrctx);
+    extrctx.setToolTipText(maxExtrCtxLabel);
+
+    // row 3
+    JLabel xl = new JLabel("Show markup along with text");
+    prefer.add(xl);
+    prefer.add(ckbSGML);
 
     fontsel = new JComboBox();
     for (int i = 0 ; i < FSELMAX ; i++)
       fontsel.addItem(fseltab[i]);
-    set4.add(new JLabel("Font size "));    
-		fontsel.setSelectedItem(fontSize+""); 
-    set4.add(fontsel);
+
+    // row 4
+    JLabel fl = new JLabel("Font size ");    
+    prefer.add(fl);
+		fontsel.setSelectedItem(fontSize+"");
+    prefer.add(fontsel);
 
     for (int i = 1 ; i <= SCTXMAX ; i++)
       sortctx.addItem(""+i);
 
-    set5.add(new JLabel("Sort context horizon "));
-    set5.add(sortctx);
+    // row 5
+    JLabel sl = new JLabel("Sort context horizon ");    
+    prefer.add(sl); 
+    prefer.add(sortctx);
 
-
-    set6.setLayout(new GridLayout(2,2));
-    //set6.setLayout(new BoxLayout(set6, BoxLayout.X_AXIS));
-    //httpProxyField.setMinimumSize(new Dimension(30, 5)); 
+    // row 6
     httpProxyField.setMaximumSize(new Dimension(300, 28)); 
-    set6.add(new JLabel("HTTP Proxy:  "));
+    JLabel pl = new JLabel("HTTP Proxy:  ");
     if (System.getProperty("tec.client.runmode") != null &&
         System.getProperty("tec.client.runmode").equals("jnlp"))
       {
         httpProxyField.setEnabled(false);
-        httpProxyField.setBackground(set6.getBackground());
+        httpProxyField.setBackground(prefer.getBackground());
         httpProxyField.setText("Using browser settings!");
       }
     else
@@ -126,62 +144,58 @@ public class PreferPanel extends JFrame
                                  +":"
                                  +System.getProperty("http.proxyPort"));
       }
-    set6.add(httpProxyField);
-    //set6a.setLayout(new BoxLayout(set6a, BoxLayout.X_AXIS));
-    set6.add(new JLabel("Headers URL: "));
-    set6.add(headerBaseField);
+    prefer.add(pl);
+    prefer.add(httpProxyField);
 
-    ctrl.setLayout(new GridLayout(1,3));
-    ctrl.add(applyButton);
+    // row 7
+    JLabel hl = new JLabel("Headers URL:  ");
+    prefer.add(hl);
+    prefer.add(headerBaseField);
+
+    // row 8
+    JLabel lh = new JLabel("Local headers:  ");
+    prefer.add(lh);
+    prefer.add(headersDirField);
+
+    //ctrl.setLayout(new GridLayout(1,3,4,4));
+
     ctrl.add( cancelButton );
+    ctrl.add(new JLabel("       "));
+    ctrl.add(applyButton);
     ctrl.add( doneButton );
-    ((FlowLayout)set1.getLayout()).setAlignment(FlowLayout.LEFT);
-    ((FlowLayout)set2.getLayout()).setAlignment(FlowLayout.LEFT);
-    ((FlowLayout)set3.getLayout()).setAlignment(FlowLayout.LEFT);
-    ((FlowLayout)set4.getLayout()).setAlignment(FlowLayout.LEFT);
-    ((FlowLayout)set5.getLayout()).setAlignment(FlowLayout.LEFT);
-    ((FlowLayout)set7.getLayout()).setAlignment(FlowLayout.LEFT);
 
-    prefer.add(set1);
-    prefer.add(set2);
-    prefer.add(set3);
-    prefer.add(set4);
-    prefer.add(set5);
-    prefer.add(set6);
-    prefer.add(set6a);
-    prefer.add(set7);
-    prefer.add(ctrl);
+    //c.weightx = 0.0;
 
     //ctrl.setFont( new Font("Helvetica", Font.BOLD, 12));
-    //prefer.setFont( new Font("Helvetica", Font.PLAIN, 12));
-		this.getContentPane().add("Center",prefer);
+    //prefer.setFont( new Font("Helvetica", Font.PLAIN,12));
+    prefer.setBorder(new EmptyBorder(4,4,4,4));
+    this.getContentPane().setLayout(new BorderLayout());
+    this.getContentPane().add(title, BorderLayout.NORTH);
+		this.getContentPane().add(prefer, BorderLayout.CENTER);
+    this.getContentPane().add(ctrl, BorderLayout.SOUTH);
 
 		ckbSGML.addItemListener(this);
-		applyButton.addActionListener(this);
 		cancelButton.addActionListener(this);
+		applyButton.addActionListener(this);
 		doneButton.addActionListener(this);
+
+
   }
 
   /** Reset value of context; used for initialization and for
    *  redisplay when user enters an invalid value */
   public void resetContext() {
-    set1.removeAll();
-    context = new JTextField(""+(maxContext/2)+"",3);
-    set1.add( new JLabel(COTXBT));
-    set1.add(context);    
-    set1.add(new JLabel(" characters (maximum "+maxContext+")"));
-    set1.validate();
+    context.setText(""+maxContext/2);
+    maxContextLabel = "Number of characters (maximum "+maxExtrCtx+")";
+    context.setToolTipText(maxContextLabel);
   }
 
   /** Reset value of  extract context; used for initialization and for
    *  redisplay when user enters an invalid value */
   public void resetExtrCtx() {
-    set2.removeAll();
-    set2.add( new JLabel(EXTXBT));
-    extrctx = new JTextField(""+(maxExtrCtx/2)+"",3);
-    set2.add(extrctx);    
-    set2.add(new JLabel(" characters (maximum "+maxExtrCtx+")"));
-    set2.validate();
+    extrctx.setText(""+(maxExtrCtx/2)+"");
+    maxExtrCtxLabel = "Number of characters (maximum "+maxExtrCtx+")";
+    extrctx.setToolTipText(maxExtrCtxLabel);
   }
 
 
@@ -314,6 +328,16 @@ public class PreferPanel extends JFrame
 	public void setHeaderBaseURL (String u)
 	{
 		headerBaseField.setText(u);
+	}
+
+	public String getHeadersDir ()
+	{
+		return headersDirField.getText();
+	}
+
+	public void setHeadersDir (String u)
+	{
+		headersDirField.setText(u);
 	}
 
 

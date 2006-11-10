@@ -101,7 +101,7 @@ public class TecClientRequest extends Hashtable {
       return CONCORD;
     if (rq.equalsIgnoreCase("extract"))
       return EXTRACT;
-    if (rq.equalsIgnoreCase("sqlquery"))
+     if (rq.equalsIgnoreCase("headerbaseurl"))
       return SQLQUERY;
     // add more ifs here as your range of services grow
     return NOTREQ;

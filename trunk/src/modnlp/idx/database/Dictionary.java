@@ -235,6 +235,7 @@ public class Dictionary {
                                                         ""+founo,
                                                         true);
     TokenMap tm = wPosTable.removeFile();
+    wPosTable.close();
     for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
 			{
         Map.Entry kv = (Map.Entry) e.next();
@@ -245,6 +246,7 @@ public class Dictionary {
         if (freqTable.remove(word,set.size()) == 0)
           caseTable.remove(word);
       }
+    
     fileTable.remove(founo);
   }
 

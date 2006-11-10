@@ -21,6 +21,7 @@ import modnlp.idx.inverted.TokeniserRegex;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
 import modnlp.idx.database.AlreadyIndexedException;
+import modnlp.idx.database.NotIndexedException;
 import modnlp.dstruct.CorpusList;
 import modnlp.dstruct.TokenMap;
 
@@ -37,15 +38,22 @@ import javax.swing.JOptionPane;
  * @see  
 */
 public class IndexManager {
-  private static boolean verbose = true;
   private IndexManagerProperties props = new IndexManagerProperties();
   Dictionary dict;
+  DictProperties dictProps;
   CorpusList clist;
   IndexManagerUI imui;
   IndexingThread indexingThread;
-
+  DeindexingThread deindexingThread;
+  boolean stop = false;
+  boolean activeIndexing = false;
+  boolean debug = false; // print debug info on stderr?
   public IndexManager () {
     imui = new IndexManagerUI(this);
+  }
+
+  public void setStop(boolean b){
+    stop = b;
   }
 
   public void chooseNewCorpus(){
@@ -60,29 +68,64 @@ public class IndexManager {
       return;
     String cdir = ncc.getSelectedFile().toString();
     props.setProperty("last.index.dir", cdir);
-    DictProperties dp = new DictProperties(cdir);
+    dictProps = new DictProperties(cdir);
     if (dict != null)
       dict.close();
-    dict = new Dictionary(true,dp);
-    imui.setCurrentDir(dp.getProperty("last.datafile.dir"));
+    dict = new Dictionary(true,dictProps);
+    imui.setCurrentDir(dictProps.getProperty("last.datafile.dir"));
     imui.setTitle("IndexManager: operating on index at "+cdir);
     imui.print("\n----- Selected corpus: "+cdir+" ------\n");
     imui.setCorpusListData(dict.getIndexedFileNames());
-    dict.setVerbose(verbose);
+    // choose headers directory
+    String hh = null;
+    if ((hh = dictProps.getProperty("headers.home")) == null)  // see if dictProps already exists
+      {
+        while ( (r = ncc.showChooseDir("Choose a headers directory"))
+                != CorpusChooser.APPROVE_OPTION  ) 
+          {
+            JOptionPane.showMessageDialog(null, "Please choose a headers directory (folder)");      
+          }
+        hh = ncc.getSelectedFile().toString();
+        dictProps.setProperty("headers.home", hh);
+        dictProps.save();
+      }
+    if ((hh = dictProps.getProperty("headers.url")) == null)  // see if dictProps already exists
+      {
+        HeaderURLChooser huc = new HeaderURLChooser(imui, null);
+        while ( (r = huc.showChooseURL()) == HeaderURLChooser.CANCEL_OPTION ) 
+          JOptionPane.showMessageDialog(null, "Please choose a headers URL");
+        dictProps.setProperty("headers.url", huc.getURL());
+        dictProps.save();
+      }
+    dict.setVerbose(debug);
   }
 
   public void indexSelectedFiles (File[] files) {
-    dict.getDictProps().setProperty("last.datafile.dir", files[0].getParent());
+    dictProps.setProperty("last.datafile.dir", files[0].getParent());
     indexingThread = new IndexingThread(new CorpusList(files));
     indexingThread.start();
   }
 
+  public void deindexSelectedFiles (Object[] files) {
+    deindexingThread = new DeindexingThread(new CorpusList(files));
+    deindexingThread.start();
+  }
+
+
   public void exit(int c)
   {
+    setStop(true);
+    try {
+      while ( activeIndexing )
+        Thread.sleep(500);
+    }
+    catch (Exception e) {}
     if (dict != null)
       dict.close();
     if (props != null)
       props.save();
+    if (dictProps != null)
+      dictProps.save();
     System.exit(c);
   }
 
@@ -92,18 +135,6 @@ public class IndexManager {
       im.chooseNewCorpus();
       im.imui.pack();
       im.imui.setVisible(true);
-      //System.out.println(System.setProperty("file.encoding", "ISO8859_1"));
-      /*CorpusChooser ncc = new CorpusChooser();
-        while (ncc.showChooseCorpus() != CorpusChooser.APPROVE_OPTION) {
-        JOptionPane.showMessageDialog(null, "Please choose a corpus directory (folder)");      
-        }
-        DictProperties dp = new DictProperties(ncc.getSelectedFile().toString());
-        Dictionary d = null;
-        try {
-        dict = new Dictionary(true,dp);
-        dict.setVerbose(verbose);
-        // IndexManager mti = new IndexManager();
-        */
     } // end try
     catch (Exception ex){
       System.err.println(ex);
@@ -127,13 +158,21 @@ public class IndexManager {
     }
         
     public void run() {
+      activeIndexing = true;
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
+        if (stop) {
+          stop = false;
+          imui.print("----- Indexing aborted by user.");
+          imui.enableChoice(true);
+          activeIndexing = false;
+          return;
+        }
         String fname = (String)e.nextElement();
         try {
           TokeniserRegex tkr = new TokeniserRegex(new File(fname));
-          // if (verbose) {
+          // if (debug) {
           imui.print("\n----- Processing: "+fname+" ------\n");
-          tkr.setVerbose(false);
+          tkr.setVerbose(debug);
           //}
           if (dict.indexed(fname)){
             throw new AlreadyIndexedException(fname);
@@ -143,9 +182,10 @@ public class IndexManager {
           TokenMap tm = tkr.getTokenMap();
           //System.err.print(tm.toString());
           imui.print("-- Indexing ...\n");
-          dict.setVerbose(false);
+          dict.setVerbose(debug);
           dict.addToDictionary(tm, fname);
           imui.print("-- Done.\n");
+          imui.addIndexedFile(fname);
         }
         catch (AlreadyIndexedException ex){
           imui.print("Warning: "+ex+"\n");
@@ -154,12 +194,54 @@ public class IndexManager {
         catch (java.io.IOException ex){
           imui.print("IO Error processing file "+fname+": "+ex+"\n");
           imui.print("Indexing stopped.\n");
+          activeIndexing = false;
+          imui.enableChoice(true);
           return;
         }
       }
+      activeIndexing = false;
+      imui.enableChoice(true);
+    } // end run()
 
+  } // end IndexingThread
+
+
+  class DeindexingThread extends Thread {
+    CorpusList clist;
+    public DeindexingThread(CorpusList cl) {
+      super("Indexing thread");
+      clist = cl;
     }
-  }
+        
+    public void run() {
+      activeIndexing = true;
+      for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
+        if (stop) {
+          stop = false;
+          imui.print("----- De-indexing aborted by user.");
+          imui.enableChoice(true);
+          activeIndexing = false;
+          return;
+        }
+        String fname = (String)e.nextElement();
+        try {
+          // if (debug) {
+          imui.print("\n----- De-indexing: "+fname+" ------\n");
+          dict.setVerbose(debug);
+          dict.removeFromDictionary(fname);
+          imui.print("-- Done.\n");
+          imui.removeIndexedFile(fname);
+        }
+        catch (NotIndexedException ex){
+          imui.print("Warning: "+ex+"\n");
+          imui.print("Ignoring this entry.\n");
+        }
+      }
+      activeIndexing = false;
+      imui.enableChoice(true);
+    } // end run()
+
+  } // end DeindexingThread
 
 
 }

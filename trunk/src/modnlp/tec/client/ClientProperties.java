@@ -16,7 +16,8 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.*;
 import java.util.Properties;
 /**
@@ -28,20 +29,47 @@ import java.util.Properties;
 */
 public class ClientProperties extends Properties{
 
+  static final String FNAME = "tecli.properties";
+  static final String DEF_SERVER = "ronaldo.cs.tcd.ie";
+  static final String DEF_PORT = "1240";
+  static final String DEF_HDURL = "http://ronaldo.cs.tcd.ie/tec/headers";
+
 	public ClientProperties () 
 	{
     super();
     try {
-      ClassLoader cl = this.getClass().getClassLoader();
-      InputStream fis = ((cl.getResource("tecli.properties")).openConnection()).getInputStream();
-       //FileInputStream fis = new FileInputStream(new File("tecli.properties"));
+      //ClassLoader cl = this.getClass().getClassLoader();
+      //InputStream fis = ((cl.getResource("tecli.properties")).openConnection()).getInputStream();
+       FileInputStream fis = new FileInputStream(FNAME);
       this.load(fis);
     }
     catch (Exception e) {
-	    System.err.println("Property ERROR: " + e);
-	    e.printStackTrace(System.out);
-			System.exit(1);
+	    System.err.println("Warning" + e);
+	    System.err.println("Creating new property file" + FNAME);
+      System.err.println("Setting default to remote access to main TEC site");
+      setProperty("tec.client.server", DEF_SERVER);
+      setProperty("tec.client.port", DEF_PORT);
+      setProperty("tec.client.headers", DEF_HDURL);
+      setProperty("stand.alone", "no");
+      save();
+	    //e.printStackTrace(System.out);
+			//System.exit(1);
 		}
 	}
+
+  public void save () {
+    try {
+      store(new FileOutputStream(FNAME), 
+            "Corpus Browser's properties");
+    }
+    catch (Exception e){
+      System.err.println("Error writing property file "+FNAME+": "+e);
+    }
+  }
+
+  protected void finalize () throws java.lang.Throwable {
+    save();
+    super.finalize();
+  }
 
 }

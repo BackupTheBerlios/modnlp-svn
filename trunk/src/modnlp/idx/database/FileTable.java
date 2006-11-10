@@ -59,7 +59,7 @@ public class FileTable extends Table {
   public void remove(int sik) {
     DatabaseEntry key = new DatabaseEntry();
     IntegerBinding.intToEntry(sik, key);
-    System.err.println("Removing "+sik);
+    //System.err.println("Removing "+sik);
     remove(key);
   }
 

@@ -31,6 +31,8 @@ public class DictProperties extends java.util.Properties{
   public static String PROP_FNAME = "dictionary.properties";
   private static String PS = java.io.File.separator;
   String envHome = "/tmp/tec/index/";   // a very unsafe default;
+  //String headDir = "/tmp/tec/headers/";   // a very unsafe default;
+  //String headURL = "file:///tmp/tec/headers/";   //  this is really supposed to be a HTTP address
   String wFilTableName = "wfindex.db";  // word -> [fileno1, fileno2, ...]
   String caseTableName = "caindex.db";  // canonicalform -> [form1, form2, ...]
   String freqTableName = "fqtable.db";  // word -> noofoccurrences
@@ -60,6 +62,8 @@ public class DictProperties extends java.util.Properties{
 	    System.err.println("Error reading property file "+pf+": "+e);
 	    System.err.println("Using defaults in DictProperties.java");
       setProperty("dictionaty.environment.home",envHome);
+      //setProperty("headers.url",headURL);
+      //setProperty("headers.home",headDir);
       setProperty("wfile.table.name", wFilTableName);
       setProperty("case.table.name", caseTableName);
       setProperty("frequency.table.name", freqTableName);
@@ -85,9 +89,16 @@ public class DictProperties extends java.util.Properties{
     super.finalize();
   }
 
-
   public String getEnvHome () {
     return getProperty("dictionaty.environment.home");
+  }
+
+  public String getHeadURL () {
+    return getProperty("headers.url");
+  }
+
+  public String getHeadDir () {
+    return getProperty("headers.home");
   }
 
   public String getTPosTableName () {

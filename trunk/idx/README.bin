@@ -1,0 +1,34 @@
+modnlp-idx, binary distribution: 
+-------------------------------
+
+The modnlp text indexing suite is distributed under the
+GNU General Public License. See COPYING for details.
+
+modnlp-idx is fully compatible with the GNU Classpath
+(http://www.gnu.org/software/classpath/) and I intend to keep it that
+way.  It has been tested on a kaffe (v1.1.5), and partially tested on
+sablevm (v1.1.6), jamvm (v1.3), with the gnu.regexp package. It also
+runs on Sun's JDK version 1.4 or greater.
+
+The source code, API documentation is available from 
+
+  http://modnlp.berlios.de/
+
+In order to run the Indexing utility (to generate a TEC-compatible
+index) simply click/double-click on idx.jar or, on the command line,
+type:
+
+ % java -jar idx.jar
+
+To query the index, type
+
+ % java -cp idx.jar:gnu-regexp-1.1.4.jar:je.jar modnlp.idx.Query INDEX-DIRECTORY -q
+
+and eenter your query at the '>' prompt. E.g. 
+
+ > the
+
+should return lines containing the query term ("the")
+surrounded by its immediate context (50 chars). 
+
+-- S. Luz (luzs@cs.tcd.ie)

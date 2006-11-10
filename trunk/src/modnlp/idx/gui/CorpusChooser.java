@@ -36,16 +36,24 @@ public class CorpusChooser extends JFileChooser {
       setSelectedFile(new File(def));
   }
 
-
-
   public int showChooseCorpus () {
     try {
+      setDialogTitle("Choose corpus location");
       return showDialog(null, "Choose corpus location");
     } catch (Exception e) {
       System.err.println("Error choosing corpus dir"+e);
       return JFileChooser.ERROR_OPTION;
     }
+  }
 
+  public int showChooseDir (String msg) {
+    try {
+      setDialogTitle(msg);
+      return showDialog(null, msg);
+    } catch (Exception e) {
+      System.err.println("Error choosing directory"+e);
+      return JFileChooser.ERROR_OPTION;
+    }
   }
 
 }

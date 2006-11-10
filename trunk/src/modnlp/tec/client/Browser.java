@@ -16,9 +16,13 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-//import java.applet.*;
 
+import modnlp.tec.client.gui.RemoteCorpusChooser;
+import modnlp.tec.client.gui.PreferPanel;
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.database.DictProperties;
+import modnlp.idx.gui.CorpusChooser;
+
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Event;
@@ -34,6 +38,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import java.sql.*;
 import javax.swing.event.*;
 //import javax.swing.filechooser.ExtensionFileFilter;
@@ -86,7 +91,6 @@ public class Browser extends JFrame
   private PreferPanel preferenceFrame = new PreferPanel(this);
   private ClientProperties clProperties;
 
-
   // Strings for the GUI
   private static final String HEDBUT = "Metadata";
   private static final String EXTBUT = "Extract";
@@ -120,6 +124,8 @@ public class Browser extends JFrame
   private JButton concButton;
 
   private JMenu  fileMenu = new JMenu("File");
+  private JMenuItem nlcButton = new JMenuItem("New local corpus...");
+  private JMenuItem nrcButton = new JMenuItem("New Internet corpus...");    
   private JMenuItem dldButton = new JMenuItem("Save concordances...");  
 	private JMenuItem quitButton = new JMenuItem(QUITBUT);
 
@@ -157,6 +163,8 @@ public class Browser extends JFrame
   private boolean prevOn = false;
   private boolean noApplet = false;
   private boolean standAlone = false;
+  private boolean debug = true;
+  private boolean firstRemoteFlag = true;
   private Connection conn;
   private int srt_i = 0;
   private AdvConcSearch advSearchFrame;
@@ -168,7 +176,10 @@ public class Browser extends JFrame
    */
   public Browser(int width, int height){
 
-    super("TEC Concordance Browser (v. "+getRelease()+")");
+    super(getBrowserName());
+
+    clProperties = new ClientProperties();
+
     Container contentPane = getContentPane();
     setSize(width,height);
     setFont(new Font("Helvetica",Font.PLAIN, 12));
@@ -187,6 +198,8 @@ public class Browser extends JFrame
     menuBar = new JMenuBar();
     setJMenuBar(menuBar);
     
+    fileMenu.add(nlcButton);
+    fileMenu.add(nrcButton);
     fileMenu.add(dldButton);
     fileMenu.addSeparator();
     fileMenu.add(quitButton);
@@ -243,6 +256,8 @@ public class Browser extends JFrame
     headerButton.setEnabled(false);
     dldButton.setEnabled(false);
     
+    nlcButton.setToolTipText("Select a new corpus index");
+    nrcButton.setToolTipText("Select a new corpus index server");
     dldButton.setToolTipText("Save the displayed concordances to disk");
     stlButton.setToolTipText("Sort with left context horizon indicated on the box");
     strButton.setToolTipText("Sort with right context horizon indicated on the box");
@@ -327,6 +342,8 @@ public class Browser extends JFrame
     strButton.addActionListener(this);
     extractButton.addActionListener(this);
     headerButton.addActionListener(this);
+    nlcButton.addActionListener(this);
+    nrcButton.addActionListener(this);
     dldButton.addActionListener(this);
 
     helpButton.addActionListener(this);
@@ -402,40 +419,7 @@ public class Browser extends JFrame
   }
   */
 
-  public void setAdvSearchOptions (){
 
-    splashScreen.setMessage("Setting options...");
-    splashScreen.incProgress();
-    advSearchFrame.setANames(getSQLMetadata("AuthorNames"));
-    splashScreen.incProgress();
-    advSearchFrame.setAGends(getSQLMetadata("AuthorGenders"));
-    splashScreen.incProgress();
-    advSearchFrame.setANats(getSQLMetadata("AuthorNationalities"));
-    splashScreen.incProgress();
-    advSearchFrame.setASexOr(getSQLMetadata("AuthorSexualOrientation"));
-
-    advSearchFrame.setTNames(getSQLMetadata("TranslatorNames"));
-    splashScreen.incProgress();
-    advSearchFrame.setTGends(getSQLMetadata("TranslatorGenders"));
-    splashScreen.incProgress();
-    advSearchFrame.setTNats(getSQLMetadata("TranslatorNationalities"));
-    splashScreen.incProgress();
-    advSearchFrame.setTSexOr(getSQLMetadata("TranslatorSexualOrientation"));
-    splashScreen.incProgress();
-
-    advSearchFrame.setTLans(getSQLMetadata("SourceLanguage"));
-    splashScreen.incProgress();
-    advSearchFrame.setDocuments(getSQLMetadata("Filenames"));
-    splashScreen.incProgress();
-
-    advSearchFrame.getMenu();
-    splashScreen.incProgress();
-
-  }
-
-  public void showHelp() {
-    
-  }
   public static String getRelease (){
     return RELEASE;
   }
@@ -444,6 +428,10 @@ public class Browser extends JFrame
     return REVISION.substring(11,REVISION.lastIndexOf("$"));
   }
   
+  public static String getBrowserName (){
+    return "MODNLP/TEC Concordance Browser (v. "+getRelease()+")";
+  }
+
   /*public void getADSMenu(AdvConcSearch acs)
     {
     acs.setMenus();
@@ -554,6 +542,10 @@ public class Browser extends JFrame
           //advSearchFrame.setSize( 1000, 250 );
           advSearchFrame.show();
         }
+      else if(  evt.getSource() == nrcButton )
+        chooseNewRemoteCorpus();
+      else if(  evt.getSource() == nlcButton )
+        chooseNewLocalCorpus();
       else if(  evt.getSource() == dldButton )
         {
           try
@@ -757,6 +749,8 @@ public class Browser extends JFrame
   }
 
 	public void updateStatusLabel (String msg){
+    if (debug)
+      System.err.println(msg);
 		statusLabel.setText(msg);
 	}
 	public void updateStatusLabelScroll (String msg){
@@ -824,18 +818,18 @@ public class Browser extends JFrame
     return sq.response.toArray();
   }
 
-
-  /** Show header file of text identified by
-   *  position <code>sel</code>
-   * in the current <code>ConcArray</code>
+  /** Show header file of text identified by position <code>sel</code>
+   *  in the current <code>ConcArray</code>
    *  @see #array
    *  @see ConcArray
    */
   public void showHeader(ConcordanceObject sel)
   {
     String filename = sel.filename;
-    String headerName =
-      filename.substring(0,filename.lastIndexOf("."))+".hed";
+    String headerName = 
+      filename.substring(0,filename.lastIndexOf('.'))+".hed";
+    int p = headerName.lastIndexOf(java.io.File.separator);
+    headerName = p < 0? headerName : headerName.substring(p);
     showHeader(headerName);
   }
 
@@ -849,10 +843,10 @@ public class Browser extends JFrame
     HeaderXMLHandler parser =  new HeaderXMLHandler();
     try {
       URL headerURL = null;
-      if (standAlone)
-        headerURL = new URL("file://"+dictionary.getCorpusDir()+"/"+headerName);
-      else
-        headerURL = new URL(HEDBAS+"/"+headerName);
+      /*if (standAlone)
+        headerURL = new URL("file://"+dictionary.getDictProps().getHeadURL()+"/"+headerName);
+        else*/
+      headerURL = new URL(HEDBAS+"/"+headerName);
 			BufferedReader in
 				= new BufferedReader(new InputStreamReader(headerURL.
                                                    openConnection().
@@ -891,7 +885,6 @@ public class Browser extends JFrame
   public void defaultChanged(FontSizeChangeEvent e)
 	{
 	}
-
 
 	public int getFontSize()
 	{
@@ -936,38 +929,160 @@ public class Browser extends JFrame
     }
   }
   
+  public void chooseNewLocalCorpus(){
+    CorpusChooser ncc = new CorpusChooser(clProperties.getProperty("last.index.dir"));
+    int r;
+    while (!((r = ncc.showChooseCorpus()) == CorpusChooser.APPROVE_OPTION ||
+             (r != CorpusChooser.CANCEL_OPTION )) ) 
+      {
+        JOptionPane.showMessageDialog(null, "Please choose a corpus directory (folder)");      
+      }
+    if (r == CorpusChooser.CANCEL_OPTION)
+      return;
+    String cdir = ncc.getSelectedFile().toString();
+    clProperties.setProperty("last.index.dir", cdir);
+    clProperties.save();
+    setLocalCorpus(cdir);
+  }
+
+  public void setLocalCorpus (String cdir) {
+    DictProperties dictProps = new DictProperties(cdir);
+    if (dictionary != null)
+      dictionary.close();
+    dictionary = new Dictionary(false,dictProps);
+    setTitle(getBrowserName()+": index at "+cdir);
+    dictionary.setVerbose(debug);
+    setHeadersURL(dictProps);
+    standAlone = true;
+  }
+
+  private void setHeadersURL(DictProperties dictProps){
+    int r;
+    String hh = null;
+    if ((hh = dictProps.getProperty("headers.home")) == null)  // an unsafe default
+      {
+        CorpusChooser ncc = new CorpusChooser(null);
+        while (!((r = ncc.showChooseDir("Choose a headers directory")) == CorpusChooser.APPROVE_OPTION ||
+                 r != CorpusChooser.CANCEL_OPTION)  ) 
+          {
+            JOptionPane.showMessageDialog(null, "Please choose a headers directory (folder)");      
+          }
+        if (r == CorpusChooser.CANCEL_OPTION){
+          String cdir = clProperties.getProperty("last.index.dir");
+          hh = cdir.substring(0,cdir.lastIndexOf('/', cdir.length()-1))+"/headers/";
+        }
+        else
+          hh = ncc.getSelectedFile().toString();
+        dictProps.setProperty("headers.home", hh);
+        dictProps.save();
+      }
+    HEDBAS = "file://"+hh;
+    preferenceFrame.setHeaderBaseURL(HEDBAS);
+  }
+
+  public void chooseNewRemoteCorpus () {
+    RemoteCorpusChooser rcc = 
+      new RemoteCorpusChooser(this, clProperties.getProperty("tec.client.server")+":"+
+                              clProperties.getProperty("tec.client.port"));
+    int r;
+    if ((r = rcc.showChooseCorpus()) == RemoteCorpusChooser.CANCEL_OPTION)
+      return;
+    if ( !firstRemoteFlag && r == RemoteCorpusChooser.SAME_IP)
+      return;
+    else
+      firstRemoteFlag = false;
+      
+    SERVER = rcc.getServer();
+    PORTNUM =  rcc.getPort();
+    clProperties.setProperty("tec.client.server",SERVER);
+    clProperties.setProperty("tec.client.port",PORTNUM+"");
+    clProperties.save();
+    setTitle(getBrowserName()+": index at "+SERVER+":"+PORTNUM);
+    standAlone = false;
+    TecClientRequest request = new TecClientRequest();
+    request.setServerURL("http://"+SERVER);
+    request.setServerPORT(PORTNUM);
+    request.put("request","headerbaseurl");
+    request.setServerProgramPath("/headerbaseurl");
+    try {
+      URL exturl = new URL(request.toString());
+      HttpURLConnection exturlConnection = (HttpURLConnection) exturl.openConnection();
+      //exturlConnection.setUseCaches(false);
+      exturlConnection.setRequestMethod("GET");
+      BufferedReader input = new
+        BufferedReader(new
+                       InputStreamReader(exturlConnection.getInputStream() ));
+      HEDBAS = input.readLine();
+      System.err.println(">>>>"+HEDBAS);
+      if (HEDBAS == null || HEDBAS.equals(""))
+        HEDBAS = "http://"+SERVER+"/tec/headers";
+    preferenceFrame.setHeaderBaseURL(HEDBAS);
+    }
+    catch(IOException e)
+      {
+        System.err.println("Exception: couldn't create URL input stream: "+e);
+        HEDBAS = "http://"+SERVER+"/tec/headers";
+        System.err.println("Setting URL to "+HEDBAS);
+        preferenceFrame.setHeaderBaseURL(HEDBAS);
+      }
+  }
+
+  public boolean workOffline() {
+    int option;
+    if ((clProperties.getProperty("stand.alone")).equals("yes"))
+      return true;
+    if (JOptionPane.showConfirmDialog(this,
+                                      "Work offline (stand-alone corpus)?",
+                                      "Work offline (stand-alone corpus)?",
+                                      JOptionPane.YES_NO_OPTION) 
+        == JOptionPane.YES_OPTION)
+      {
+        clProperties.setProperty("stand.alone","yes");
+        return true;
+      }
+    else 
+      {
+        clProperties.setProperty("stand.alone","no");
+        return false;
+      }
+  }
+
   public static void main(String[] args) {
     try {
       //System.err.println("entered main");
-			ClientProperties p = new ClientProperties();
-      splashScreen = new SplashScreen("Initialising TEC. Please wait...", 20);
+      splashScreen = new SplashScreen("Initialising. Please wait...", 20);
       splashScreen.incProgress();
       Browser f = new Browser(WIDTH, HEIGHT);
+
 			f.addWindowListener(new WindowAdapter() {
 					public void windowClosing(WindowEvent e) {
 						System.exit(0);
 					}
         });
+
       if (args.length > 0 && args[0] != null)
-        if (args[0].equals("-standalone")) {
+        if (args[0].equals("-standalone") || f.workOffline() ) {
           f.standAlone = true;
-          f.dictionary = new Dictionary();
-          String u = f.dictionary.getCorpusDir();
-          if (!u.equals(""))
-            u = u.substring(0,u.lastIndexOf('/', u.length()-1))+"/headers/";
-          f.preferenceFrame.setHeaderBaseURL(u);
+          f.chooseNewLocalCorpus();
+          //f.dictionary = new Dictionary();
         }
         else
           f.SERVER = args[0];
-      else if ( p.getProperty("tec.client.server") != null )
-				f.SERVER = p.getProperty("tec.client.server");
+      // SL: all this needs to be revamped to allow user to choose which
+      // corpus server(s) to connect to. 
+      else if ( f.workOffline() )
+        if ( f.clProperties.getProperty("last.index.dir") == null)
+          f.chooseNewLocalCorpus();
+        else
+          f.setLocalCorpus(f.clProperties.getProperty("last.index.dir"));
+        else if ( f.clProperties.getProperty("tec.client.server") != null )
+          f.SERVER = f.clProperties.getProperty("tec.client.server");
       f.HEDBAS = "http://"+f.SERVER+"/tec/headers";
-      if ( p.getProperty("tec.client.headers") != null )
-				f.HEDBAS = p.getProperty("tec.client.headers");
+      if ( f.clProperties.getProperty("tec.client.headers") != null )
+				f.HEDBAS = f.clProperties.getProperty("tec.client.headers");
       //f.show();
-			if ( p.getProperty("tec.client.port") != null )
-				f.PORTNUM = new Integer(p.getProperty("tec.client.port")).intValue();
-      f.clProperties = p;
+			if ( f.clProperties.getProperty("tec.client.port") != null )
+				f.PORTNUM = new Integer(f.clProperties.getProperty("tec.client.port")).intValue();
       //f.setAdvSearchOptions();
 			f.pack();
       splashScreen.dismiss();

@@ -19,14 +19,18 @@ package modnlp.idx.gui;
 
 import modnlp.idx.IndexManager;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -49,18 +53,21 @@ public class IndexManagerUI extends JFrame
 
   private JTextArea textArea;
   private JButton dismissButton = new JButton("QUIT");
-  private JButton loadButton = new JButton("Load Files");
+  private JButton loadButton = new JButton("Index new files");
   private JButton newCorpusButton = new JButton("New index");
+  private JButton stopButton = new JButton("Stop processing");
   private JButton clearButton = new JButton("Clear screen");
   private JButton deindexButton = new JButton("De-index selected files");
+  private DefaultComboBoxModel corpusListModel;
   private JList corpusList;
+  private JScrollBar scrollBar;
   private String currentDir = null;
   boolean debug = false;
 
   public IndexManagerUI (IndexManager p) {
    super("Corpus and index manager");
    parent = p;
-   textArea = new JTextArea(40,80);
+   textArea = new JTextArea(10,80);
    textArea.setLineWrap(true);
    textArea.setWrapStyleWord(true);
    JScrollPane scrollPane = new JScrollPane(textArea);
@@ -72,18 +79,26 @@ public class IndexManagerUI extends JFrame
    newCorpusButton.addActionListener(this);
    clearButton.setToolTipText("Clear the log window");
    clearButton.addActionListener(this);
-    
+   deindexButton.setToolTipText("Remove selected files from index");
+   deindexButton.addActionListener(this);
+   stopButton.setToolTipText("Gracefully stop indexing/de-indexing process");
+   stopButton.addActionListener(this);
+   
    JPanel pa = new JPanel();
    pa.add(loadButton);
    pa.add(clearButton);
-   //pa.add(validateCheckBox);
+   pa.add(stopButton);
+   pa.add(newCorpusButton);
    pa.add(dismissButton);
-   //pa.add(validateCheckBox);
+
+   enableChoice(true);
+
    getContentPane().add(pa, BorderLayout.NORTH);
    JPanel spa = new JPanel(new BorderLayout());
    spa.add(new JLabel(" Indexing log:"), BorderLayout.NORTH);
    spa.add(scrollPane, BorderLayout.CENTER);
    spa.add(new JLabel("      "), BorderLayout.SOUTH);
+   scrollBar = scrollPane.getVerticalScrollBar();
 
    getContentPane().add(spa, BorderLayout.CENTER);
 
@@ -100,13 +115,40 @@ public class IndexManagerUI extends JFrame
   }
 
   public void setCorpusListData(String [] ifn) {
-    corpusList.setModel(new DefaultComboBoxModel(ifn));
+    corpusListModel = new DefaultComboBoxModel(ifn);
+    corpusList.setModel(corpusListModel);
+  }
+
+  public void addIndexedFile(String fn){
+    corpusListModel.addElement(fn);
+  }
+
+ public void removeIndexedFile(String fn){
+    corpusListModel.removeElement(fn);
   }
 
   public void actionPerformed(ActionEvent evt)
   {
-    if(evt.getSource() == dismissButton)
-			parent.exit(0);
+    if(evt.getSource() == dismissButton){
+      if (JOptionPane.showConfirmDialog(this,
+                                        "Really quit?", 
+                                        "Really quit?", 
+                                        JOptionPane.YES_NO_OPTION) 
+          == JOptionPane.YES_OPTION) 
+        {
+          parent.exit(0);
+        }
+    }
+    if(evt.getSource() == stopButton){
+      if (JOptionPane.showConfirmDialog(this,
+                                        "Stop (de)indexing?",
+                                        "Stop (de)indexing?",
+                                        JOptionPane.YES_NO_OPTION) 
+          == JOptionPane.YES_OPTION) 
+        {
+          parent.setStop(true);
+        }
+    }
     else if(evt.getSource() == clearButton)
       textArea.setText(null);
     else if(evt.getSource() == newCorpusButton)
@@ -120,9 +162,38 @@ public class IndexManagerUI extends JFrame
           {
             File[] files = filedial.getSelectedFiles();
             currentDir = files[0].getParent();
+            enableChoice(false);
             parent.indexSelectedFiles(files);
           }
       }
+    else if(evt.getSource() == deindexButton)
+      {
+        Object[] sel = corpusList.getSelectedValues();
+        String q = "Are you sure you want to de-index all "+
+          sel.length+" selected files?";
+        if (JOptionPane.showConfirmDialog(this, q, q,
+                                          JOptionPane.YES_NO_OPTION) 
+            == JOptionPane.YES_OPTION) 
+        {
+          enableChoice(false);
+          parent.deindexSelectedFiles(sel);
+        }
+      }
+  }
+
+  public void enableStop(boolean e){
+    stopButton.setEnabled(e);
+  }
+
+  public void enableDismiss(boolean e){
+    dismissButton.setEnabled(e);
+  }
+
+  public void enableChoice(boolean e){
+    newCorpusButton.setEnabled(e);
+    loadButton.setEnabled(e);
+    deindexButton.setEnabled(e);
+    stopButton.setEnabled(!e);
   }
 
   public void setCurrentDir(String cd){
@@ -131,6 +202,7 @@ public class IndexManagerUI extends JFrame
 
   public void print (String s){
     textArea.append(s);
+    this.scrollBar.setValue(this.scrollBar.getMaximum());
     if (debug)
       System.err.println(s);    
   }

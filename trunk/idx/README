@@ -1,5 +1,5 @@
-The modnlp text indexing suite is distributed under
-the GNU General Public License. See COPYING for details.
+modnlp-idx: The modnlp text indexing suite is distributed under the
+GNU General Public License. See COPYING for details.
 
 modnlp-idx is fully compatible with the GNU Classpath
 (http://www.gnu.org/software/classpath/) and I intend to keep it that

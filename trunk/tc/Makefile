@@ -1,14 +1,6 @@
 SRCCLASSPATH=.:../lib/MinML2.jar
 TOPCLASSPATH=src:lib/MinML2.jar
-SOURCES=modnlp/tc/induction/*.java \
-	modnlp/tc/classify/*.java \
-	modnlp/tc/evaluation/*.java \
-	modnlp/util/*.java \
-	modnlp/dstruct/*.java \
-	modnlp/tc/util/*.java \
-	modnlp/tc/dstruct/*.java \
-	modnlp/tc/parser/*.java \
-	modnlp/tc/tsr/*.java
+SOURCES=modnlp/util/*.java modnlp/dstruct/*.java modnlp/tc/util/*.java modnlp/tc/dstruct/*.java modnlp/tc/parser/*.java modnlp/tc/tsr/*.java modnlp/tc/evaluation/*.java modnlp/tc/induction/*.java modnlp/tc/classify/*.java 
 DOCS=doc
 SOURCEDIR=src
 DISTDIR=tc-`cat VERSION`
@@ -19,7 +11,7 @@ DISTFILES=BUGS COPYING ChangeLog INSTALL Makefile README TODO VERSION AUTHORS\
 JAVA=java
 JAVAC=javac
 JAVAFLAGS=-classpath $(TOPCLASSPATH)
-JAVACFLAGS=-classpath $(SRCCLASSPATH)
+JAVACFLAGS= -classpath $(SRCCLASSPATH)
 
 build:
 	cd $(SOURCEDIR) && $(JAVAC) $(JAVACFLAGS) $(SOURCES)

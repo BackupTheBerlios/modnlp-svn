@@ -1,7 +1,12 @@
 TEC-CLIENT - Translational English Concordancer
 ===============================================
 
-For installation instructions see INSTALL.
+Run the concordancer by clicking/double-clicking on teccli.jar
+or by entering 
+
+ % java -jar teccli.jar
+
+at a command line.
 
 
 ABOUT TEC

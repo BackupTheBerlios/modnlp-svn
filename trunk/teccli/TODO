@@ -1,13 +1,21 @@
-* Write a proper Makefile, including only the files for distribution
-  with teccli (i.e. tec/client/...)
+* So much to do I don't even know where to start. Here's a
+  couple of things that come to mind:
 
 * Re-activate plugins; implement JE-based subcorpus selection to
   replace SQL server on tec-server
 
+* separate GUI from Browser (move GUI into gui/ package)
+
+* re-implement ConcArray based on a ('growable') collection class
+  rather than array
+
+* implement merging of corpus sources (i.e. the ability to spawn
+  several ConcordanceThread's and collate the downloads into a single
+  ConcArray for display by a single ListDisplay
+
+* fix scrollbars in ListDisplay (draw list renderers on a
+  ScrollablePane) 
+
 * Implement visualisation and direct manipulation plugins (for
-  subcorpus seection etc)
+  subcorpus selection etc)
 
-* Move TecClientRequest into package uk...tecutil, so it
-  can be shared by tec-client and tec-server 
-
-* Check security problems with TecApplet.

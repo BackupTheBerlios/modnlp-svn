@@ -180,7 +180,7 @@ public class ListDisplay extends JPanel
 				if (conc.concArray[count] == null 
 						|| 
 						count >= parentFrame.concThread.noFound
-						|| count >= conc.arraymax)  
+						|| count >= conc.arraymax)
 					{
 						//coa[count-concArrayOffset] = "";
 						ffwdb.setEnabled(false);
