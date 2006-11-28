@@ -37,19 +37,18 @@ public class TokeniserGNU extends Tokeniser {
   private String bigWordRegexp = "[\\w-]+'?s?"; //"[\\w-]+'?s?";
   private String wordRegexp = "\\w+|'s?";
   private String ignoredElements = "(omit|ignore)";  
-  private boolean tagIndexing = false; 
 
 
   public TokeniserGNU(String t){
     super(t);
   }
 
-  public TokeniserGNU(File t) throws IOException {
-    super(t);
+  public TokeniserGNU(File t, String e) throws IOException {
+    super(t,e);
   }
 
-  public TokeniserGNU(URL t) throws IOException {
-    super(t);
+  public TokeniserGNU(URL t, String e) throws IOException {
+    super(t,e);
   }
 
   public void tokenise () {

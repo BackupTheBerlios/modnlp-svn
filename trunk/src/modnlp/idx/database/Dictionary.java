@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
+ */
 package modnlp.idx.database;
 
 import modnlp.idx.query.WordQuery;
@@ -49,8 +49,11 @@ import java.util.Vector;
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
  * @version <font size=-1>$Id: Dictionary.java,v 1.2 2006/05/22 17:26:02 amaral Exp $</font>
  * @see  
-*/
+ */
 public class Dictionary {
+
+  public static final String TTOKENS_LABEL = "Total Number of tokens";
+  public static final String TTRATIO_LABEL = "Type-token ratio";
 
   DictProperties dictProps;
   LogStream logf;
@@ -66,6 +69,7 @@ public class Dictionary {
 
   protected boolean verbose = false; 
 
+  
 
   /**
    * Open a new <code>Dictionary</code> in read-only mode with default
@@ -171,8 +175,8 @@ public class Dictionary {
       founo = -1*founo;
     fileTable.put(founo,fou);
     WordPositionTable wPosTable = new WordPositionTable(environment, 
-                                      ""+founo,
-                                      true);
+                                                        ""+founo,
+                                                        true);
     // store sorted set of positions (worst-case for basic operations
     // O(ln(n)) which should be better than storing in a vector and
     // standard merge sorting, which is O(n^2 ln(n))) 
@@ -180,7 +184,7 @@ public class Dictionary {
     TreeSet poss = new TreeSet();
     int ct = 1;
     for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
-			{
+      {
         if (verbose)
           PrintUtil.printNoMove("Indexing ...",ct++);
         Map.Entry kv = (Map.Entry) e.next();
@@ -201,6 +205,7 @@ public class Dictionary {
     int i = 0;
     for (Iterator e = poss.iterator(); e.hasNext() ;)
       posa[i++] = ((Integer) e.next()).intValue();
+    //System.out.println(PrintUtil.toString(posa));
     tposTable.put(founo,new IntOffsetArray(posa));
     System.out.println("Cumulative compression ratio = "+
                        nf.format(tposTable.getCompressionRatio())+
@@ -237,7 +242,7 @@ public class Dictionary {
     TokenMap tm = wPosTable.removeFile();
     wPosTable.close();
     for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
-			{
+      {
         Map.Entry kv = (Map.Entry) e.next();
         String word = (String)kv.getKey();
         tposTable.remove(founo);
@@ -287,32 +292,35 @@ public class Dictionary {
     return wformsout;
   }
 
-	public int getFrequency (WordForms wforms)
-	{
-		int tf = 0;
+  public int getFrequency (WordForms wforms)
+  {
+    int tf = 0;
     if (wforms == null)
       return 0;
     for (Iterator e = wforms.iterator(); e.hasNext() ;)
       {
-				String key = (String)e.next();
-				tf = tf + freqTable.getFrequency(key);
-			}
-		return tf;
-	}
+        String key = (String)e.next();
+        tf = tf + freqTable.getFrequency(key);
+      }
+    return tf;
+  }
 
-	public WordForms getWordForms (String key, boolean csensitive)
-	{
-		WordForms wforms = new WordForms(key);
-    if ( WordQuery.isWildcard(key) )
+  public WordForms getWordForms (String key, boolean csensitive)
+  {
+    WordForms wforms = new WordForms(key);
+    if ( WordQuery.isLeftWildcard(key) )
       return caseTable.getAllPrefixMatches(key, csensitive);
+
+    if ( WordQuery.isRightWildcard(key) )
+      return caseTable.getAllSuffixMatches(key, csensitive);
     
-		if (csensitive) {
+    if (csensitive) {
       wforms.addElement(key);
       return wforms;
     }	
-		else
-		  return caseTable.getAllCases(key);
-	}
+    else
+      return caseTable.getAllCases(key);
+  }
 
   /**
    * <code>matchConcordance</code> match <code>cline</code> against
@@ -346,7 +354,9 @@ public class Dictionary {
       rpa = new int[rh.getMaxSearchHorizon()];
     }
 
-    for (int i = 0; i < posa.length; i++) {
+    // this should be implemented as binary search in order to spped it up 
+    // (avoiding O(n) worst-case behaviour)
+    for (int i = 0; i < posa.length; i++) { 
       if (posa[i] == pos || lh == null){
         // reorder the left-hand side array
         if (lh != null) {
@@ -423,22 +433,37 @@ public class Dictionary {
     return true;
   }
 
-	/** Return a vector containing all filenames where KEY 
-	 *  occurs in the corpus.
+  /** Return a vector containing all filenames where KEY 
+   *  occurs in the corpus.
    * @param  key   the keyword to search for 
-	 */
-	public Vector getAllFileNames (String key){
-		Vector filenames = new Vector();
+   */
+  public Vector getAllFileNames (String key){
+    Vector filenames = new Vector();
     IntegerSet fset = wFilTable.fetch(key);
     for (Iterator f = fset.iterator(); f.hasNext() ;){
       int fno = ((Integer)f.next()).intValue();
       filenames.addElement(fileTable.getFileName(fno));
     }
-		return filenames;
-	} 
+    return filenames;
+  } 
+
+  public void printCorpusStats (PrintWriter os) {
+    os.println(0+"\t"+TTOKENS_LABEL+"\t"+freqTable.getTotalNoOfTokens());
+    os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio());
+  }
+
+  public double getTypeTokenRatio(){
+    return 
+      (double)caseTable.getTotalNoOfTypes()/freqTable.getTotalNoOfTokens();
+  }
 
   public void printSortedFreqList (PrintWriter os) {
-    freqTable.printSortedFreqList(os);
+    printSortedFreqList(os, 0);
+  }
+
+  public void printSortedFreqList (PrintWriter os, int max) {
+    printCorpusStats(os);
+    freqTable.printSortedFreqList(os, max);
   }
   
   public String getCorpusDir() {
@@ -464,13 +489,14 @@ public class Dictionary {
     String key =  query.getKeyword();
     int frequency = getFrequency(wforms);
     String cdir = dictProps.getCorpusDir();
-    // tell client how many lines we're sending
+    // tell client the max no. of lines we are sending
     os.println(frequency);
     os.flush();
     for (Iterator w = wforms.iterator(); w.hasNext(); ) {
       String word = (String)w.next();
       IntegerSet files =  wFilTable.fetch(word);
       int posl = 0;
+      //int i = 1;
       try {
         for (Iterator f = files.iterator(); f.hasNext(); ) {
           Integer fno = (Integer)f.next();
@@ -483,7 +509,8 @@ public class Dictionary {
             continue;
           PrepContextQuery pcq = new PrepContextQuery(lh, rh, wpt);
           String fn = fileTable.getFileName(fno.intValue());
-          CorpusFile fh = new CorpusFile(cdir+fn);
+          CorpusFile fh = new CorpusFile(cdir+fn,
+                                         dictProps.getProperty("file.encoding"));
           fh.setIgnoreSGML(ignx);
           for (Iterator p = pos.iterator(); p.hasNext(); ) {
             Integer bp = (Integer)p.next();
@@ -518,7 +545,8 @@ public class Dictionary {
     String kw = null;
     String pos = null;
     try {
-      CorpusFile fh = new CorpusFile(dictProps.getCorpusDir()+fn);
+      CorpusFile fh = new CorpusFile(dictProps.getCorpusDir()+fn,
+                                     dictProps.getProperty("file.encoding"));
       fh.setIgnoreSGML(ignx);
       pre = fh.getPreContext(offset,ctx);
       pos = fh.getPosContext(offset,ctx);
@@ -544,8 +572,6 @@ public class Dictionary {
     wFilTable.dump();
     System.out.println("===========\n CaseTable:\n===========");
     caseTable.dump();
-    System.out.println("===========\n FreqTable:\n===========");
-    freqTable.dump();
     System.out.println("===========\n FileTable:\n===========");
     fileTable.dump();
     System.out.println("===========\n TPosTable:\n===========");
@@ -560,10 +586,20 @@ public class Dictionary {
       wPosTable.dump();
       wPosTable.close();
     }
+    System.out.println("===========\n FreqTable:\n===========");
+    freqTable.dump();
   }
 
   public DictProperties getDictProps() {
     return dictProps;
+  }
+
+  public void sync () {
+    try {
+      environment.sync();
+    } catch(Exception e) {
+      logf.logMsg("Error synchronising environment: "+e);
+    }
   }
 
   public void close () {

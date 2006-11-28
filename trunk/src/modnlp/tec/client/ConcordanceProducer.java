@@ -37,7 +37,7 @@ public class ConcordanceProducer extends Thread {
   PrintWriter out = null;
   TecClientRequest request;
   Dictionary dictionary;
-
+  
   public ConcordanceProducer (Dictionary d, TecClientRequest r){
     super();
     this.dictionary = d;
@@ -50,14 +50,14 @@ public class ConcordanceProducer extends Thread {
       System.err.println("Concordancer error creating pipe: " + e);
     }
   }
-
+  
   public BufferedReader getBufferedReader (){
     return in;
   }
-
+  
   public void run () {
     boolean cse = ((String)request.get("case")).equalsIgnoreCase("sensitive");
-		WordQuery wquery = 
+    WordQuery wquery = 
       new WordQuery((String)request.get("keyword"), dictionary, cse);
     int ctx = 
       (new Integer((String)request.get("context"))).intValue();

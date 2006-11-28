@@ -27,6 +27,7 @@
 package modnlp.tec.server;
 
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.database.DictProperties;
 
 import java.io.*;
 import java.net.*;
@@ -43,7 +44,7 @@ import java.util.Enumeration;
  * @author Nino Luz &#60;luzs@acm.org&#62;
  * @version $Id: TecServer.java,v 1.3 2003/06/22 17:55:15 luzs Exp $
  * @see TecCorpusFile 
- * @see TecLogFile 
+ * @see TecLogFile
  * @see TecDicFile
  * @see TecDictionary
  * @see FilePosStr
@@ -73,7 +74,8 @@ public class Server extends Thread {
       System.out.println("socket open");
       serverSocket = new ServerSocket(PORTNUM);
       System.out.println("socket open");
-      dtab = new Dictionary();
+      DictProperties dictProps = new DictProperties(sprop.getProperty("index.dir"));
+      dtab = new Dictionary(dictProps);
       // separate method for initLogFile  to catch different IOException
       initLogFile();
       logf.logMsg("TEC Server accepting connections on port # "+PORTNUM);
@@ -93,19 +95,19 @@ public class Server extends Thread {
   public void run() {
     try {
     while (true)
-	{
-	    new TecConnection( serverSocket.accept(), dtab, logf);
-	}
+      {
+        new TecConnection( serverSocket.accept(), dtab, logf);
+      }
     }
     catch (IOException e) {
       logf.logMsg("TecServer: couldn't create socket"+e);
     }
     catch (Exception e){
-	System.err.println("Usage: DocumentStats CORPUS_LIST");
-	e.printStackTrace();
+      System.err.println("Error establishing connection "+e);
+      e.printStackTrace();
     }
   }
-
+  
   
   /** Initialize the logfile for this server
    */
@@ -118,7 +120,7 @@ public class Server extends Thread {
       System.exit(-1);
     }
   }
-
+  
   private void setLogDebug() {
     if (DEBUG)
       logf.debugOn = true;

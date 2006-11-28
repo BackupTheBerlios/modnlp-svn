@@ -1,13 +1,14 @@
 (jde-project-file-version "1.0")
 (jde-set-variables
- '(jde-project-name "default")
- '(jde-db-option-application-args nil)
+ '(jde-compile-option-nowarn t)
  '(jde-db-read-app-args t)
- '(jde-global-classpath (quote ("../.." "../../../lib/idx.jar" "../../../lib/MinML2.jar" "../../../lib/je.jar")))
+ '(jde-global-classpath (quote ("../../../lib/MinML2.jar" "../.." "../../../lib/je.jar" "../../../lib/gnu-regexp-1.1.4.jar")))
  '(jde-run-working-directory "../..")
- '(jde-run-option-application-args nil)
+ '(jde-run-option-vm-args (quote ("-Dfile.encoding=UTF8")))
  '(jde-run-read-app-args t)
  '(jde-sourcepath (quote ("../..")))
- '(jde-compile-option-debug (quote ("all" (t nil nil)))))
+ '(jde-db-option-vm-args (quote ("-Dfile.encoding=UTF8")))
+ '(jde-compile-option-debug (quote ("all" (t nil nil))))
+ '(jde-run-read-vm-args t))
 ;;; JDE Project file
 ;;; PRJ.EL ends heres

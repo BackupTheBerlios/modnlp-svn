@@ -7,6 +7,7 @@ DATA=$(TOPDIR)data
 SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/util/LogStream.java \
 	$(SOURCEDIR)modnlp/util/Tokeniser.java \
+	$(SOURCEDIR)modnlp/util/IOUtil.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusList.java \
 	$(SOURCEDIR)modnlp/dstruct/WordForms.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusFile.java \
@@ -101,7 +102,7 @@ test: $(TARGETS)
 docs: $(TARGETS)
 	javadoc -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp.idx
 
-dist: docs clean
+dist: clean
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	cp -aL --parents $(DISTFILES) $(DISTDIR)

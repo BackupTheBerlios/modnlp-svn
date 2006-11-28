@@ -39,6 +39,7 @@ public class DictProperties extends java.util.Properties{
   String fileTableName = "fitable.db";  // fileno -> fileuri
   String tPosTableName = "tptable.db";  // fileno -> [offset1, offset2, ...]
   String corpusDir = ""; // the default directory for relative fileTableNames 
+  String encoding  = "UTF8";
 
 	public DictProperties (String cd) {
     envHome = cd;
@@ -70,6 +71,7 @@ public class DictProperties extends java.util.Properties{
       setProperty("file.table.name", fileTableName);
       setProperty("tpos.table.name", tPosTableName);
       setProperty("corpus.data.directory", corpusDir);
+      setProperty("file.encoding", encoding);
       save();
 		}
 	}

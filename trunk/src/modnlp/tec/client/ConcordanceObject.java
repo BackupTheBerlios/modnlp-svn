@@ -16,7 +16,8 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.lang.*;
+
+import java.io.File;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 import javax.swing.JLabel;
@@ -97,8 +98,8 @@ public class ConcordanceObject
 				if(data[i] == '|')
 					{
 						filename = new String(data, start, i);
-            sfilename = 
-              filename.substring(filename.lastIndexOf('/')+1);
+            sfilename =   (new File(filename)).getName();
+              //  filename.substring(filename.lastIndexOf('/')+1);
 						start = i + 1;
 						break;
 					}
@@ -128,9 +129,21 @@ public class ConcordanceObject
     String fn = sfilename.length() > lfn_size? 
       sfilename.substring(0,lfn_size-1) : sfilename;
 		String offset = adjustOffSet(lfn_size,fn.length());
-    sfilename = fn;
-		return fn == null ? " " : fn+offset+""+concordance+" ["+(index+1)+"]";
+    sfilename = fn == null ?  " " : fn+offset;
+		return sfilename+""+concordance+" ["+(index+1)+"]";
 	}
+
+	public String textFilename (int lfn_size){
+    String fn = sfilename.length() > lfn_size? 
+      sfilename.substring(0,lfn_size-1) : sfilename;
+		String offset = adjustOffSet(lfn_size,fn.length());
+    sfilename = fn;
+		return fn == null ? " " : fn+offset;
+	}
+
+	public String textConcordance () {
+    return concordance+" ["+(index+1)+"]";
+  }
 
 
 	public int compareTo(Object o) {

@@ -22,6 +22,7 @@ import modnlp.tec.client.gui.PreferPanel;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
 import modnlp.idx.gui.CorpusChooser;
+import modnlp.util.IOUtil;
 
 import java.awt.Font;
 import java.awt.Insets;
@@ -86,7 +87,7 @@ public class Browser extends JFrame
   /** Deafult URL where to find header files */
   public String HEDBAS;
   // plugin list
-  private static final String PLGLIST = "modnlp/tec/client/pluginlist.txt";
+  private static final String PLGLIST = "teclipluginlist.txt";
   /** Object to record user preferences */
   private PreferPanel preferenceFrame = new PreferPanel(this);
   private ClientProperties clProperties;
@@ -319,11 +320,11 @@ public class Browser extends JFrame
     statusArea.add(statusLabel);
     statusArea.add(statusLabelScroll);
 
-    // -------- plugins disabled for the time being
-    //splashScreen.setMessage("Loading plugins...");
-    //splashScreen.incProgress();
-     pluginMenu.setEnabled(false);
-     //loadPluginMenu();
+    // -------- plugins partly disabled for the time being
+    splashScreen.setMessage("Loading plugins...");
+    splashScreen.incProgress();
+    pluginMenu.setEnabled(true);
+    loadPluginMenu();
 
     
     // set up even listening
@@ -386,7 +387,7 @@ public class Browser extends JFrame
     return;
   }
 
-  /*
+  
   private void loadPluginMenu () {
     try {
       ClassLoader cl = this.getClass().getClassLoader();
@@ -397,18 +398,15 @@ public class Browser extends JFrame
       while ( (plg = in.readLine() ) != null ){
         StringTokenizer st = new StringTokenizer(plg, ":");
         // first token: class name (ignore for now)
-        st.nextToken();
+        final Plugin tp = (Plugin)IOUtil.loadPlugin(st.nextToken());
+        tp.setParent(this);
         JMenuItem pmi = new JMenuItem(st.nextToken());
         pluginMenu.add(pmi);
-        // need to create an object via ObjectFactory 
-        // take a look at ImageJ to see how this is done
-        // .addActionListener(st.nextToken();
-        final Browser dad = this;
         pmi.addActionListener(
                               new ActionListener(){
                                 public void actionPerformed(ActionEvent event)
                                 {
-                                  new ie.tcd.cs.plugin.FqListBrowser(dad);
+                                  tp.activate();
                                 }
                               });
       }
@@ -417,7 +415,7 @@ public class Browser extends JFrame
       e.printStackTrace(System.err);
     }
   }
-  */
+  
 
 
   public static String getRelease (){
@@ -684,9 +682,9 @@ public class Browser extends JFrame
       concThread = new ConcordanceThread(this, request);
       concThread.start();
     }
-		concThread.addConcordanceDisplayListener(concList);
-		//SwingUtilities.invokeLater(concThread);
-		//concList = new ListDisplay(this, concThread.conc);
+    concThread.addConcordanceDisplayListener(concList);
+    //SwingUtilities.invokeLater(concThread);
+    //concList = new ListDisplay(this, concThread.conc);
     currentIndex = 0;
     progressBar.setMaximum(SRTBARMAX-1);
     ucrt_timer.start();
@@ -713,26 +711,26 @@ public class Browser extends JFrame
   public void displayConcord ()
   {
     try {
-			//updateStatusLabel(null);
-			if ( concList != null && concList.list != null)
-				concList.list.clearSelection();
+      //updateStatusLabel(null);
+      if ( concList != null && concList.list != null)
+        concList.list.clearSelection();
       if (concThread.noFound > 0){
-				updateStatusLabel("  Searching through "
+        updateStatusLabel("  Searching through "
                           +concThread.noFound+" concordances ");
-				timer.start();
-				progressBar.setString(null);
-				progressBar.setMaximum(concThread.noFound);
-				strButton.setEnabled(true);
-				stlButton.setEnabled(true);
-				leftSortCtx.setEnabled(true);
-				rightSortCtx.setEnabled(true);
-				extractButton.setEnabled(false);
-				headerButton.setEnabled(false);
-				if ( noApplet )
-					dldButton.setEnabled(true);
+        timer.start();
+        progressBar.setString(null);
+        progressBar.setMaximum(concThread.noFound);
+        strButton.setEnabled(true);
+        stlButton.setEnabled(true);
+        leftSortCtx.setEnabled(true);
+        rightSortCtx.setEnabled(true);
+        extractButton.setEnabled(false);
+        headerButton.setEnabled(false);
+        if ( noApplet )
+          dldButton.setEnabled(true);
       }
       else if (concThread.noFound == 0)
-				labelMessage(" No concordances found");
+        labelMessage(" No concordances found");
     }
     catch (NumberFormatException e){
       labelMessage("Error caught: Server may be down. ");
@@ -800,8 +798,7 @@ public class Browser extends JFrame
         tecClient = new ContextClient(request, dictionary);
       else
         tecClient = new ContextClient(request);
-
-			preferenceFrame.addDefaultChangeListener(tecClient);
+      preferenceFrame.addDefaultChangeListener(tecClient);
     }
   }
 
@@ -852,7 +849,7 @@ public class Browser extends JFrame
                                                    openConnection().
                                                    getInputStream()));
       InputSource source = new InputSource(in);
-      source.setEncoding("ISO-8859-1");
+      source.setEncoding("UTF8");
       if ( preferenceFrame.stSGML.equals("no") ) {
         parser.parse(source);
       }
@@ -929,6 +926,10 @@ public class Browser extends JFrame
     }
   }
   
+  public boolean isStandAlone() {
+    return standAlone;
+  }
+
   public void chooseNewLocalCorpus(){
     CorpusChooser ncc = new CorpusChooser(clProperties.getProperty("last.index.dir"));
     int r;
@@ -1047,19 +1048,22 @@ public class Browser extends JFrame
       }
   }
 
+  public Dictionary getDictionary(){
+    return dictionary;
+  }
+
   public static void main(String[] args) {
     try {
-      //System.err.println("entered main");
+      //System.err.println(System.getProperty("file.encoding"));
       splashScreen = new SplashScreen("Initialising. Please wait...", 20);
       splashScreen.incProgress();
       Browser f = new Browser(WIDTH, HEIGHT);
-
-			f.addWindowListener(new WindowAdapter() {
-					public void windowClosing(WindowEvent e) {
-						System.exit(0);
-					}
+      f.addWindowListener(new WindowAdapter() {
+          public void windowClosing(WindowEvent e) {
+            System.exit(0);
+          }
         });
-
+      
       if (args.length > 0 && args[0] != null)
         if (args[0].equals("-standalone") || f.workOffline() ) {
           f.standAlone = true;
@@ -1079,21 +1083,21 @@ public class Browser extends JFrame
           f.SERVER = f.clProperties.getProperty("tec.client.server");
       f.HEDBAS = "http://"+f.SERVER+"/tec/headers";
       if ( f.clProperties.getProperty("tec.client.headers") != null )
-				f.HEDBAS = f.clProperties.getProperty("tec.client.headers");
+        f.HEDBAS = f.clProperties.getProperty("tec.client.headers");
       //f.show();
-			if ( f.clProperties.getProperty("tec.client.port") != null )
-				f.PORTNUM = new Integer(f.clProperties.getProperty("tec.client.port")).intValue();
+      if ( f.clProperties.getProperty("tec.client.port") != null )
+        f.PORTNUM = new Integer(f.clProperties.getProperty("tec.client.port")).intValue();
       //f.setAdvSearchOptions();
-			f.pack();
+      f.pack();
       splashScreen.dismiss();
-			f.setVisible(true);
+      f.setVisible(true);
       f.noApplet = true;
-			//System.err.println("SERVER="+f.SERVER+" PORT="+f.PORTNUM+"\nHEADERS="+f.HEDBAS);
+      //System.err.println("SERVER="+f.SERVER+" PORT="+f.PORTNUM+"\nHEADERS="+f.HEDBAS);
     }
     catch (Exception e){
       System.err.println(e+" Usage: Browser HOSTNAME\n See also client.properties");
-			e.printStackTrace();
+      e.printStackTrace();
       System.exit(1);
     }
-}
+  }
 }

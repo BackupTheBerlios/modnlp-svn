@@ -8,9 +8,9 @@ package modnlp.tc.tsr;
 
 import modnlp.tc.dstruct.*;
 import modnlp.tc.parser.*;
-import modnlp.tc.util.*;
+import modnlp.tc.util.IOUtil;
 
-import modnlp.util.*;
+import modnlp.util.PrintUtil;
 import modnlp.dstruct.*;
 
 import java.io.*;

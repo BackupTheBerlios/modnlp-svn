@@ -26,9 +26,14 @@ import java.io.*;
  * @version <font size=-1>$Id: CorpusFile.java,v 1.1 2006/05/22 17:26:02 amaral Exp $</font>
  * @see  
 */
-public class CorpusFile extends RandomAccessFile {
+public class CorpusFile {
 
+  InputStreamReader fileReader;
+  //int static final MAX_FILE_SIZE = 10000000;
 
+  char [] fileArray;
+  int noChars;
+  String encoding = "UTF8"; // default
 
   /**
    * The <code>ignoreSGML</code> flag controls whether
@@ -36,15 +41,24 @@ public class CorpusFile extends RandomAccessFile {
    * force character reading methods to skip tags of the form '<.*>'
    * @see setSGMLFlag
    * @see readNextChar
-   * @see readPreviousChar
+   * @see readPreviousCha
    */
   protected boolean ignoreSGML = true;
 
+
 	public static final byte WHITESPACE = 32; // code for ws char
 
-  public CorpusFile(String fname) throws IOException{
-    super(fname,"r");
+  public CorpusFile(String fname, String e) throws IOException{
+    encoding = e;
+    File f = new File(fname);
+    // length() gives us length in bytes, so array will generally be overdimensioned
+    fileArray = new char[(int)f.length()];
+    fileReader = new InputStreamReader(new FileInputStream(f), encoding);
+    int n = 0;
+    noChars = fileReader.read(fileArray);
+    //fileReader.close();
   }
+
 
   /** get a number (<code>ctx</code>) of characters surrounding 
    *  the word (<code>wrd</code>) strating at <code>position</code>
@@ -55,7 +69,7 @@ public class CorpusFile extends RandomAccessFile {
    *              <code>wrd</code> to be returned
    * @return a string of size <code>ctx + ctx + wrd.length()</code> 
    *         (Note: control characters found in the file will be 
-   *          replaced by whitespaces and SGML tags will be ignored
+   *          replaced by whitespaces and markup will be ignored
    *          if <code>ignoreSGML</code> is <code>true</code>) 
    * @see ignoreSGML
    * @see readPreviousChar
@@ -65,38 +79,88 @@ public class CorpusFile extends RandomAccessFile {
    */
   public String getWordInContext(Integer pos, String wrd, int ctx)
     throws IOException{ 
-		
-    long filepos = pos.longValue();
-    int chaft = ctx+wrd.length();
-    byte [] bef = new byte[ctx];
-    bef[0] = WHITESPACE; // fill in byte left by backward reading algorithm
-    byte [] aft = new byte[chaft];
-    String eflag = "";
-    seek((filepos));
-    for (int i = 1;  i < ctx; i++){ // read backward
-      try{
-				bef[ctx-i] = readPreviousByte();
-      }
-      catch (IOException e){ 
-				// BOF reached: fill the remaining with spaces
-				for (int j = i;  j < ctx; j++)
-					bef[ctx-j] = WHITESPACE;
-				i = ctx;
-      }
+    
+    char [] lc = new char[ctx];
+    char [] rc = new char[ctx+wrd.length()];
+    int j = pos.intValue();
+    int k = j-1;
+    int cp = ctx-1;
+    for (int i = 0; i < ctx; i++) {
+      k = findNextLeftIndex(k); // find next allowed index (possibly ignoring tags
+      lc[cp-i] = k < 0 || Character.isISOControl(fileArray[k])? 
+        ' ' : fileArray[k--];
+      j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
+      rc[i] = j >= fileArray.length ||  Character.isISOControl(fileArray[j])? 
+        ' ' : fileArray[j++];
     }
-    seek((filepos));
-    try{      // read from position till end
-      for (int i = 0; i < chaft; i++)
-				aft[i] = readNextByte();
+    for (int i = 0; i < wrd.length(); i++ ){
+      j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
+      rc[ctx+i] = j >= fileArray.length ||  Character.isISOControl(fileArray[j])? 
+        ' ' : fileArray[j++];
     }
-    catch (EOFException e) {
-      eflag = "<eof>";
-    }
-    String outStr = 
-      byteArrayToString(bef)+""+byteArrayToString(aft)+eflag;
-    return outStr;
+    return (new String(lc))+(new String(rc));
   }
-	
+
+  private int findNextRightIndex (int i) {
+    if (i >= fileArray.length) // index gone past end of string, signal ' ' should be entered
+      return -1;
+    if (!ignoreSGML)  // any char will do
+      return i;
+    boolean ignore = fileArray[i] == '<' ? true : false;
+    while (ignore){
+      while ( i < fileArray.length && fileArray[i++] != '>' ) {}
+      if (fileArray[i] != '<')
+        return i;
+      else
+        i++;
+      if (i == fileArray.length)
+        return -1;
+    }
+    return i;
+  }
+
+  private int findNextLeftIndex (int i) {
+    if (i < 0) // index gone past begining of string, signal ' ' should be entered
+      return -1;
+    if (!ignoreSGML)  // any char will do
+      return i;
+    boolean ignore = fileArray[i] == '>' ? true : false;
+    while (ignore){
+      while ( i >= 0 && fileArray[i--] != '<' ) {}
+      if (fileArray[i] != '>')
+        return i;
+      if (i == fileArray.length)
+        return -1;
+    }
+    return i;
+  }
+
+  public String getWordInContextWithTags(Integer pos, String wrd, int ctx)
+    throws IOException{ 
+    
+    char [] lc = new char[ctx];
+    char [] rc = new char[ctx+wrd.length()];
+    int j = pos.intValue();
+    int k = j-1;
+    int cp = ctx-1;
+    for (int i = 0; i < ctx; i++) {
+      if (k < 0)
+        lc[cp-i] = ' ';
+      else
+        lc[cp-i] = fileArray[k--];
+      if (j == fileArray.length)
+        rc[i] = ' ';
+      else
+        rc[i] = fileArray[j++];
+    }
+    for (int i = 0; i < wrd.length(); i++ )
+      if (j == fileArray.length)
+        rc[ctx+i] = ' ';
+      else
+        rc[ctx+i] = fileArray[j++];
+    return (new String(lc))+(new String(rc));
+  }
+
   /** get a number (<code>ctx</code>) of characters before
    *  a position
    *
@@ -112,146 +176,33 @@ public class CorpusFile extends RandomAccessFile {
 
   public String getPreContext(long offset, int ctx)
     throws IOException{ 
-    long filepos = offset;
-    byte [] bef = new byte[ctx];
-    for (int j = 0; j < ctx ; j++)// init array 
-      bef[j] = WHITESPACE; 
-    byte c;
-    // read up to position
-    seek((filepos));
-    for (int i = 1;  i < (ctx-1); i++){
-      try 
-				{
-					bef[ctx-i] = (byte) readPreviousByte();
-				}
-      catch (IOException e)
-				{
-					bef[ctx-i] = WHITESPACE;//readPreviousByte();
-					i = ctx;
-				}
+    char [] ca = new char[ctx];
+    int j = (int)offset-1;
+    for (int i = 1; i <= ctx; i++) {
+      j = findNextLeftIndex(j); // find next allowed index (possibly ignoring tags
+      ca[ctx-i] = j < 0 || Character.isISOControl(fileArray[j])? 
+        ' ' : fileArray[j--];
     }
-    return byteArrayToString(bef);
+    return new String(ca);
   }
-	
-  /** get a number (<code>ctx</code>) of characters after
-   *  a position (offset)
-   *
-   * @param pos   a (randomly-accessible) position in this file
-   * @param ctx   the number of characters after
-   *              <code>position</code> to be returned
-   * @return a string of size <code>ctx</code>
-   * @deprecated  
-   */
-  public String getPosContext(Integer pos, int ctx)
+
+  public String getPosContext(Integer pos, int ctx) 
     throws IOException{
-    return getPosContext(pos.intValue(),ctx);
+    return getPosContext(pos.longValue(),ctx);
   }
 
   public String getPosContext(long offset, int ctx)
-    throws IOException{ 
+    throws IOException{
+    char [] ca = new char[ctx];
+    int j = (int)offset;
+    for (int i = 0; i < ctx; i++) {
+      j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags
+      ca[i] = j < 0 || Character.isISOControl(fileArray[j])? 
+        ' ' : fileArray[j++];
+    }
+    return new String(ca);
+  }
 
-    long filepos = offset;
-    byte [] aft = new byte[ctx];
-    String eflag = "";
-    try{
-      // read from to position
-      seek(filepos);
-      for (int i = 0; i < ctx; i++)
-				aft[i] = readNextByte();
-    }
-    catch (EOFException e) {
-      eflag = "<eof>";
-    }
-    
-    //String outStr = 
-    return ""+byteArrayToString(aft)+eflag;
-  }
-	
-  /** Read next byte in this <code>CorpusFile</code> and 
-   *  if it is a control byte, replace it by a whitespace 
-   */
-  private byte readByteNoControl() 
-    throws EOFException, IOException {
-		
-    byte red = readByte();
-    if ( Character.isISOControl((char)red) ) 
-      return WHITESPACE;
-    else 
-      return red;
-  }
-	
-  /** Read previous char in this <code>CorpusFile</code> and 
-   *  if <code>ignoreSGML</code> is <code>true</code> skip
-   *  areas of the form '<.*>'
-   */
-  public byte readPreviousByte() 
-    throws EOFException, IOException 
-  {
-    if (! ignoreSGML ){
-      return readBack();
-    }
-    else{
-      byte red = readBack();
-      boolean ignore;
-      if (red == '>') 
-				ignore = true;
-      else 
-				ignore = false;
-      while (ignore){
-				if ( (red = readBack()) == '<' ){
-					//System.err.print("!"+red+"!");
-					red = readBack();
-					if (red != '>') 
-						ignore = false;
-				}
-      }
-      return red;
-    }
-  }
-	
-  /** Read the byteacter before the one current pointed
-   *  at by FilePointer and move the pointer backwards
-   *  1 position
-   */
-  public byte readBack ()
-    throws EOFException, IOException 
-  {
-    //System.err.print("Point:"+getFilePointer());
-		seek(getFilePointer()-1);
-		byte red = readByteNoControl();
-		seek(getFilePointer()-1);
-		return red;
-  }
-	
-  /** Read next byte in this <code>CorpusFile</code> and 
-   *  if <code>ignoreSGML</code> is <code>true</code> skip
-   *  areas of the form '<.*>'
-   */
-  public byte readNextByte() 
-    throws EOFException, IOException 
-  {
-    if (! ignoreSGML ){
-      return readByteNoControl();
-    }
-    else{
-      byte red = readByteNoControl();
-      boolean ignore;
-      if (red == '<') 
-				ignore = true;
-      else 
-				ignore = false;
-      while (ignore){
-				if ( (red = readByteNoControl()) == '>' ){
-					//System.err.print("!"+red+"!");
-					red = readByteNoControl();
-					if (red != '<') 
-						ignore = false;
-				}
-      }
-      return red;
-    }
-  }
-	
   /** Set <code>ignoreSGML</code>. Default is <code>false</code>
    * @see ignoreSGML
    */
@@ -260,7 +211,7 @@ public class CorpusFile extends RandomAccessFile {
       ignoreSGML = true;
     else
       ignoreSGML = false;
-  } 
+  }
 
   public void setIgnoreSGML (boolean v){
     ignoreSGML = v;
@@ -270,27 +221,18 @@ public class CorpusFile extends RandomAccessFile {
     return ignoreSGML;
   }
 
-
-  /** Convert a byte array into a (n internationalized) string 
-   */
-  public String byteArrayToString (byte [] by)
-    throws IOException
-  { 
-    ByteArrayInputStream  bi = new ByteArrayInputStream(by);
-    BufferedReader br
-      = new BufferedReader(new InputStreamReader(bi));
-    String os = "";
-    String tm = null;
-    while ( (tm = br.readLine()) != null)
-      os += tm;
-    return os;
+  public void close(){
+   
   }
-	
-	
-  protected void finalize() 
-    throws Throwable {
-    close();
-    super.finalize();
+
+  public static void main (String[] a){
+    try {
+      CorpusFile c = new CorpusFile(a[0], a[1]);
+      System.err.println("-->"+c.getWordInContext((new Integer(a[1])), "aa", (new Integer(a[2])).intValue())
+                         +"<--");
+    } catch (Exception e) {
+      System.err.print(e);
+    }
   }
 
 }

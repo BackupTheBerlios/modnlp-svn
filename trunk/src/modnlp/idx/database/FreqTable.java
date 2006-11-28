@@ -23,6 +23,7 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.bind.tuple.StringBinding;
 import com.sleepycat.bind.tuple.IntegerBinding;
 import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.BtreeStats;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.OperationStatus;
@@ -31,6 +32,7 @@ import com.sleepycat.je.LockMode;
 import com.sleepycat.je.SecondaryDatabase;
 import com.sleepycat.je.SecondaryConfig;
 import com.sleepycat.je.SecondaryCursor;
+import com.sleepycat.je.StatsConfig;
 
 
 /**
@@ -50,7 +52,7 @@ import com.sleepycat.je.SecondaryCursor;
 public class FreqTable extends Table {
 
   SecondaryDatabase freqKeyDatabase = null;
-
+  private int totalNoOfTokens = -1;
 
   public FreqTable (Environment env, String fn, boolean write) {
     super(env,fn,write);
@@ -69,10 +71,11 @@ public class FreqTable extends Table {
       freqKeyDatabase = env.openSecondaryDatabase(null, 
                                                   scname, 
                                                   database,
-                                                  sc); } 
+                                                  sc);
+    }
     catch (DatabaseException e) {
       logf.logMsg("Error opening secondary FreqTable", e);
-      try {       
+      try {
         if (freqKeyDatabase != null) 
           freqKeyDatabase.close();
         if (database != null)
@@ -112,9 +115,10 @@ public class FreqTable extends Table {
       }
       IntegerBinding.intToEntry(freq, data);
       put(key,data);
+      totalNoOfTokens = getTotalNoOfTokens() + noccur;
     }
     catch (DatabaseException e) {
-      logf.logMsg("Error reading FreqTable" , e);
+      logf.logMsg("Error updating FreqTable" , e);
     }
     return freq;
   }
@@ -134,6 +138,7 @@ public class FreqTable extends Table {
           IntegerBinding.intToEntry(freq, data);
           put(key,data);
         }
+        totalNoOfTokens = getTotalNoOfTokens() - noccur;
       }
     }
     catch (DatabaseException e) {
@@ -141,6 +146,64 @@ public class FreqTable extends Table {
     }
     return freq;
   }
+
+  public int getTotalNoOfTokens(){
+    int tnt = 0;
+    if (totalNoOfTokens > -1)
+      return totalNoOfTokens;
+
+    try {
+      Cursor c = database.openCursor(null, null);
+      DatabaseEntry key = new DatabaseEntry();
+      DatabaseEntry data = new DatabaseEntry();
+      while (c.getNext(key, data, LockMode.DEFAULT) == 
+             OperationStatus.SUCCESS) {
+        tnt  += IntegerBinding.entryToInt(data);
+      }
+      c.close();
+    }
+    catch (DatabaseException e) {
+      logf.logMsg("Error accessing FreqTable" , e);
+      return -1;
+    }
+    totalNoOfTokens = tnt;
+    return totalNoOfTokens;
+  }
+
+  /**
+   * Retrive total number of types, where each (case-sensitive) form
+   * of a word counts as a type. Possibly not what you are after. See
+   * {@link modnlp.idx.database.CaseTable#getTotalNoOfTokens} for an
+   * alternative that corresponds to the usual definition of number of
+   * types.
+   *
+   * @return an <code>int</code> value
+   */
+  public int getTotalNoOfTypes(){
+    try {
+      StatsConfig stc = new StatsConfig();  // stc.setFast(true);
+      BtreeStats dbs = (BtreeStats)database.getStats(stc);
+      return (int)dbs.getLeafNodeCount();
+    }
+    catch (DatabaseException e) {
+      logf.logMsg("Error accessing FileTable" + e);
+      return 0;
+    }
+  }
+
+  /**
+   * Return the case-sensitive type token ratio. That's probably not a
+   * very useful metric. See
+   * {@link modnlp.idx.database.Dictionary#getTypeTokenRatio} for a better
+   * alternative.
+   *
+   * @return a <code>double</code> value
+   * @see  modnlp.idx.database.Dictionary#getTypeTokenRatio
+   */
+  public double getTypeTokenRatio() {
+    return (double)getTotalNoOfTypes()/getTotalNoOfTokens();
+  }
+
 
   public void  dump () {
     try {
@@ -154,23 +217,39 @@ public class FreqTable extends Table {
         System.out.println(sik+" = "+freq);
       }
       c.close();
+      System.out.println("General stats:\n============= ");
+      System.out.println("Total number of tokens = "+getTotalNoOfTokens());
+      System.out.println("Total number of types = "+getTotalNoOfTypes());
+      System.out.println("Type-token ratio (case-sensitive) = "+getTypeTokenRatio());
     }
     catch (DatabaseException e) {
       logf.logMsg("Error accessing FreqTable" , e);
     }
   }
 
+  /**
+   * Describe <code>printSortedFreqList</code> method here.
+   *
+   * @param os a <code>PrintWriter</code> value
+   */
   public void printSortedFreqList (PrintWriter os) {
+    printSortedFreqList(os, 0);
+  }
+
+  public void printSortedFreqList (PrintWriter os, int max) {
     try {
       SecondaryCursor c = freqKeyDatabase.openSecondaryCursor(null, null);
       DatabaseEntry key = new DatabaseEntry();
       DatabaseEntry skey = new DatabaseEntry();
       DatabaseEntry data = new DatabaseEntry();
+      int i = 1;
       while (c.getNext(skey, key, data, LockMode.DEFAULT) == 
-             OperationStatus.SUCCESS) {
+             OperationStatus.SUCCESS && (max == 0  || i <= max) ) {
         String sik = StringBinding.entryToString(key);
         int freq  = IntegerBinding.entryToInt(data);
-        os.println(sik+": "+freq);
+        if (sik.length() > 0)
+          os.println(i+++"\t"+sik+"\t"+freq);
+        //System.out.println(i+";"+sik+";"+freq);
       }
       c.close();
       os.flush();

@@ -36,6 +36,8 @@ public class Tokeniser {
   protected boolean verbose = false; 
   protected String originalText;
   protected TokenMap tokenMap;
+  
+  protected String encoding = "UTF8";
 
 	public static final char[] SEPTKARR = {' ',
                                          '|',
@@ -77,9 +79,10 @@ public class Tokeniser {
     tokenMap = new TokenMap();
   }
 
-  public Tokeniser (URL url) throws IOException {
+  public Tokeniser (URL url, String e) throws IOException {
+    encoding = e;
     BufferedReader in = 
-      new BufferedReader(new InputStreamReader(url.openStream()));
+      new BufferedReader(new InputStreamReader(url.openStream(), encoding));
     StringBuffer sb = new StringBuffer(in.readLine()+" ");
     String line = null;
     while ((line = in.readLine()) != null) {
@@ -90,9 +93,10 @@ public class Tokeniser {
     tokenMap = new TokenMap();
   }
 
-  public Tokeniser (File file) throws IOException {
+  public Tokeniser (File file,  String e) throws IOException {
+    encoding = e;
     BufferedReader in = 
-      new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+      new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
     StringBuffer sb = new StringBuffer(in.readLine()+" ");
     String line = null;
     while ((line = in.readLine()) != null) {
@@ -117,6 +121,14 @@ public class Tokeniser {
 
   public void setVerbose(boolean v) {
     verbose = v;
+  }
+
+  public String getEncoding() {
+    return encoding;
+  }
+
+  public void setEncoding(String v) {
+    encoding = v;
   }
 
   public TokenMap getTokenMap() {

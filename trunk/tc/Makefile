@@ -12,9 +12,16 @@ JAVA=java
 JAVAC=javac
 JAVAFLAGS=-classpath $(TOPCLASSPATH)
 JAVACFLAGS= -classpath $(SRCCLASSPATH)
+JARTARGET=$(TOPDIR)lib/tc.jar
+JAR=jar
+JARFLAGS= cvf 
+JARREDS=$(subst .java,.class,$(SOURCES))
 
 build:
 	cd $(SOURCEDIR) && $(JAVAC) $(JAVACFLAGS) $(SOURCES)
+
+jar: build
+	cd $(SOURCEDIR) && $(JAR) $(JARFLAGS) ../$(JARTARGET) $(JARREDS)
 
 test:
 	@echo "Testing TSR..."

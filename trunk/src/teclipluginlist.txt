@@ -1,0 +1,1 @@
+modnlp.tec.client.plugin.FqListBrowser:Word frequency list:Browse the corpus word frequency list

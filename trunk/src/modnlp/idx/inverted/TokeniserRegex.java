@@ -37,17 +37,17 @@ public class TokeniserRegex extends Tokeniser {
   private String bigWordRegexp = "[\\p{L}-.]+'?s?"; // include dots for abbrev. (e.g. U.S.A.)
   private String wordRegexp = "[\\p{L}.]+|'s?";
   private String ignoredElements = "(omit|ignore)";  
-
+  
   public TokeniserRegex(String t){
     super(t);
   }
 
-  public TokeniserRegex(File t) throws IOException {
-    super(t);
+  public TokeniserRegex(File t, String e) throws IOException {
+    super(t,e);
   }
 
-  public TokeniserRegex(URL t) throws IOException {
-    super(t);
+  public TokeniserRegex(URL t, String e) throws IOException {
+    super(t,e);
   }
 
   public void tokenise ()  {

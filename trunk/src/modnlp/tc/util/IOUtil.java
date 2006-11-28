@@ -29,7 +29,7 @@ import modnlp.tc.evaluation.*;
  * @version <font size=-1>$Id: IOUtil.java,v 1.1.1.1 2005/05/26 13:59:30 amaral Exp $</font>
  * @see  
 */
-public class IOUtil {
+public class IOUtil extends modnlp.util.IOUtil {
 
   public static final String PARSER_PLUGIN_BASE = "modnlp.tc.parser.";
   public static final String TSR_PLUGIN_BASE = "modnlp.tc.tsr.";
@@ -103,6 +103,7 @@ public class IOUtil {
     String fc = TSR_PLUGIN_BASE+plugin;
     return (TermFilter)cl.loadClass(fc).newInstance();
   }
+
 
   public static void main(String[] args) {
     try {

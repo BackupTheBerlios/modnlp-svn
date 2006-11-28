@@ -1,21 +1,18 @@
 TOPDIR=
 SOURCEDIR=$(TOPDIR)src/
-LIBSPATH=$(TOPDIR)lib/je.jar:$(TOPDIR)lib/MinML2.jar:lib/idx.jar
+LIBSPATH=$(TOPDIR)lib/je.jar:lib/idx.jar
 LIBS=$(subst :, ,$(LIBSPATH))
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
-MANIFEST=teccli-manifest.txt
-SOURCES:= $(shell find $(SOURCEDIR)modnlp/tec/client -name *.java)
+MANIFEST=tecser-manifest.txt
+SOURCES:= $(shell find $(SOURCEDIR)modnlp/tec/server -name *.java)
 TARGETS=$(subst .java,.class,$(SOURCES))
-JARREDS=modnlp/tec/client/*.class modnlp/tec/client/gui/*.class \
-	modnlp/tec/client/plugin/*.class \
-	modnlp/tec/client/icons/*.{gif,jpg,png} \
-	modnlp/tec/client/help/*.{html,jpg} tecli.properties
+JARREDS=modnlp/tec/server/*.class
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`
-DISTDIR:=modnlp-teccli-`cat VERSION`
+DISTDIR:=modnlp-tecser-`cat VERSION`
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
-	$(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)tecli.properties* \
-	$(SOURCEDIR)modnlp/tec/client $(SOURCEDIR)$(MANIFEST) $(SOURCEDIR)modnlp/tec/prj.el
+	$(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)server.properties \
+	$(SOURCEDIR)modnlp/tec/server $(SOURCEDIR)$(MANIFEST) $(SOURCEDIR)modnlp/tec/prj.el
 #JAVA=jamvm
 #JAVAC=jikes-classpath
 JAVA=java
@@ -24,7 +21,7 @@ JAR=jar
 JARFLAGS= cvmf $(MANIFEST)
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
-JARTARGET=$(TOPDIR)lib/teccli.jar
+JARTARGET=$(TOPDIR)lib/tecser.jar
 BINDISTDIR=$(DISTDIR)-bin
 #VPATH=$(SOURCEDIR)
 
@@ -44,19 +41,20 @@ jar: $(TARGETS)
 	cd $(SOURCEDIR) && $(JAR) $(JARFLAGS) ../$(JARTARGET) $(JARREDS)
 
 docs: $(TARGETS)
-	javadoc -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp.tec.client 
+	javadoc -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp.tec.server
 
 ## distribution building, the joy of life...
-dist: 
+dist: docs
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	cp -aL --parents $(DISTFILES) $(DISTDIR)
 	tar cfvz /tmp/$(DISTDIR).tar.gz  --exclude-from=exclude.txt $(DISTDIR)
 	rm -rf $(DISTDIR)
 
-bindist: jar
+bindist: $(TARGETS)
 	mkdir $(BINDISTDIR)
 	cp README.bin $(BINDISTDIR)/README
 	cp $(LIBS) $(JARTARGET) $(BINDISTDIR)
+	cp $(SOURCEDIR)server.properties $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)

@@ -258,13 +258,24 @@ public class WordQuery {
     */
   }
 
+  public static final boolean isLeftWildcard(String key) {
+    return key.lastIndexOf('*') > 0;
+  }
 
-  public static boolean isWildcard(String key) {
-    return ( key.lastIndexOf('*') > -1 );
+  public static final boolean isRightWildcard(String key) {
+    return key.charAt(0) == '*';
+  }
+
+  public static final boolean isWildcard(String key) {
+    return ( isLeftWildcard(key) || isRightWildcard(key) );
   }
 
   public static String getWildcardsLHS (String key) {
     return key.substring(0,  key.lastIndexOf('*'));
+  }
+
+  public static String getWildcardsRHS (String key) {
+    return key.substring(1);
   }
 
   public String getKeyword () {

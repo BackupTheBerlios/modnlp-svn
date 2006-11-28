@@ -16,10 +16,12 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.idx;
+
 import modnlp.dstruct.CorpusList;
 import modnlp.idx.inverted.TokeniserRegex;
 import modnlp.dstruct.TokenMap;
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.database.DictProperties;
 import modnlp.idx.database.AlreadyIndexedException;
 
 import java.io.File;
@@ -38,17 +40,18 @@ public class MakeTECIndex {
 
 
   public static void main(String[] args) {
-    System.out.println(System.setProperty("file.encoding", "ISO8859_1"));
+    //System.out.println(System.setProperty("file.encoding", "ISO8859_1"));
     Dictionary d = null;
     try {
-      d = new Dictionary(true); 
+      DictProperties dictProps = new DictProperties(args[0]);
+      d = new Dictionary(true, dictProps); 
       d.setVerbose(verbose);
       // MakeTECIndex mti = new MakeTECIndex();
-      CorpusList clist =  new CorpusList(args[0]);
+      CorpusList clist =  new CorpusList(args[1]);
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
         try {
           String fname = (String)e.nextElement();
-          TokeniserRegex tkr = new TokeniserRegex(new File(fname));
+          TokeniserRegex tkr = new TokeniserRegex(new File(fname), dictProps.getProperty("file.encoding"));
           if (verbose) {
             System.err.print("\n----- Processing: "+fname+" ------\n");
             tkr.setVerbose(verbose);
@@ -83,8 +86,9 @@ public class MakeTECIndex {
 
 
   public static void usage() {
-    System.err.println("\nUSAGE: MakeTECIndex CORPUS_LIST [-e]");
+    System.err.println("\nUSAGE: MakeTECIndex CORPUS_INDEX_DIR CORPUS_LIST [-e]");
     System.err.println("\ttokenise and index each file in CORPUS_LIST");
+    System.err.println("\tand store them in CORPUS_INDEX_DIR");
     System.err.println("\tOptions:");
     System.err.println("\t\t-e\tStop indexing if index contains");
     System.err.println("\t\t  \ta file in CORPUS_LIST");

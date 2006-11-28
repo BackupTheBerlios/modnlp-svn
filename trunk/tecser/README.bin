@@ -1,10 +1,6 @@
 modnlp-tecser: TEC SERVER - Concordance server
 ==============================================
 
-Compile the server by typing
-
- % make build 
-
 To start the server, first edit lib/server.properties so that
 index.dir points to the directory where you keep the index
 (see modules-idx): that should normally be the value of

@@ -20,10 +20,10 @@ package modnlp.tc.induction;
 import modnlp.tc.dstruct.*;
 import modnlp.tc.parser.*;
 import modnlp.tc.tsr.*;
-import modnlp.tc.util.*;
+import modnlp.tc.util.IOUtil;
 
 import modnlp.dstruct.*;
-import modnlp.util.*;
+import modnlp.util.PrintUtil;
 
 import java.io.*;
 import java.util.Enumeration;

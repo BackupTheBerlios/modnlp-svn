@@ -1,3 +1,7 @@
+* replace sequential search in the posa loops in matchConcordance() by
+  binary search to make them more efficient.
+
 * Implement preferences pane for modnlp.idx.IndexManager, including
   settings for local header directory, header's  URL (for external
   access), tag ignore regexp, tokenisation regexp etc.
+

@@ -158,7 +158,7 @@ public class IndexManagerUI extends JFrame
         CorpusFilesChooser filedial = (currentDir == null ) ? 
           new CorpusFilesChooser(): new CorpusFilesChooser(currentDir);
         int returnVal = filedial.showOpenDialog(this);//filedial.showDialog(this, "Select files");
-        if (returnVal == filedial.APPROVE_OPTION)
+        if (returnVal == CorpusFilesChooser.APPROVE_OPTION)
           {
             File[] files = filedial.getSelectedFiles();
             currentDir = files[0].getParent();

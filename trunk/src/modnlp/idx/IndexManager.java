@@ -39,7 +39,7 @@ import javax.swing.JOptionPane;
 */
 public class IndexManager {
   private IndexManagerProperties props = new IndexManagerProperties();
-  Dictionary dict;
+  Dictionary dict = null;
   DictProperties dictProps;
   CorpusList clist;
   IndexManagerUI imui;
@@ -59,10 +59,10 @@ public class IndexManager {
   public void chooseNewCorpus(){
     CorpusChooser ncc = new CorpusChooser(props.getProperty("last.index.dir"));
     int r;
-    while (!((r = ncc.showChooseCorpus()) == CorpusChooser.APPROVE_OPTION ||
-             (r != CorpusChooser.CANCEL_OPTION && dict != null)) ) 
+    while ((r = ncc.showChooseCorpus()) != CorpusChooser.APPROVE_OPTION &&
+           r != CorpusChooser.CANCEL_OPTION)
       {
-        JOptionPane.showMessageDialog(null, "Please choose a corpus directory (folder)");      
+        JOptionPane.showMessageDialog(null, "Please choose a corpus index directory (folder)");      
       }
     if (r == CorpusChooser.CANCEL_OPTION)
       return;
@@ -133,6 +133,8 @@ public class IndexManager {
     IndexManager im = new IndexManager();
     try {
       im.chooseNewCorpus();
+      if (im.dict == null)
+        System.exit(0);
       im.imui.pack();
       im.imui.setVisible(true);
     } // end try
@@ -147,7 +149,7 @@ public class IndexManager {
 
   public static void usage() {
     System.err.println("\nUSAGE: IndexManager ");
-    System.err.println("\ttGUI for index maintainance");
+    System.err.println("\tGUI for index maintainance");
   }
   
   class IndexingThread extends Thread {
@@ -156,7 +158,7 @@ public class IndexManager {
       super("Indexing thread");
       clist = cl;
     }
-        
+    
     public void run() {
       activeIndexing = true;
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
@@ -165,25 +167,29 @@ public class IndexManager {
           imui.print("----- Indexing aborted by user.");
           imui.enableChoice(true);
           activeIndexing = false;
+          dict.sync();
           return;
         }
         String fname = (String)e.nextElement();
         try {
-          TokeniserRegex tkr = new TokeniserRegex(new File(fname));
+          TokeniserRegex tkr = new TokeniserRegex(new File(fname), 
+                                                  dictProps.getProperty("file.encoding"));
+          tkr.setVerbose(debug);
           // if (debug) {
           imui.print("\n----- Processing: "+fname+" ------\n");
-          tkr.setVerbose(debug);
           //}
           if (dict.indexed(fname)){
             throw new AlreadyIndexedException(fname);
           }
           imui.print("-- Tokenising ...\n");
           tkr.tokenise();
+
           TokenMap tm = tkr.getTokenMap();
           //System.err.print(tm.toString());
           imui.print("-- Indexing ...\n");
           dict.setVerbose(debug);
           dict.addToDictionary(tm, fname);
+          dict.sync();
           imui.print("-- Done.\n");
           imui.addIndexedFile(fname);
         }
@@ -221,6 +227,7 @@ public class IndexManager {
           imui.print("----- De-indexing aborted by user.");
           imui.enableChoice(true);
           activeIndexing = false;
+          dict.sync();
           return;
         }
         String fname = (String)e.nextElement();
@@ -229,6 +236,7 @@ public class IndexManager {
           imui.print("\n----- De-indexing: "+fname+" ------\n");
           dict.setVerbose(debug);
           dict.removeFromDictionary(fname);
+          dict.sync();
           imui.print("-- Done.\n");
           imui.removeIndexedFile(fname);
         }

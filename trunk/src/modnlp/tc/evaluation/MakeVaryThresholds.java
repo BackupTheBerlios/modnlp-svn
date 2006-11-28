@@ -17,8 +17,8 @@
 */
 package modnlp.tc.evaluation;
 
-import modnlp.util.*;
-import modnlp.tc.util.*;
+import modnlp.util.PrintUtil;
+import modnlp.tc.util.IOUtil;
 import java.util.Set;
 /**
  *  Evaluate classifier performance for a range of CSV thresholds

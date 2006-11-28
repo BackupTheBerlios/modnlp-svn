@@ -18,12 +18,15 @@
 package modnlp.tc.classify;
 
 import modnlp.dstruct.*;
-import modnlp.util.*;
+import modnlp.util.PrintUtil;
+import modnlp.util.Maths;
+import modnlp.util.Tokeniser;
 
 import modnlp.tc.parser.*;
 import modnlp.tc.dstruct.*;
 import modnlp.tc.evaluation.*;
-import modnlp.tc.util.*;
+import modnlp.tc.util.IOUtil;
+
 import java.util.Set;
 import java.util.Enumeration;
 import java.util.Iterator;

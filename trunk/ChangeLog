@@ -1,3 +1,9 @@
+2006-11-28  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* modnlp/idx, modnlp/dstruct/CorpusFile.java: Fixed UTF-8 encoding
+	issues, fixed search, implemented frequency list plugin, fixed
+	minor bugs. 
+
 2006-08-23  S. Luz  <luzs@cs.tcd.ie>
 
 	* idx/Makefile, tc/Makefile, tec/Makefile (modnlp): tidied up

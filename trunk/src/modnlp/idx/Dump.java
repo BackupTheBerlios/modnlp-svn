@@ -21,6 +21,7 @@ import modnlp.dstruct.CorpusList;
 import modnlp.idx.inverted.TokeniserRegex;
 import modnlp.dstruct.TokenMap;
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.database.DictProperties;
 import modnlp.idx.database.AlreadyIndexedException;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public class Dump {
   public static void main(String[] args) {
     Dictionary d = null;
     try {
-      d = new Dictionary(false); 
+      d = new Dictionary(new DictProperties(args[0])); 
       d.dump();
       d.printSortedFreqList(new java.io.PrintWriter(System.out));
       d.close();
