@@ -38,17 +38,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
+
 /**
  *  Mediate access to all databases (called Dictionary for
  *  'historical' reasons; see tec-server)
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
  * @version <font size=-1>$Id: Dictionary.java,v 1.2 2006/05/22 17:26:02 amaral Exp $</font>
- * @see  
+ * @see modnlp.idx.MakeTECIndex
  */
 public class Dictionary {
 
@@ -67,9 +69,7 @@ public class Dictionary {
   TPosTable tposTable;           // fileno -> (offset) positions of each token in file
   Environment environment;
 
-  protected boolean verbose = false; 
-
-  
+  protected boolean verbose = false;  
 
   /**
    * Open a new <code>Dictionary</code> in read-only mode with default
@@ -161,8 +161,12 @@ public class Dictionary {
    * @exception AlreadyIndexedException if an error occurs
    */
   public void addToDictionary(TokenMap tm, String fou) 
-    throws AlreadyIndexedException 
+    throws AlreadyIndexedException, EmptyFileException
   {
+    if (tm == null || tm.size() == 0){
+      logf.logMsg("Dictionary: file or URI already indexed "+fou);
+      throw new EmptyFileException(fou);
+    }
     // check if file already exists in corpus; if so, quit and warn user
     NumberFormat nf = NumberFormat.getInstance();
     nf.setMaximumFractionDigits(4);
@@ -273,25 +277,7 @@ public class Dictionary {
   public String [] getIndexedFileNames () {
     return fileTable.getFileNames();
   }
-
-  // kwa elements can also be wildcards (e.g. "test*", matching "test", "tested", etc)
-  public WordForms getLeastFrequentWord (String [] kwa, boolean cs ){
-    //String word = null;
-    int freq = 0;
-    WordForms wformsout = new WordForms();
-    for (int i = 0; i < kwa.length ; i++ ) {
-      WordForms wforms = getWordForms(kwa[i], cs);
-      int fqaux = getFrequency(wforms);
-      if (fqaux == 0)
-        return wforms;
-      if (freq == 0 || fqaux < freq){
-        freq = fqaux;
-        wformsout = wforms;
-      }
-    }
-    return wformsout;
-  }
-
+ 
   public int getFrequency (WordForms wforms)
   {
     int tf = 0;
@@ -305,21 +291,9 @@ public class Dictionary {
     return tf;
   }
 
-  public WordForms getWordForms (String key, boolean csensitive)
-  {
-    WordForms wforms = new WordForms(key);
-    if ( WordQuery.isLeftWildcard(key) )
-      return caseTable.getAllPrefixMatches(key, csensitive);
 
-    if ( WordQuery.isRightWildcard(key) )
-      return caseTable.getAllSuffixMatches(key, csensitive);
-    
-    if (csensitive) {
-      wforms.addElement(key);
-      return wforms;
-    }	
-    else
-      return caseTable.getAllCases(key);
+  public CaseTable getCaseTable (){
+    return caseTable;
   }
 
   /**
@@ -327,9 +301,17 @@ public class Dictionary {
    * this query (represented after <code>parseQuery()</code> by
    * <code>queryArray</code> and <code>intervArray</code>)
    *
-   * @param fno the file number
+   * <p>
+   * N.B.: as binary search in order to speed it up to logarithmic
+   * levels (avoiding the current O(n) worst-case behaviour)
+   * 
+   * @param pcq the 'pre-processed' query object, containing the
+   *  search horizons ({@link modnlp.idx.query.Horizon Horizon})
+   *  objects, and a set of byte offsets per wordform for a specific
+   *  file ({@link modnlp.idx.database.WordPositionTable
+   *  WordPositionTable}).
    * @param pos the position (as byte offset) of the keyword on the file
-   * @param wq the <code>WordQuery</code>, a complete parsed representation of the query
+   * @param posa a position array for a specified file (ontained through {@link TPosTable#getPosArray(int)}).
    * @return <code>true</code> if cline matches, false otherwise.
    */
   public boolean matchConcordance(PrepContextQuery pcq, int pos, int[] posa){
@@ -354,9 +336,16 @@ public class Dictionary {
       rpa = new int[rh.getMaxSearchHorizon()];
     }
 
-    // this should be implemented as binary search in order to spped it up 
-    // (avoiding O(n) worst-case behaviour)
-    for (int i = 0; i < posa.length; i++) { 
+    long bt = System.currentTimeMillis();
+
+    // this should be implemented as binary search in order to speed it up 
+    // to logarithmic levels (avoiding the current O(n) worst-case behaviour)
+    // e.g. int i = Arrays.binarySearch(posa, pos); // b-search
+    //      i--;
+    //      for (int j = 0; j < lpa.length; j++)
+    //         lpa[j] = (i - j < 0) ? 0 : posa[i-j];
+    // and replace the while loop below by b_find_index() 
+    for (int i = 0; i < posa.length; i++) {
       if (posa[i] == pos || lh == null){
         // reorder the left-hand side array
         if (lh != null) {
@@ -370,7 +359,7 @@ public class Dictionary {
               aux[j] = li-j < 0 ? lpa[lpa.length + (li-j)]  : lpa[li-j];
           }
           lpa = aux;
-        }
+        } // end if (lh != null)
         if (rh == null)
           break;
         while (posa[i] != pos)
@@ -384,10 +373,14 @@ public class Dictionary {
           else
             rpa[j] = 0;
         break;
-      }
-      lpa[i%lpa.length] = posa[i];
-    }
+      } // end of if (posa[i] == pos || lh == null)
+      lpa[i%lpa.length] = posa[i];  // fill the lpa array 
+    } // end for
 
+    long et = System.currentTimeMillis();
+    System.err.println("Time: "+et+"-"+bt+"="+(et-bt));
+
+    
     // match left-hand side
     if (lh != null){
       int bi = 0;
@@ -408,7 +401,6 @@ public class Dictionary {
           return false; // otherwise, move on to the next kw
       }
     }
-
     // match right-hand side
     if (rh != null){
       int bi = 0;
@@ -429,7 +421,6 @@ public class Dictionary {
           return false; // otherwise, move on to the next kw
       }
     }
-
     return true;
   }
 
@@ -470,7 +461,7 @@ public class Dictionary {
     return dictProps.getCorpusDir();
   }
 
-  public void printCorcordances(WordQuery query, int ctx, boolean ignx, PrintWriter os) 
+  public void printConcordances(WordQuery query, int ctx, boolean ignx, PrintWriter os) 
   {
     WordForms wforms = query.getKeyWordForms();
     if (wforms == null) {
@@ -509,12 +500,15 @@ public class Dictionary {
             continue;
           PrepContextQuery pcq = new PrepContextQuery(lh, rh, wpt);
           String fn = fileTable.getFileName(fno.intValue());
-          CorpusFile fh = new CorpusFile(cdir+fn,
-                                         dictProps.getProperty("file.encoding"));
-          fh.setIgnoreSGML(ignx);
+          CorpusFile fh = null;
           for (Iterator p = pos.iterator(); p.hasNext(); ) {
             Integer bp = (Integer)p.next();
             if ( jkw || matchConcordance(pcq,bp.intValue(),posa)) {
+              if (fh == null) {
+                fh = new CorpusFile(cdir+fn,
+                                    dictProps.getProperty("file.encoding"));
+                fh.setIgnoreSGML(ignx);
+              } 
               String ot = fh.getWordInContext(bp, key, ctx);
               //              if (  query.matchConcordance(ot,ctx) )
               //{
@@ -523,12 +517,14 @@ public class Dictionary {
               os.flush();
             }
             if (os.checkError()) {
-              logf.logMsg("Dictionary.printCorcordances: connection closed prematurely by client");
-              fh.close();
+              logf.logMsg("Dictionary.printConcordances: connection closed prematurely by client");
+              if (fh != null)
+                fh.close();
               return;
             }
           }
-          fh.close();
+          if (fh != null)
+            fh.close();
           wpt.close();
         }
       }
@@ -602,6 +598,24 @@ public class Dictionary {
     }
   }
 
+  public void compress () {
+    try {
+      System.err.println("compressing db....");
+      environment.compress();
+    } catch(Exception e) {
+      logf.logMsg("Error compressing environment: "+e);
+    }
+  }
+
+  public void cleanLog () {
+    try {
+      System.err.println("cleanning Log....");
+      environment.cleanLog();
+    } catch(Exception e) {
+      logf.logMsg("Error cleanning environment log: "+e);
+    }
+  }
+
   public void close () {
     try {
       tposTable.close();
@@ -617,6 +631,7 @@ public class Dictionary {
   }
 
   public void finalize () {
+    cleanLog();
     close();
   }
 

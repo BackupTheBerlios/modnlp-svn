@@ -1,0 +1,3 @@
+#modnlp.idx.IndexManager's properties (tailored to ECPC indexing)
+#Wed May 16 15:29:14 IST 2007
+tokeniser.ignore.elements=(omit|ignore|header|chair|heading|post|name)

@@ -1,6 +1,6 @@
 TOPDIR=
 SOURCEDIR=$(TOPDIR)src/
-LIBSPATH=$(TOPDIR)lib/gnu-regexp-1.1.4.jar:$(TOPDIR)lib/je.jar:$(TOPDIR)lib/MinML2.jar
+LIBSPATH=$(TOPDIR)lib/gnu-regexp.jar:$(TOPDIR)lib/je.jar:$(TOPDIR)lib/MinML2.jar:$(TOPDIR)lib/jung.jar
 LIBS=$(subst :, ,$(LIBSPATH))
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
@@ -40,7 +40,7 @@ jar: $(TARGETS)
 	cd $(SOURCEDIR) && $(JAR) cfv ../$(TOPDIR)lib/modnlp.jar $(JARREDS)
 
 docs: $(TARGETS)
-	javadoc -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp
+	javadoc -encoding "ISO-8859-1" -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp
 
 dist: clean
 	rm -rf $(DISTDIR)

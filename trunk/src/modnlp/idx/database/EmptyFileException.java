@@ -1,4 +1,4 @@
-/** 
+/**
  *  © 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
@@ -15,28 +15,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-package modnlp.tec.client;
-import java.lang.*;
+package modnlp.idx.database;
+
 /**
- *  Objects implementing this interface should monitor a concordance
- *  list and update the appropriate ConcordanceDisplayListener.
+ *  Indicate that file or URI contains no indexable tokens
  *
- * 
- * @author  Saturnino Luz &#60;luzs@acm.org&#62;
- * @version <font size=-1>$Id: ConcordanceMonitor.java,v 1.1.1.1 2000/07/07 16:54:36 luz Exp $</font>
+ * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
+ * @version <font size=-1>$Id: EmptyFileException.java,v 1.2 2006/05/22 17:26:02 amaral Exp $</font>
  * @see  
 */
-public interface ConcordanceMonitor {
 
-  /**
-   * Set listDisplay as a concordance display listener (that is, an object
-   * which will be notified of changes in the concordance list via, e.g.,
-   * 
-   */
-  public void addConcordanceDisplayListener(ConcordanceDisplayListener conc);
+public class EmptyFileException extends Exception {
 
-  public void removeConcordanceDisplayListener(ConcordanceDisplayListener conc);
+  public EmptyFileException () {
+    super("File or URI contains no indexable tokens.");
+  }
 
+  public EmptyFileException (String fn) {
+    super("File or URI contains no indexable tokens: "+fn);
+  }
 
 
 }

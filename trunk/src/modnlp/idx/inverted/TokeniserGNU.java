@@ -51,6 +51,24 @@ public class TokeniserGNU extends Tokeniser {
     super(t,e);
   }
 
+  /**
+   * Get the <code>IgnoredElements</code> value.
+   *
+   * @return a <code>String</code> value
+   */
+  public final String getIgnoredElements() {
+    return ignoredElements;
+  }
+
+  /**
+   * Set the <code>IgnoredElements</code> value.
+   *
+   * @param newIgnoredElements The new IgnoredElements value.
+   */
+  public final void setIgnoredElements(final String newIgnoredElements) {
+    this.ignoredElements = newIgnoredElements;
+  }
+
   public void tokenise () {
 
     try { 

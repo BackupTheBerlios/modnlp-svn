@@ -90,12 +90,12 @@ public class CorpusFile {
       lc[cp-i] = k < 0 || Character.isISOControl(fileArray[k])? 
         ' ' : fileArray[k--];
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
-      rc[i] = j >= fileArray.length ||  Character.isISOControl(fileArray[j])? 
+      rc[i] = j < 0 || j >= fileArray.length || Character.isISOControl(fileArray[j])? 
         ' ' : fileArray[j++];
     }
     for (int i = 0; i < wrd.length(); i++ ){
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
-      rc[ctx+i] = j >= fileArray.length ||  Character.isISOControl(fileArray[j])? 
+      rc[ctx+i] = j < 0 || j >= fileArray.length ||  Character.isISOControl(fileArray[j])? 
         ' ' : fileArray[j++];
     }
     return (new String(lc))+(new String(rc));
@@ -106,9 +106,9 @@ public class CorpusFile {
       return -1;
     if (!ignoreSGML)  // any char will do
       return i;
-    boolean ignore = fileArray[i] == '<' ? true : false;
+    boolean ignore = i < 0 || fileArray[i] == '<' ? true : false;
     while (ignore){
-      while ( i < fileArray.length && fileArray[i++] != '>' ) {}
+      while ( ++i < fileArray.length && fileArray[i] != '>' ) {}
       if (fileArray[i] != '<')
         return i;
       else

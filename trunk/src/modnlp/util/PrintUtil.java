@@ -46,6 +46,15 @@ public class PrintUtil {
     return sb.substring(0,sb.length()-1);
   }
 
+  public static String toString(byte[] ba){
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < ba.length ; i++)
+      sb.append(ba[i]+",");
+    if (sb.length() < 1)
+      return "";
+    return sb.substring(0,sb.length()-1);
+  }
+
   public static String toString(int[] ba){
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < ba.length ; i++)

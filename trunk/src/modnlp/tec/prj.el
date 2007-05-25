@@ -1,8 +1,8 @@
 (jde-project-file-version "1.0")
 (jde-set-variables
- '(jde-compile-option-nowarn t)
+ '(jde-compile-option-nowarn nil)
  '(jde-db-read-app-args t)
- '(jde-global-classpath (quote ("../../../lib/MinML2.jar" "../.." "../../../lib/je.jar" "../../../lib/gnu-regexp-1.1.4.jar")))
+ '(jde-global-classpath (quote ("../../../lib/MinML2.jar" "../.." "../../../lib/je.jar" "../../../lib/gnu-regexp.jar")))
  '(jde-run-working-directory "../..")
  '(jde-run-option-vm-args (quote ("-Dfile.encoding=UTF8")))
  '(jde-run-read-app-args t)

@@ -23,11 +23,12 @@ import modnlp.idx.database.WordPositionTable;
 
 /**
  *  Build and store a 'pre-processed' query object. This will contain
- *  the search horizons (<code>Horizon</code> objects, and a set of
+ *  the search horizons ({@link modnlp.idx.query.Horizon Horizon}) objects, and a set of
  *  byte offsets per wordform for a specific file
- *  (<code>WordPositionTable</code>). The main point of this class is
+ *  ({@link modnlp.idx.database.WordPositionTable
+   *  WordPositionTable}). The main point of this class is
  *  to tabulate the results of wpt lookups for use in
- *  <code>Dictionary.matchConcordance()</code>
+ *  ({@link modnlp.idx.database.Dictionary#matchConcordance(PrepContextQuery, int, int[])})
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
  * @version <font size=-1>$Id: $</font>
@@ -76,14 +77,14 @@ public class PrepContextQuery {
   public Horizon getLeftHorizon() {
     return lh;
   }
-
+  
   public Horizon getRightHorizon() {
     return rh;
   }
   public IntegerSet[] getLeftHorizonIntegerSetArray() {
     return lhisa;
   }
-
+  
   public IntegerSet[] getRightHorizonIntegerSetArray() {
     return rhisa;
   }

@@ -46,7 +46,7 @@ public class StopWordList extends  Vector
     }
   }
 
-  public boolean contains (String tw ){
+  public boolean contains (String tw){
     return super.contains(tw.toLowerCase());
   } 
 }

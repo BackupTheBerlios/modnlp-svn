@@ -36,6 +36,7 @@ import com.sleepycat.je.StatsConfig;
 
 import java.util.Iterator;
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 /**
  *  Store a canonical (lowercase) form of a word and all other forms
@@ -218,6 +219,43 @@ public class CaseTable extends Table {
     //System.out.println(wordform);    
 		return wordform;
 	}
+
+	public WordForms getAllRegexMatches (String k, boolean csensitive ){
+		WordForms wordform = new WordForms(k);
+		try {
+      Cursor c = database.openCursor(null, null);
+      TupleBinding kb = new StringBinding();
+      TupleBinding isb = new StringSetBinding();
+      DatabaseEntry key = new DatabaseEntry();
+      DatabaseEntry data = new DatabaseEntry();
+      while (c.getNext(key, data, LockMode.DEFAULT) == 
+             OperationStatus.SUCCESS) {
+        String sik = (String) kb.entryToObject(key);
+        StringSet set  = (StringSet) isb.entryToObject(data);
+        for (Iterator f = set.iterator(); f.hasNext() ;) {       
+          String word = (String)f.next();
+          Pattern p = null;
+          if ( ! csensitive ) {
+            final int ciflag = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            p = Pattern.compile(k, ciflag);  //
+          }
+          else {
+            p = Pattern.compile(k);  //
+          } 
+          if ( p.matcher(word).matches() ) 
+            wordform.addElement(word);
+        }
+      }
+      c.close();
+    }
+    catch (DatabaseException e) {
+      logf.logMsg("Error accessing CaseTable" + e);
+    }
+    Collections.sort(wordform);
+    //System.out.println(wordform);    
+		return wordform;
+	}
+
 
 	/** Return a vector containing all word forms (all existing
 	 *  cases) found in the dictionary.

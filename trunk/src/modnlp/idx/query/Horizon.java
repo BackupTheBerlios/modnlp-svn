@@ -21,7 +21,7 @@ import modnlp.dstruct.WordForms;
 /**
  *  Store words and the max number of words to scan between each
  *  word and the keyword. Example:
- *
+ *  <pre>
  *  query = a+[2]be+see+Dee, keyword = see
  *         
  *  will set a left Horizon with:
@@ -29,8 +29,8 @@ import modnlp.dstruct.WordForms;
  *  horizonArray = [ 4 , 1 ], 
  *  wordArray =    [ a,  be ]
  *  maxSearchHorizon = 4 
- *
- *  i.e. one needs to look back 4 words to be able to match "a", 1
+ *  </pre>
+ *  That is, one can look back up to 4 words to be able to match "a", 1
  *  word back to match "be". maxSearchHorizon is redundant.
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;

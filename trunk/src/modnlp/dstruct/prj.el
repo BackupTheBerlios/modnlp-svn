@@ -8,6 +8,6 @@
  '(jde-db-read-app-args t)
  '(jde-run-option-vm-args (quote ("-Dfile.encoding=UTF8")))
  '(jde-sourcepath (quote ("../..")))
+ '(jde-compile-option-debug (quote ("all" (t nil nil))))
  ;;'(jde-compile-option-optimize t)
-
 )

@@ -31,7 +31,7 @@ import java.io.*;
 */
 public class HeaderReader {
 
-  private final int MAXLIN = 5000;
+  private static final int MAXLIN = 5000;
   private DataInputStream data;
 
   public String headerfile;  

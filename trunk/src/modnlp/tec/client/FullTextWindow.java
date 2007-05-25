@@ -69,7 +69,7 @@ public class FullTextWindow extends JFrame
   public String text[];
   private boolean testConc = true;
   private int height, width;
-  private JEditorPane out = new  JEditorPane("text/html", ""); // new  JTextArea(20,40);
+  private JEditorPane outPane = new  JEditorPane("text/html", ""); // new  JTextArea(20,40);
 	private JButton dismissButton =  new JButton("Dismiss");
   private boolean useText = false;
 
@@ -78,8 +78,8 @@ public class FullTextWindow extends JFrame
   public FullTextWindow(String title)
   {
     super(title);
-    out.setEditable(false); 
-    out.setFont( new Font("Helvetica", Font.PLAIN, 12) );
+    outPane.setEditable(false); 
+    outPane.setFont( new Font("Helvetica", Font.PLAIN, 12) );
     useText = true;
     textInit();
   }
@@ -90,10 +90,10 @@ public class FullTextWindow extends JFrame
   public FullTextWindow(String title, String[] fullText)
   {
     super(title);
-    out.setEditable(false); 
+    outPane.setEditable(false); 
     useText = true;
     text = fullText;
-    out.setFont( new Font("Helvetica", Font.PLAIN, 12) );
+    outPane.setFont( new Font("Helvetica", Font.PLAIN, 12) );
     textInit();
     displayText(text);
   }
@@ -104,23 +104,23 @@ public class FullTextWindow extends JFrame
   public FullTextWindow(String title, StringBuffer fullText)
   {
     super(title);
-    out.setEditable(false); 
+    outPane.setEditable(false); 
     useText = true;
-    out.setFont( new Font("Helvetica", Font.PLAIN, 12) );
+    outPane.setFont( new Font("Helvetica", Font.PLAIN, 12) );
     textInit();
-    out.setText(fullText.toString());
-		out.setCaretPosition(0);
+    outPane.setText(fullText.toString());
+		outPane.setCaretPosition(0);
   }
 
  public FullTextWindow(String title, String fullText)
   {
     super(title);
-    out.setEditable(false); 
+    outPane.setEditable(false); 
     useText = true;
-    out.setFont( new Font("Helvetica", Font.PLAIN, 12) );
+    outPane.setFont( new Font("Helvetica", Font.PLAIN, 12) );
     textInit();
-    out.setText(fullText.toString());
-		out.setCaretPosition(0);
+    outPane.setText(fullText.toString());
+		outPane.setCaretPosition(0);
   }
 
 
@@ -132,9 +132,9 @@ public class FullTextWindow extends JFrame
   public FullTextWindow(String title, String fullText[], int h, int w)
   {
     super(title);
-    out.setEditable(false); 
+    outPane.setEditable(false); 
     setBackground(Color.white);
-    out.setFont( new Font("Helvetica", Font.PLAIN, 12) );
+    outPane.setFont( new Font("Helvetica", Font.PLAIN, 12) );
     text = fullText;
     height = h;
     width = w;
@@ -148,11 +148,11 @@ public class FullTextWindow extends JFrame
 
     ctrl.setLayout(new GridLayout(1,3));
     getContentPane().setLayout(new BorderLayout());
-    out.setBackground(Color.white);
+    outPane.setBackground(Color.white);
     ctrl.add( new JLabel(""));
     ctrl.add(dismissButton);
     ctrl.add( new JLabel(""));
-		JScrollPane areaScrollPane = new JScrollPane(out);
+		JScrollPane areaScrollPane = new JScrollPane(outPane);
     getContentPane().add("North",ctrl);
     getContentPane().add("Center",areaScrollPane);
 		dismissButton.addActionListener(this);
@@ -219,7 +219,7 @@ public class FullTextWindow extends JFrame
       {
 				sb.append(text[count]);
       }
-    out.setText(sb.toString());
+    outPane.setText(sb.toString());
     validate();
   }
 	
@@ -229,8 +229,8 @@ public class FullTextWindow extends JFrame
    */
   public boolean resetFontIfChanged(int nsz){
 		
-    if ( out.getFont().getSize() != nsz ){
-      out.setFont( new Font("Helvetica", Font.PLAIN, nsz) );
+    if ( outPane.getFont().getSize() != nsz ){
+      outPane.setFont( new Font("Helvetica", Font.PLAIN, nsz) );
       return true;
     }
     else 

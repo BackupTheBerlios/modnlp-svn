@@ -35,9 +35,9 @@ import com.sleepycat.je.LockMode;
 /**
  *  Store words and the positions in which they occur as follows:
  *  <pre>  
- *       KEY      |  DATA
- *   -------------|-------------------
- *   word   |  [pos1, pos2, ...]
+ *        KEY      |  DATA
+ *    -------------|-------------------
+ *       word      |  [pos1, pos2, ...]
  *  </pre>
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
@@ -106,8 +106,9 @@ public class WordPositionTable extends Table {
     }
     finally {
       try{ c.close(); }catch(DatabaseException e){};
-      return tm;
+      //return tm;
     }
+    return tm;
   }
 
   public IntegerSet fetch (String sik) {

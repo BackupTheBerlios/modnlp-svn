@@ -50,7 +50,7 @@ public class Query {
         String req = cline.readLine();
         while ( ! req.equalsIgnoreCase("") ) {          
           System.err.println("No. of concordances for "+req+": ");
-          d.printCorcordances(new WordQuery(req,d,false), 50, true, new java.io.PrintWriter(System.out));
+          d.printConcordances(new WordQuery(req,d,false), 50, true, new java.io.PrintWriter(System.out));
           System.out.print("\n> ");
           System.out.flush();
           req = cline.readLine();
@@ -59,7 +59,7 @@ public class Query {
       else if (args[1].equals("-l")) { // one-off query
         String req = args[2];
         System.err.println("No. of concordances for "+req+": ");
-        d.printCorcordances(new WordQuery(req,d,false), 50, 
+        d.printConcordances(new WordQuery(req,d,false), 50, 
                             true, new java.io.PrintWriter(System.out));
         System.out.flush();
       }

@@ -107,6 +107,10 @@ public class Tokeniser {
     tokenMap = new TokenMap();
   }
 
+  public void setTokenMap(TokenMap t){
+    tokenMap = t;
+  }
+
   public boolean getTagIndexing() {
     return tagIndexing;
   }

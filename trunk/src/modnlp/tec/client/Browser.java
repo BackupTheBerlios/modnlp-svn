@@ -22,6 +22,7 @@ import modnlp.tec.client.gui.PreferPanel;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
 import modnlp.idx.gui.CorpusChooser;
+import modnlp.idx.query.WordQuery;
 import modnlp.util.IOUtil;
 
 import java.awt.Font;
@@ -73,7 +74,7 @@ public class Browser extends JFrame
                 ListSelectionListener, TecDefaultChangeListener
 {
 
-  public static final String RELEASE = "0.4";
+  public static final String RELEASE = "0.5.0";
   public static final String REVISION = "$Revision: 1.9 $";
   /* The next 2 thread objects will eventually become plug-in's */
   public ConcordanceThread concThread = null;
@@ -103,8 +104,8 @@ public class Browser extends JFrame
   private static final String ASCBUTT = "Subcorpus";
   private static final String QUITBUT = "QUIT";
 
-  private final static int WIDTH = 1000;
-  private final static int HEIGHT = 700;
+  private final static int FRAME_WIDTH = 1000;
+  private final static int FRAME_HEIGHT = 700;
   private final static int ONE_SECOND = 1000;
   private final static int SRTBARMAX = 6;
 
@@ -415,8 +416,6 @@ public class Browser extends JFrame
       e.printStackTrace(System.err);
     }
   }
-  
-
 
   public static String getRelease (){
     return RELEASE;
@@ -440,8 +439,12 @@ public class Browser extends JFrame
     String arg = evt.getActionCommand();
 		//System.out.println("ARG:"+arg);
     if(evt.getSource() instanceof JTextField){
-	    if (sortThread != null)
-	      sortThread.stop();
+      if (!WordQuery.isValidQuery(keyword.getText())) {
+        alertWindow("Invalid query syntax");
+        return;
+      }
+      if (sortThread != null)
+        sortThread.stop();
       labelMessage("Building concordance list. Please wait...");
       updateStatusLabelScroll("");
       concordancer();
@@ -715,8 +718,9 @@ public class Browser extends JFrame
       if ( concList != null && concList.list != null)
         concList.list.clearSelection();
       if (concThread.noFound > 0){
-        updateStatusLabel("  Searching through "
-                          +concThread.noFound+" concordances ");
+        if (concThread.noFound > concThread.ctRead)
+          updateStatusLabel("  Searching through "
+                            +concThread.noFound+" concordances ");
         timer.start();
         progressBar.setString(null);
         progressBar.setMaximum(concThread.noFound);
@@ -738,10 +742,6 @@ public class Browser extends JFrame
     }
     catch (NullPointerException e){
       labelMessage("Error caught: Server may be down. ");
-      concThread.stop();
-    }
-    catch (sun.applet.AppletSecurityException e){
-      labelMessage("Error caught: server not responding.");
       concThread.stop();
     }
   }
@@ -1057,7 +1057,7 @@ public class Browser extends JFrame
       //System.err.println(System.getProperty("file.encoding"));
       splashScreen = new SplashScreen("Initialising. Please wait...", 20);
       splashScreen.incProgress();
-      Browser f = new Browser(WIDTH, HEIGHT);
+      Browser f = new Browser(FRAME_WIDTH, FRAME_HEIGHT);
       f.addWindowListener(new WindowAdapter() {
           public void windowClosing(WindowEvent e) {
             System.exit(0);

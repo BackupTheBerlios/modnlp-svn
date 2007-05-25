@@ -1,3 +1,11 @@
+2007-05-25  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* all: Fixed a few bugs, added class to 'split' XML files,
+	improved the IndexManager and Browser interface (somewhat),
+	cleaned up the license files, released teccli 0.5.0 and idx
+	0.1.0. Started preparing the ground for new teccli visualisation
+	plugin.
+
 2006-11-28  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* modnlp/idx, modnlp/dstruct/CorpusFile.java: Fixed UTF-8 encoding

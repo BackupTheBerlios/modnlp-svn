@@ -18,6 +18,7 @@
 package modnlp.idx;
 
 import modnlp.dstruct.CorpusList;
+import modnlp.dstruct.StopWordList;
 import modnlp.idx.inverted.TokeniserRegex;
 import modnlp.dstruct.TokenMap;
 import modnlp.idx.database.Dictionary;
@@ -28,14 +29,13 @@ import java.io.File;
 import java.util.Enumeration;
 
 /**
- *  Read input file(s) and create case, occurrence, position and
- *  frequency tables for use with TEC
+ *  Create a co-occurence matrix
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
- * @version <font size=-1>$Id: MakeTECIndex.java,v 1.2 2006/05/22 17:26:02 amaral Exp $</font>
+ * @version <font size=-1>$Id: MakeCVSCoOccurrenceMatrix.java,v 1.2 2006/05/22 17:26:02 amaral Exp $</font>
  * @see  
 */
-public class MakeTECIndex {
+public class MakeCVSCoOccurrenceMatrix {
   private static boolean verbose = true;
 
 
@@ -44,16 +44,17 @@ public class MakeTECIndex {
     Dictionary d = null;
     try {
       DictProperties dictProps = new DictProperties(args[0]);
-      IndexManagerProperties props = new IndexManagerProperties();
       d = new Dictionary(true, dictProps); 
       d.setVerbose(verbose);
-      // MakeTECIndex mti = new MakeTECIndex();
+      // MakeCVSCoOccurrenceMatrix mti = new MakeCVSCoOccurrenceMatrix();
       CorpusList clist =  new CorpusList(args[1]);
+      StopWordList swlist =  new StopWordList(args[2]);
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
         try {
           String fname = (String)e.nextElement();
           TokeniserRegex tkr = new TokeniserRegex(new File(fname), 
                                                   dictProps.getProperty("file.encoding"));
+          tkr.setTokenMap(new TokenMap(swlist));
           if (verbose) {
             System.err.print("\n----- Processing: "+fname+" ------\n");
             tkr.setVerbose(verbose);
@@ -61,7 +62,6 @@ public class MakeTECIndex {
           if (d.indexed(fname)){
             throw new AlreadyIndexedException(fname);
           }
-          tkr.setIgnoredElements(props.getProperty("tokeniser.ignore.elements"));
           tkr.tokenise();
           TokenMap tm = tkr.getTokenMap();
           //System.err.print(tm.toString());
@@ -89,7 +89,7 @@ public class MakeTECIndex {
 
 
   public static void usage() {
-    System.err.println("\nUSAGE: MakeTECIndex CORPUS_INDEX_DIR CORPUS_LIST [-e]");
+    System.err.println("\nUSAGE: MakeCVSCoOccurrenceMatrix CORPUS_INDEX_DIR CORPUS_LIST [-e]");
     System.err.println("\ttokenise and index each file in CORPUS_LIST");
     System.err.println("\tand store them in CORPUS_INDEX_DIR");
     System.err.println("\tOptions:");

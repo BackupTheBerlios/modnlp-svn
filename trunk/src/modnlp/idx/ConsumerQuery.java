@@ -71,7 +71,7 @@ public class ConsumerQuery implements Runnable {
         in = new BufferedReader(new PipedReader(pipeOut));
         PrintWriter out = new PrintWriter(pipeOut);
         Dictionary d = new Dictionary(false);
-        d.printCorcordances(new WordQuery(query,d,false), 
+        d.printConcordances(new WordQuery(query,d,false), 
                             50, true, out);        
       } catch (IOException e) {
         System.err.println("Concordancer error: " + e);

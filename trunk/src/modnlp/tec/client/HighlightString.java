@@ -27,8 +27,8 @@ import java.lang.*;
 */
 public class HighlightString {
 
-  public static int position;
-  public static String string;
+  public int position;
+  public String string;
 
   public HighlightString(int p, String s){
     position = p;

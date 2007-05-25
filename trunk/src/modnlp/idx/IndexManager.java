@@ -16,19 +16,23 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.idx;
-import modnlp.idx.gui.*;
 import modnlp.idx.inverted.TokeniserRegex;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
 import modnlp.idx.database.AlreadyIndexedException;
+import modnlp.idx.database.EmptyFileException;
 import modnlp.idx.database.NotIndexedException;
 import modnlp.dstruct.CorpusList;
 import modnlp.dstruct.TokenMap;
+import modnlp.idx.gui.IndexManagerUI;
+import modnlp.idx.gui.CorpusChooser;
+import modnlp.idx.gui.HeaderURLChooser;
 
 import java.io.File;
 import java.util.Enumeration;
 
 import javax.swing.JOptionPane;
+import java.io.IOException;
 
 /**
  *  GUI for corpus maintainance.
@@ -53,6 +57,7 @@ public class IndexManager {
   }
 
   public void setStop(boolean b){
+    imui.print("-- Stop requested. I will finish indexing current file before stopping...\n");
     stop = b;
   }
 
@@ -80,7 +85,7 @@ public class IndexManager {
     String hh = null;
     if ((hh = dictProps.getProperty("headers.home")) == null)  // see if dictProps already exists
       {
-        while ( (r = ncc.showChooseDir("Choose a headers directory"))
+        while ( (r = ncc.showChooseDir("Choose the directory (folder) where the headers are stored"))
                 != CorpusChooser.APPROVE_OPTION  ) 
           {
             JOptionPane.showMessageDialog(null, "Please choose a headers directory (folder)");      
@@ -175,6 +180,7 @@ public class IndexManager {
           TokeniserRegex tkr = new TokeniserRegex(new File(fname), 
                                                   dictProps.getProperty("file.encoding"));
           tkr.setVerbose(debug);
+          tkr.setIgnoredElements(props.getProperty("tokeniser.ignore.elements"));
           // if (debug) {
           imui.print("\n----- Processing: "+fname+" ------\n");
           //}
@@ -193,6 +199,10 @@ public class IndexManager {
           imui.print("-- Done.\n");
           imui.addIndexedFile(fname);
         }
+        catch (EmptyFileException ex){
+          imui.print("Warning: "+ex+"\n");
+          imui.print("Ignoring this entry.\n");
+        }
         catch (AlreadyIndexedException ex){
           imui.print("Warning: "+ex+"\n");
           imui.print("Ignoring this entry.\n");
@@ -204,7 +214,8 @@ public class IndexManager {
           imui.enableChoice(true);
           return;
         }
-      }
+      } // end for 
+      imui.print("----- Indexing completed.");
       activeIndexing = false;
       imui.enableChoice(true);
     } // end run()

@@ -33,8 +33,20 @@ import java.util.Iterator;
 
 public class TokenMap extends HashMap {
 
-  
+  StopWordList stopWordList = null;
+
+  public TokenMap(){
+    super();
+  }
+
+  public TokenMap(StopWordList swl){
+    super();
+    stopWordList = swl;
+  }
+
   public void putPos (String type, int pos) {
+    if (stopWordList != null && stopWordList.contains(type))
+      return;
     IntegerSet set = (IntegerSet) remove(type);
     if (set == null)
       set = new IntegerSet();

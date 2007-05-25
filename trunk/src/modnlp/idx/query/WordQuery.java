@@ -19,8 +19,11 @@ package modnlp.idx.query;
 
 import modnlp.dstruct.WordForms;
 import modnlp.idx.database.Dictionary;
-import modnlp.idx.database.WordPositionTable;
+//import modnlp.idx.database.WordPositionTable;
+import modnlp.idx.database.CaseTable;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.StringTokenizer;
 import java.util.*;
 /**
@@ -34,6 +37,9 @@ import java.util.*;
 public class WordQuery {
   
   public static final String QSEPTOKEN = "+[]";
+
+  public static final String REGEXPMARKER = "___REGEXP___";
+
   public static char[] SEPTKARR 
     = {' ', '|', '\'','`','"','-','_',(new String(",")).charAt(0),
        (new String(".")).charAt(0),'?','!',(new String(";")).charAt(0),':',
@@ -41,6 +47,7 @@ public class WordQuery {
   public static String SEPTOKEN = new String(SEPTKARR);
 
   private String originalQuery;
+  private ArrayList regexpQueryTerms = new ArrayList();
 
   // keyword is the least frequent word if query contains more than
   // one word
@@ -60,6 +67,11 @@ public class WordQuery {
   //   i1 = max allowed intervening words between k1 and k1
   //   i2 = max allowed intervening words between k1 and k2
   // ...
+  private byte [] wordFormTypes;
+  public static final byte WORD_TYPE = 0; 
+  public static final byte LEFTWILDCARD_TYPE = 1; 
+  public static final byte RIGHTWILDCARD_TYPE = 2; 
+  public static final byte REGEX_TYPE = 3; 
   private int [] intervArray;
   private WordForms[] wformsArray;
   private WordForms keywordforms;
@@ -116,44 +128,51 @@ public class WordQuery {
   public WordQuery (String query, Dictionary dict, boolean cs)
       throws WordQueryException
   {
-    caseSensitive = cs; 
+    caseSensitive = cs;
     originalQuery = query;
+    dictionary = dict;
+
+    query = replaceRegexpQueryTerms(query);
     int qsize = (new StringTokenizer(query, "+")).countTokens();
+    wordFormTypes = new byte[qsize];
     queryArray = new String[qsize];
     intervArray = new int[qsize];
+
 
     // after parseQuery() queryArray will contain the keywords [kw1,
     // kw2, ..., kwn] and interv array the admissible gaps between kw1
     // and all other keywords (def.: gap between kw1 and kw1 = -1),
     // [-1, gap(kw1,kw2), ..., gap(kw1,kwn)]
+    
     parseQuery(query);
 
-    keywordforms = dict.getLeastFrequentWord(queryArray, cs);
+    wformsArray = new WordForms[queryArray.length];
+    for (int i = 0; i < queryArray.length ; i++)
+      wformsArray[i] = getWordForms(i);
+    
+    keywordforms = getLeastFrequentWord();
+
     if ( keywordforms == null)
       keyword = "";
     else {
       keyword = keywordforms.getKeyword();
-      wformsArray = new WordForms[queryArray.length];
-      for (int i = 0; i < queryArray.length ; i++)
-        wformsArray[i] = dict.getWordForms(queryArray[i],cs);
     }
 
-      
     Horizon a = getLeftHorizon();
     Horizon b = getRightHorizon();
 
-    // at this point all words/wildcard will have been expanded and their
+
+    System.err.println("QA= ["+modnlp.util.PrintUtil.toString(queryArray)+"]");
+    System.err.println("WT= ["+modnlp.util.PrintUtil.toString(wordFormTypes)+"]");
+     // at this point all words/wildcard will have been expanded and their
     // expanded forms stored in wformsArray
 
-
     //dictionary = dict;
-
 
     /*
     System.err.println(modnlp.util.PrintUtil.toString(intervArray)+" kw="+keyword);
     Horizon a = getLeftHorizon();
     Horizon b = getRightHorizon();
-
     if (a != null){
       System.err.println("LIA= ["+modnlp.util.PrintUtil.toString(a.getHorizonArray())+"]");
       System.err.println("LWA= ["+modnlp.util.PrintUtil.toString(a.getWordArray())+"]");
@@ -290,6 +309,45 @@ public class WordQuery {
     return justKeyword;
   }
 
+ public WordForms getLeastFrequentWord (){
+    //String word = null;
+    int freq = 0;
+    WordForms wformsout = new WordForms();
+    for (int i = 0; i < wformsArray.length ; i++ ) {
+      WordForms wforms = wformsArray[i];
+      int fqaux = dictionary.getFrequency(wforms);
+      if (fqaux == 0)
+        return wforms;
+      if (freq == 0 || fqaux < freq){
+        freq = fqaux;
+        wformsout = wforms;
+      }
+    }
+    return wformsout;
+ }
+
+  public WordForms getWordForms (int i)
+  {
+    CaseTable caseTable = dictionary.getCaseTable();
+    String key = queryArray[i];
+    WordForms wforms = new WordForms(key);
+    if ( wordFormTypes[i] == WordQuery.LEFTWILDCARD_TYPE )
+      return caseTable.getAllPrefixMatches(key, caseSensitive);
+    
+    if ( wordFormTypes[i] == WordQuery.RIGHTWILDCARD_TYPE )
+      return caseTable.getAllSuffixMatches(key, caseSensitive);
+
+    if ( wordFormTypes[i] == WordQuery.REGEX_TYPE )
+      return caseTable.getAllRegexMatches(key, caseSensitive);
+    
+    if (caseSensitive) {
+      wforms.addElement(key);
+      return wforms;
+    }	
+    else
+      return caseTable.getAllCases(key);
+  }
+
   /**
    * <code>matchConcordance</code> match <code>cline</code> against
    * this query (represented after <code>parseQuery()</code> by
@@ -303,6 +361,7 @@ public class WordQuery {
    * @param cline a <code>String</code> value
    * @param ctx an <code>int</code> value
    * @return <code>true</code> if cline matches, false otherwise.
+   * @deprecated
    */
   public boolean matchConcordance (String cline, int ctx)
   {
@@ -436,25 +495,121 @@ public class WordQuery {
   private void parseQuery (String query)
     throws WordQueryException
   {
-    StringTokenizer st = new StringTokenizer(query, QSEPTOKEN, true);
+    parseQuery(query, false);
+  }
+
+  /**
+   * Perform basic sanity check on a query (for use by clients, for
+   * instance, where full parsing of the query is impossible without
+   * accessing the server)
+   *
+   * @param q a <code>String</code> value
+   * @return a <code>boolean</code> value
+   */
+  public static boolean isValidQuery(String q){
+    q.replaceAll("\".+?\"", REGEXPMARKER);
+    // this is all too sophisticated for this method. the solution above is
+    // faster and less complicated
+    String separator = QSEPTOKEN;
+    char cc = separator.charAt(0);
+    char oi = separator.charAt(1);
+    char ci = separator.charAt(2);
+    StringTokenizer st = new StringTokenizer(q, separator, true);
+    boolean expectToken = true;
+    boolean openbracket = false;
+    String next = null;
+    char c = 0;
+    char pc = 0;
+    String lasttoken = null;
+    while ( st.hasMoreElements() ){
+      next = (String)st.nextElement();
+      c = next.charAt(0);
+      if (expectToken) 
+        if ( c == cc || ((pc != cc) && (c == ci))  )
+          return false;
+        else
+          if (c == oi) {
+            expectToken = true;
+            openbracket = true;
+          }
+          else {
+            expectToken = false;
+            lasttoken = next;
+            if (c == ci){
+              openbracket = false;
+              try { Integer.parseInt(lasttoken); } 
+              catch (Exception e) {  return false; }
+            }
+          }
+      else {// not expectToken
+        if (c == ci){
+          openbracket = false;
+          try { Integer.parseInt(lasttoken); } 
+          catch (Exception e) {  return false; }
+        }
+        expectToken = true;
+      }
+      pc = c;
+    }
+    if (expectToken || openbracket)
+      return false;
+    return true;
+  }
+
+  private String replaceRegexpQueryTerms(String query) {
+    Pattern p = Pattern.compile("\".+?\"");  // quotes identify regular expressions
+    Matcher m = p.matcher(query);
+
+    StringBuffer tx = new StringBuffer(query);
+    int ct = 1;
+    while (m.find()) {
+      int s = m.start();
+      int e = m.end();
+      regexpQueryTerms.add(query.substring(s+1, e-1));
+      tx.replace(s,e,REGEXPMARKER);
+    }
+    return tx.toString();
+  }
+
+  private void parseQuery (String query, boolean regexp)
+    throws WordQueryException
+  {
+    String separator = QSEPTOKEN;
+    char concchar = separator.charAt(0);
+    char ointchar = separator.charAt(1);
+
+    StringTokenizer st = new StringTokenizer(query, separator, true);
     int ind = 0;
-    firstWord = (String)st.nextElement(); 
-    queryArray[ind] = firstWord;
+    int irqt = 0;
+    firstWord = (String)st.nextElement();
+    if (firstWord.equals(REGEXPMARKER)){
+      queryArray[ind] = (String)regexpQueryTerms.get(irqt++);
+      wordFormTypes[ind] = REGEX_TYPE;
+    }
+    else {
+      queryArray[ind] = firstWord;
+      if ( isLeftWildcard(firstWord) )
+        wordFormTypes[ind] = LEFTWILDCARD_TYPE;
+      else if ( isRightWildcard(firstWord) )
+        wordFormTypes[ind] = RIGHTWILDCARD_TYPE;
+      else
+        wordFormTypes[ind] = WORD_TYPE;
+    }
     intervArray[ind++] = -1;
     try {
       if ( !st.hasMoreElements() ){
         justKeyword = true;
         return;
-      }  
+      }
       int intervening = 0;
       while ( st.hasMoreElements() )
         {
           String el = (String) st.nextElement();
           String filter      = "";
-          if (el.equals("+") )
+          if (el.charAt(0) == concchar )  // query concatenation character (i.e. '+' or ',')
             {
               String s = (String) st.nextElement();
-              if (s.equals("[") )
+              if (s.charAt(0) == ointchar )  // open interval char (i.e. '[' or '{')
                 {
                   intervening += 
                     (new Integer((String)st.nextElement())).intValue();
@@ -471,7 +626,20 @@ public class WordQuery {
               throw new WordQueryException("Tec: Error Parsing Query", originalQuery);        
             }
           //System.out.println("-Putting "+filter+" at"+intervening);
-          queryArray[ind] = filter;
+          //queryArray[ind] = filter;
+          if (filter.equals(REGEXPMARKER)){
+            queryArray[ind] =  (String)regexpQueryTerms.get(irqt++);
+            wordFormTypes[ind] = REGEX_TYPE;
+          }
+          else {
+            queryArray[ind] = filter;
+            if ( isLeftWildcard(filter) )
+              wordFormTypes[ind] = LEFTWILDCARD_TYPE;
+            else if ( isRightWildcard(filter) )
+              wordFormTypes[ind] = RIGHTWILDCARD_TYPE;
+            else
+              wordFormTypes[ind] = WORD_TYPE;
+          }
           intervArray[ind++] = intervening++;          
         }
     }

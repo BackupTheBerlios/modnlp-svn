@@ -38,12 +38,12 @@ import java.lang.*;
 */
 public class ListDisplay extends JPanel
  implements ActionListener, ComponentListener, 
-						ConcordanceDisplayListener, TecDefaultChangeListener {
-	public JList list;
-	public JScrollPane jscroll;
+            ConcordanceDisplayListener, TecDefaultChangeListener {
+  public JList list;
+  public JScrollPane jscroll;
   public ConcArray conc;
-	public Browser parentFrame;
-	public Font font; 
+  public Browser parentFrame;
+  public Font font; 
   public static int MAXCOL = 180;
   public static int OFFSET = 40;
   public static String HSEP = " | "; 
@@ -79,37 +79,37 @@ public class ListDisplay extends JPanel
     sfwdb = new JButton(new ImageIcon(cl.getResource("modnlp/tec/client/icons/sfwd.gif")));
     swndb = new JButton(new ImageIcon(cl.getResource("modnlp/tec/client/icons/swnd.gif")));
 
-		font = new Font("Courier", Font.PLAIN, parentFrame.getFontSize());
-		//setPreferredSize(new Dimension(LWIDTH+50, LHEIGHT+30));
-		ffwdb.setPreferredSize(new Dimension(30,60));
-		rwndb.setPreferredSize(new Dimension(30,60));
-		listModel = new DefaultListModel();
-		list = new JList(listModel);
-		list.setCellRenderer(renderer);
+    font = new Font("Courier", Font.PLAIN, parentFrame.getFontSize());
+    //setPreferredSize(new Dimension(LWIDTH+50, LHEIGHT+30));
+    ffwdb.setPreferredSize(new Dimension(30,60));
+    rwndb.setPreferredSize(new Dimension(30,60));
+    listModel = new DefaultListModel();
+    list = new JList(listModel);
+    list.setCellRenderer(renderer);
     renderer.setFont(font);
-		jscroll = new JScrollPane();
-		jscroll.getViewport().setView(list);
-		jscroll.setPreferredSize(new Dimension(LWIDTH, LHEIGHT));
-		jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		JPanel bp = new JPanel();
-		bp.setLayout(new BoxLayout(bp, BoxLayout.Y_AXIS));
-		bp.setPreferredSize(new Dimension(BWIDTH, LHEIGHT-20));
-		rwndb.setToolTipText("Page Up");
-		ffwdb.setToolTipText("Page Down");
-		rwndb.addActionListener(this);
-		ffwdb.addActionListener(this);
-		swndb.setToolTipText("Line Up");
-		sfwdb.setToolTipText("Line Down");
-		swndb.addActionListener(this);
-		sfwdb.addActionListener(this);
-		rwndb.setEnabled(false);
-		ffwdb.setEnabled(false);
-	  swndb.setEnabled(false);
-		sfwdb.setEnabled(false);
-		scrollProgress = new JProgressBar(0, 100);
-		scrollProgress.setOrientation(JProgressBar.VERTICAL);
-		//scrollProgress.setAlignmentX(Component.CENTER_ALIGNMENT);
-		scrollProgress.
+    jscroll = new JScrollPane();
+    jscroll.getViewport().setView(list);
+    jscroll.setPreferredSize(new Dimension(LWIDTH, LHEIGHT));
+    jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+    JPanel bp = new JPanel();
+    bp.setLayout(new BoxLayout(bp, BoxLayout.Y_AXIS));
+    bp.setPreferredSize(new Dimension(BWIDTH, LHEIGHT-20));
+    rwndb.setToolTipText("Page Up");
+    ffwdb.setToolTipText("Page Down");
+    rwndb.addActionListener(this);
+    ffwdb.addActionListener(this);
+    swndb.setToolTipText("Line Up");
+    sfwdb.setToolTipText("Line Down");
+    swndb.addActionListener(this);
+    sfwdb.addActionListener(this);
+    rwndb.setEnabled(false);
+    ffwdb.setEnabled(false);
+    swndb.setEnabled(false);
+    sfwdb.setEnabled(false);
+    scrollProgress = new JProgressBar(0, 100);
+    scrollProgress.setOrientation(JProgressBar.VERTICAL);
+    //scrollProgress.setAlignmentX(Component.CENTER_ALIGNMENT);
+    scrollProgress.
 			setBorder(BorderFactory.
 								createCompoundBorder(BorderFactory.createEmptyBorder(2,14,2,0),
 																		 scrollProgress.getBorder()));
@@ -180,7 +180,7 @@ public class ListDisplay extends JPanel
 				if (conc.concArray[count] == null 
 						|| 
 						count >= parentFrame.concThread.noFound
-						|| count >= conc.arraymax)
+						|| count >= ConcArray.arraymax)
 					{
 						//coa[count-concArrayOffset] = "";
 						ffwdb.setEnabled(false);

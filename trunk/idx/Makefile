@@ -1,27 +1,31 @@
 TOPDIR=
 SOURCEDIR=$(TOPDIR)src/
-LIBSPATH=$(TOPDIR)lib/gnu-regexp-1.1.4.jar:$(TOPDIR)lib/je.jar
+LIBSPATH=$(TOPDIR)lib/gnu-regexp.jar:$(TOPDIR)lib/je.jar
 LIBS=$(subst :, ,$(LIBSPATH))
+LIBLICENSES=$(subst .jar,-COPYING ,$(LIBS))
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
 SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/util/LogStream.java \
 	$(SOURCEDIR)modnlp/util/Tokeniser.java \
 	$(SOURCEDIR)modnlp/util/IOUtil.java \
+	$(SOURCEDIR)modnlp/util/XMLSplitter.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusList.java \
-	$(SOURCEDIR)modnlp/dstruct/WordForms.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusFile.java \
 	$(SOURCEDIR)modnlp/dstruct/IntegerSet.java \
-	$(SOURCEDIR)modnlp/dstruct/StringSet.java \
-	$(SOURCEDIR)modnlp/dstruct/PositionSet.java \
-	$(SOURCEDIR)modnlp/dstruct/TokenMap.java \
-	$(SOURCEDIR)modnlp/dstruct/WordFrequencyPair.java \
 	$(SOURCEDIR)modnlp/dstruct/IntOffsetArray.java \
+	$(SOURCEDIR)modnlp/dstruct/PositionSet.java \
+	$(SOURCEDIR)modnlp/dstruct/StopWordList.java \
+	$(SOURCEDIR)modnlp/dstruct/StringSet.java \
+	$(SOURCEDIR)modnlp/dstruct/TokenMap.java \
+	$(SOURCEDIR)modnlp/dstruct/WordForms.java \
+	$(SOURCEDIR)modnlp/dstruct/WordFrequencyPair.java \
 	$(SOURCEDIR)modnlp/idx/database/AlreadyIndexedException.java \
-  $(SOURCEDIR)modnlp/idx/database/CaseTable.java \
+	$(SOURCEDIR)modnlp/idx/database/CaseTable.java \
 	$(SOURCEDIR)modnlp/idx/database/DescIntComparator.java \
 	$(SOURCEDIR)modnlp/idx/database/DictProperties.java \
 	$(SOURCEDIR)modnlp/idx/database/Dictionary.java \
+	$(SOURCEDIR)modnlp/idx/database/EmptyFileException.java \
 	$(SOURCEDIR)modnlp/idx/database/FileTable.java \
 	$(SOURCEDIR)modnlp/idx/database/FreqKeyCreator.java \
 	$(SOURCEDIR)modnlp/idx/database/FreqTable.java \
@@ -60,12 +64,13 @@ JARREDS=$(MAINJARS) \
 	'modnlp/idx/IndexManager$$IndexingThread.class'
 DISTDIR:=modnlp-idx-`cat VERSION`
 BINDISTDIR=$(DISTDIR)-bin
+BINDISTXTRAS=$(LIBLICENSES) $(TOPDIR)*COPYING*
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
 	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SOURCEDIR)modnlp/idx/prj.el $(SOURCEDIR)idx-manifest.txt
 #JAVA=jamvm
-#JAVAC=jikes-classpath
+JAVAC=jikes-classpath
 JAVA=java
-JAVAC=javac
+#JAVAC=javac
 JAR=jar
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
@@ -84,19 +89,20 @@ all: build jar test
 build: $(TARGETS)
 
 clean:
-	find . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f
+	find -L . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)' -type f -print0 |xargs -0 -e rm -f
 
 jar: $(TARGETS)
 	cd $(SOURCEDIR) && $(JAR)  $(JARFLAGS) ../$(JARTARGET) $(JARREDS)
 
 test: $(TARGETS)
 	@echo "Testing Indexer..."
-	-cp -a data/ /tmp/
+	-mkdir /tmp/datamodnlptest
+	-cp -a data/* /tmp/datamodnlptest/
 	-rm -rf /tmp/tec/index ; mkdir -p /tmp/tec/index 
-	@echo "** Indexing data/short.lst"
-	$(JAVA) $(JAVAFLAGS) modnlp.idx.MakeTECIndex $(TOPDIR)data/short.lst 
+	@echo "** Indexing datamodnlptest/short.lst"
+	$(JAVA) $(JAVAFLAGS) modnlp.idx.MakeTECIndex /tmp/tec/index $(TOPDIR)data/short.lst 
 	@echo "** Dumping index..."
-	$(JAVA) $(JAVAFLAGS) modnlp.idx.Dump 
+	$(JAVA) $(JAVAFLAGS) modnlp.idx.Dump /tmp/tec/index
 	@echo "** Testing completed"
 
 docs: $(TARGETS)
@@ -109,9 +115,10 @@ dist: clean
 	tar cfvz /tmp/$(DISTDIR).tar.gz  --exclude-from=exclude.txt $(DISTDIR)
 	rm -rf $(DISTDIR)
 
-bindist: $(TARGETS)
+bindist: jar
 	mkdir $(BINDISTDIR)
 	cp README.bin $(BINDISTDIR)/README
-	cp $(LIBS) $(JARTARGET) $(BINDISTDIR)
+	cp $(TOPDIR)src/idxmgr.properties.ecpc $(BINDISTDIR)/idxmgr.properties
+	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)

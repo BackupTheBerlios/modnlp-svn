@@ -84,7 +84,7 @@ public class ConcordanceObject
     char[] data = concLine.toCharArray();
     int start = 0;
 		// index will be mapped by ConArray
-		int index = -1;
+		//int index = -1;
 		
     if(concLine.equals("null"))
       {
@@ -239,10 +239,10 @@ public class ConcordanceObject
 																						 SEPTOKEN,
 																						 true);
 		try {
-			int index = 0;
+			int ind = 0;
 			for (int i = 1; i < srtctx; i++) {
 				String w = at.safeNextToken();
-				index = index + w.length(); 
+				ind = ind + w.length(); 
 				if (isSeparatorChar(w.charAt(0))){// ignore separator
 					--i;
 				}
@@ -250,11 +250,11 @@ public class ConcordanceObject
 			StringBuffer wb;
 			do {
 				wb = new StringBuffer(at.safeNextToken());
-				index = index + wb.length(); 
+				ind = ind + wb.length(); 
 			} while (isSeparatorChar(wb.charAt(0)));
 			
 			String word = wb.reverse().toString();
-			return new HighlightString(halfConcordance - index, 
+			return new HighlightString(halfConcordance - ind, 
 																 word);
 		}
 		catch (StringIndexOutOfBoundsException e){
@@ -272,12 +272,12 @@ public class ConcordanceObject
 																						 SEPTOKEN,
 																						 true);
 		try {
-			int index = 0;
+			int ind = 0;
 			// discard keyword
-			index = index + at.safeNextToken().length();            
+			ind = ind + at.safeNextToken().length();            
 			for (int i = 1; i < srtctx; i++) {
 				String w = at.safeNextToken();
-				index = index + w.length(); 
+				ind = ind + w.length(); 
 				if (isSeparatorChar(w.charAt(0))){// ignore separator
 					--i;
 				}
@@ -285,10 +285,10 @@ public class ConcordanceObject
 			String word;
 			do {
 				word = at.safeNextToken();
-				index = index + word.length(); 
+				ind = ind + word.length(); 
 			} while (isSeparatorChar(word.charAt(0)));
-			index = index - word.length(); // move backwards
-			return new HighlightString(halfConcordance + index, 
+			ind = ind - word.length(); // move backwards
+			return new HighlightString(halfConcordance + ind, 
 																 word);
 		}
 		catch (StringIndexOutOfBoundsException e){

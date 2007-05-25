@@ -187,7 +187,7 @@ public class TecConnection extends Thread {
       int ctx = getSafeInteger((String)req.get("context"),MAXCTX).intValue();
       boolean ignx = 
         ((String)req.get("sgml")).equalsIgnoreCase("no")? true : false;
-      dtab.printCorcordances(wquery, ctx, ignx, os);
+      dtab.printConcordances(wquery, ctx, ignx, os);
     }
     catch (WordQueryException e) {
       logf.logMsg("doConcordance: Malformed query: |"+wquery+"|"+e);

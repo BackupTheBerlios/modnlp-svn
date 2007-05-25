@@ -41,8 +41,8 @@ public class PreferPanel extends JFrame
 	implements  ActionListener, ItemListener, DefaultManager 
 {
 
-  private final String COTXBT = "Concordance context ";
-  private final String EXTXBT = "File extract context ";
+  private static final String COTXBT = "Concordance context ";
+  private static final String EXTXBT = "File extract context ";
   private static String [] fseltab = {"10", "12","14","16","18"};
   private static  int FSELMAX = Array.getLength(fseltab);
   private JPanel set1 = new JPanel();

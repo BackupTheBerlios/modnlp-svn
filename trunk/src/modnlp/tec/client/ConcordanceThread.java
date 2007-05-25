@@ -16,7 +16,7 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.lang.*;
+
 import java.net.*;
 import java.io.*;
 import javax.swing.SwingUtilities;
@@ -38,6 +38,9 @@ public class ConcordanceThread
 	implements Runnable, ConcordanceMonitor{
 
   private Thread concThread;
+  // SL: all these public vars are a real mess! This class must be
+  // fixed urgently (though we have much more interesting stuff to do
+  // than fixing legacy code)
   /**  This variable sets where we should start showing the list */
   public int updateThreshold = 40;
   public Browser parent;
@@ -47,7 +50,7 @@ public class ConcordanceThread
   public int noActuallyFound = 0;
   public ConcArray conc = new ConcArray();
   public int ctRead;
-	public boolean stop = false;
+	boolean stop = false;
 	public boolean serverResponded = false;
 	private ConcordanceDisplayListener concList = null;
 	private TecClientRequest request = null;
@@ -101,8 +104,7 @@ public class ConcordanceThread
           (HttpURLConnection) concurl.openConnection();
         concurlConnection.setUseCaches(false);
         concurlConnection.setRequestMethod("GET");
-        concurlConnection.connect();
-        
+        concurlConnection.connect();  
         input = new
           BufferedReader(new
                          InputStreamReader(concurlConnection.getInputStream() ));
@@ -124,10 +126,6 @@ public class ConcordanceThread
 			parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
 			stop();
 		}
-		catch (sun.applet.AppletSecurityException e){
-			parent.updateStatusLabel(" **** TRANSFER INTERRUPTED: SERVER NOT RESPONDING *****");
-			stop();
-		}
 		catch (Exception e){
       e.printStackTrace();
 			stop();
@@ -139,12 +137,11 @@ public class ConcordanceThread
     boolean notru = true;
 		stop = false;
     ctRead = 0;
-
     try {
       initConcordanceThread();
       String concordance = null;
       int ctsz = request.getContextSize();
-      System.out.println("_________context size: "+ctsz);
+      //System.out.println("_________context size: "+ctsz);
       while (!stop && 
 						 ctRead < noFound && 
 						 (concordance = input.readLine()) != null &&
@@ -162,7 +159,7 @@ public class ConcordanceThread
 								fshow = true;
 							}
 				}
-      noActuallyFound =  (ctRead == conc.arraymax) ? noFound : ctRead;
+      noActuallyFound =  (ctRead == ConcArray.arraymax) ? noFound : ctRead;
       noFound = ctRead;
 			if ( !fshow )
 				{
@@ -182,6 +179,8 @@ public class ConcordanceThread
     catch (java.io.IOException e){
       parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
 			if (noFound > 0) {
+        noActuallyFound =  (ctRead == ConcArray.arraymax) ? noFound : ctRead;
+        noFound = ctRead;
 				parent.updateStatusLabel(" Returned "+
                                  noActuallyFound+
                                  " lines matching your query");
@@ -193,12 +192,6 @@ public class ConcordanceThread
     }
     catch (NullPointerException e){
       parent.updateStatusLabel("  ConcordanceThread error: "+e);
-      fireDisplayEvent(0);
-      parent.displayConcord();
-      stop();
-    }
-    catch (sun.applet.AppletSecurityException e){
-      parent.updateStatusLabel(" **** TRANSFER INTERRUPTED: SERVER NOT RESPONDING *****");
       fireDisplayEvent(0);
       parent.displayConcord();
       stop();

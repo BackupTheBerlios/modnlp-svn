@@ -30,7 +30,7 @@ import javax.swing.JFileChooser;
 public class CorpusChooser extends JFileChooser {
 
   public CorpusChooser (String def) {
-    super("Select a location for the new corpus index");
+    super("Choose a location for the index");
     setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     if (def != null)
       setSelectedFile(new File(def));
@@ -38,8 +38,8 @@ public class CorpusChooser extends JFileChooser {
 
   public int showChooseCorpus () {
     try {
-      setDialogTitle("Choose corpus index location");
-      return showDialog(null, "Choose corpus index location");
+      setDialogTitle("Choose a location for the index");
+      return showDialog(null, "Choose a location for the index");
     } catch (Exception e) {
       System.err.println("Error choosing corpus index dir"+e);
       return JFileChooser.ERROR_OPTION;

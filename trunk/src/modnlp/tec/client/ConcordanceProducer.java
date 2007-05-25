@@ -20,6 +20,7 @@ package modnlp.tec.client;
 
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.query.WordQuery;
+import modnlp.idx.query.WordQueryException;
 import java.io.*;
   
 /**
@@ -56,13 +57,19 @@ public class ConcordanceProducer extends Thread {
   }
   
   public void run () {
-    boolean cse = ((String)request.get("case")).equalsIgnoreCase("sensitive");
-    WordQuery wquery = 
-      new WordQuery((String)request.get("keyword"), dictionary, cse);
-    int ctx = 
-      (new Integer((String)request.get("context"))).intValue();
-    boolean ignx = 
-      ((String)request.get("sgml")).equalsIgnoreCase("no")? true : false;
-    dictionary.printCorcordances(wquery, ctx, ignx, out);        
+    try {
+      boolean cse = ((String)request.get("case")).equalsIgnoreCase("sensitive");
+      WordQuery wquery = 
+        new WordQuery((String)request.get("keyword"), dictionary, cse);
+      int ctx = 
+        (new Integer((String)request.get("context"))).intValue();
+      boolean ignx = 
+        ((String)request.get("sgml")).equalsIgnoreCase("no")? true : false;
+      dictionary.printConcordances(wquery, ctx, ignx, out);
+    }
+    catch (WordQueryException e){
+      out.println(1);
+      out.println("ERROR |0|Invalid query: "+request.get("keyword")+e);
+    }
   }
 }

@@ -36,7 +36,7 @@ public class TokeniserRegex extends Tokeniser {
 
   private String bigWordRegexp = "[\\p{L}-.]+'?s?"; // include dots for abbrev. (e.g. U.S.A.)
   private String wordRegexp = "[\\p{L}.]+|'s?";
-  private String ignoredElements = "(omit|ignore)";  
+  private String ignoredElements = "(omit|ignore)";
   
   public TokeniserRegex(String t){
     super(t);
@@ -48,6 +48,24 @@ public class TokeniserRegex extends Tokeniser {
 
   public TokeniserRegex(URL t, String e) throws IOException {
     super(t,e);
+  }
+
+  /**
+   * Get the <code>IgnoredElements</code> value.
+   *
+   * @return a <code>String</code> value
+   */
+  public final String getIgnoredElements() {
+    return ignoredElements;
+  }
+
+  /**
+   * Set the <code>IgnoredElements</code> value.
+   *
+   * @param newIgnoredElements The new IgnoredElements value.
+   */
+  public final void setIgnoredElements(final String newIgnoredElements) {
+    this.ignoredElements = newIgnoredElements;
   }
 
   public void tokenise ()  {
