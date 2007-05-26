@@ -315,6 +315,93 @@ public class Dictionary {
    * @return <code>true</code> if cline matches, false otherwise.
    */
   public boolean matchConcordance(PrepContextQuery pcq, int pos, int[] posa){
+
+    IntegerSet [] lhisa = null;
+    int [] lha =  null; 
+    int [] lpa = null;
+    Horizon lh = pcq.getLeftHorizon();
+    if (lh !=null){
+      lhisa =  pcq.getLeftHorizonIntegerSetArray();
+      lha =  lh.getHorizonArray();
+      lpa = new int[lh.getMaxSearchHorizon()];
+    }
+
+    IntegerSet [] rhisa = null;
+    int [] rha = null;
+    int [] rpa = null;
+    Horizon rh = pcq.getRightHorizon();
+    if (rh !=null){
+      rhisa = pcq.getRightHorizonIntegerSetArray();
+      rha = rh.getHorizonArray();
+      rpa = new int[rh.getMaxSearchHorizon()];
+    }
+
+    long bt = System.currentTimeMillis();
+
+    if (lh != null){// build left-hand side array
+      int i = Arrays.binarySearch(posa,pos);
+      i--;
+      for (int j = 0; j < lpa.length; j++)
+        lpa[j] = (i - j < 0) ? 0 : posa[i-j];
+    }
+    if (rh != null){// build right-hand side array
+      int i = Arrays.binarySearch(posa,pos);
+      i++;
+      int i2 = i+1; 
+      int ml = posa.length-i2;
+      for (int j = 0; j < rpa.length; j++)
+        if (j < ml )
+          rpa[j] = posa[j+i2];
+        else
+          rpa[j] = 0;
+    }
+    long et = System.currentTimeMillis();
+    System.err.println("Time: "+et+"-"+bt+"="+(et-bt));
+
+    // match left-hand side
+    if (lh != null){
+      int bi = 0;
+      int ei = 0;
+      for (int i = 0;  i < lhisa.length; i++) {
+        boolean matched = false;
+        if (lhisa[i] == null) 
+          continue;
+        bi = ei;
+        ei = lha[i];
+        for (int k = bi; k < ei; k++) {
+          if (lhisa[i].contains(lpa[k])) { // lhisa[i] should contain a set with with pos for all  kw forms
+            matched = true;
+            break;
+          }
+        }
+        if (!matched)  // no matches for this kw, search doesn't match
+          return false; // otherwise, move on to the next kw
+      }
+    }
+    // match right-hand side
+    if (rh != null){
+      int bi = 0;
+      int ei = 0;
+      for (int i = 0;  i < rhisa.length; i++) {
+        boolean matched = false;
+        if (rhisa[i] == null) 
+          continue;
+        bi = ei;
+        ei = rha[i];
+        for (int k = bi; k < ei; k++) {
+          if (rhisa[i].contains(rpa[k])) { // rhisa[i] should contain a set with with pos for all  kw forms
+            matched = true;
+            break;
+          }
+        }
+        if (!matched)  // no matches for this kw, search doesn't match
+          return false; // otherwise, move on to the next kw
+      }
+    }
+    return true;
+  }
+
+  public boolean matchConcordance2(PrepContextQuery pcq, int pos, int[] posa){
      
     IntegerSet [] lhisa = null;
     int [] lha =  null; 
