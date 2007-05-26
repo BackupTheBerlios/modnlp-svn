@@ -21,6 +21,16 @@ This directory contains:
 
 To compile, follow the instructions in the INSTALL file.
 
+Access to the development version via SVN through anonymous HTTP with
+the following command:
+
+svn checkout http://svn.berlios.de/svnroot/repos/modnlp/trunk
+
+or 
+
+svn checkout svn+ssh://yourloginname@svn.berlios.de/svnroot/repos/modnlp/trunk modnlp
+
+(if you are a developer)
 
 -- S. Luz (luzs@cs.tcd.ie)
 
