@@ -1,3 +1,8 @@
+2007-08-20  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* Fixed some bugs in tc, added basic sub-corpus serch
+	functionality to idx, tec-server
+
 2007-06-07  S. Luz  <luzs@cs.tcd.ie>
 
 	* all: Fixed a number of bugs, improved performance of conjunctive
