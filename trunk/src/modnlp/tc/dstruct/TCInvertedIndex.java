@@ -88,6 +88,13 @@ public interface TCInvertedIndex {
   int getTermSetSize();
 
   /**
+   * Get the set of terms (types) indexed by this index
+   *
+   * @return a <code>Set</code> containing all terms in the index
+   */
+  Set getTermSet();
+
+  /**
    * Get the number of files a term occurs in.
    *
    * @param term word (type) to be looked up
@@ -114,6 +121,17 @@ public interface TCInvertedIndex {
    * @return the number of occurrences
    */
   public int getCount(String term);
+
+
+  /**
+   * Return a vector containing the number of documents the word <code>term</code>
+   * co-occurs with each term in  <code>terms</code>
+   *
+   * @param term a <code>String</code> value
+   * @param terms a <code>String[]</code> value
+   * @return an <code>int[]</code> value
+   */
+  public int[] getCooccurrenceVector(String term, String[] terms);
 
   /**
    * Size of the corpus on which this model is based. What this number

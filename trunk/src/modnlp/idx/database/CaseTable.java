@@ -25,6 +25,7 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.StringBinding;
 import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.DatabaseNotFoundException;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.DeadlockException;
 import com.sleepycat.je.Cursor;
@@ -56,7 +57,8 @@ import java.util.regex.Pattern;
 */
 public class CaseTable extends Table {
 
-  public CaseTable (Environment env, String fn, boolean write) {
+  public CaseTable (Environment env, String fn, boolean write) 
+    throws DatabaseNotFoundException {
     super(env,fn,write);
   }
 

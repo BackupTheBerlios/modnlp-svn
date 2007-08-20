@@ -214,8 +214,8 @@ public class ConcordanceThread
         output.flush();
         output.close();
       }
-      if (input != null) 
-        input.close();
+      //if (input != null) 
+      //  input.close();
       if (socket != null) 
         socket.close();
 			input = null;

@@ -28,8 +28,9 @@ import java.io.FileOutputStream;
 
 public class IndexManagerProperties extends java.util.Properties{
 
-  public static String PROP_FNAME = System.getProperty("user.dir")+
+  public static final String PROP_FNAME = System.getProperty("user.dir")+
     java.io.File.separator+"idxmgr.properties";
+  public static final String EXIST_CONF_FNAME = "eXistConf.xml";
 
 	public IndexManagerProperties () 
 	{

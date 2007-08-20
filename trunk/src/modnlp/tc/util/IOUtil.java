@@ -115,10 +115,13 @@ public class IOUtil extends modnlp.util.IOUtil {
       //    System.out.println(ws[i]);
       //}
       System.out.println(pm.getCreationInfo());
+      if  (args.length > 1 && args[1].equals("-d")){
+        dumpProbabilityModel(pm,args[2]);
+      }
     }
     catch (Exception e){
       System.err.println("USAGE:");
-      System.err.println(" IOUtil probabilitymodel -d\n");
+      System.err.println(" IOUtil probabilitymodel -d dumpfile\n");
       System.err.println("SYNOPSIS:\n load probabilitymodel and print creation info.");
     }
 

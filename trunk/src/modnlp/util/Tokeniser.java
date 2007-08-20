@@ -139,6 +139,10 @@ public class Tokeniser {
     return tokenMap;
   }
 
+  public String getOriginalText() {
+    return originalText;
+  }
+
 
   /**
    * <code>tokenise</code>: Very basic tokenisation; Serious tokenisers

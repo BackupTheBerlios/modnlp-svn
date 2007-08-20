@@ -33,4 +33,6 @@ You can also query the index bu running
 which should return lines containing the query term ("the")
 surrounded by its immediate context (50 chars). 
 
+
+
 -- S. Luz (luzs@cs.tcd.ie)

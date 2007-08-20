@@ -26,6 +26,7 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.BtreeStats;
 import com.sleepycat.je.StatsConfig;
 import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.DatabaseNotFoundException;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.DatabaseEntry;
@@ -49,7 +50,8 @@ public class TPosTable extends Table {
   private int bytesReceived = 0; // no of bytes (in IntOffsetArray) passed to put() 
   private int bytesWritten = 0; // no of bytes actually written
 
-  public TPosTable (Environment env, String fn, boolean write) {
+  public TPosTable (Environment env, String fn, boolean write) 
+    throws DatabaseNotFoundException{
     super(env,fn,write);
   }
 

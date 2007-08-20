@@ -39,4 +39,13 @@ public class Probabilities {
   public double getPTgiven_C(){
     return  tnc / (1 - c);
   }  
+
+  public String toString(){
+    return 
+      " p(t,c) = "+tc+
+      " p(t,-c) = "+tnc+
+      " p(-t,c) = "+ntc+
+      " p(-t,-c) = "+ntnc; 
+ }
+
 }

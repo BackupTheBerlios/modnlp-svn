@@ -63,10 +63,10 @@ public class MakeReducedTermSet
   /** 
    *  Set up the main user interface items
    */
-  public  MakeReducedTermSet(String clist, String swlist, String aggr) {
+  public  MakeReducedTermSet(String cl, String sw, String aggr) {
     super();
-    this.clist = new CorpusList(clist);
-    this.swlist = new StopWordList(swlist);
+    this.clist = new CorpusList(cl);
+    this.swlist = new StopWordList(sw);
     this.aggressiveness = (new Integer(aggr)).intValue();
     return;
   }
@@ -128,6 +128,8 @@ public class MakeReducedTermSet
       String category = args[4];
       String parser = args.length > 5 ? args[5] : "NewsParser";
       BVProbabilityModel pm = new BVProbabilityModel();
+      if (args.length > 6)
+        pm.setSmoothingType((new Byte(args[6])).byteValue());
       for (Enumeration e = f.clist.elements(); e.hasMoreElements() ;)
         {
           String fname = (String)e.nextElement();
@@ -148,7 +150,7 @@ public class MakeReducedTermSet
     }
     catch (Exception e){
       System.err.println("\nUsage: MakeReducedTermSet CORPUS_LIST STOPWDLIST");
-      System.err.println("                            AGGRESSIVENESS TF_METHOD CATEG PARSER");
+      System.err.println("                            AGGRESSIVENESS TF_METHOD CATEG [PARSER [SMOOTHING]]");
       System.err.println("       tokenise each file in CORPUS_LIST, remove words in STOPWDLIST");
       System.err.println("       and reduce the term set by a factor of AGGRESSIVENESS.\n");
       System.err.println(" TF_METHOD: term filtering method. One of:");
@@ -167,6 +169,7 @@ public class MakeReducedTermSet
       System.err.println(" PARSER: parser to be used [default: 'NewsParser']");
       System.err.println("  'LingspamEmailParser': Androutsopoulos' lingspam corpus,");
       System.err.println("  'NewsParser':  REUTERS-21578 corpus, XML version.");
+      System.err.println(" SMOOTHING: 0: no smoothing, 1: Laplace, ...  [default: 0]");
       e.printStackTrace();
     } 
   }

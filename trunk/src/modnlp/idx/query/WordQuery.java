@@ -67,14 +67,16 @@ public class WordQuery {
   //   i1 = max allowed intervening words between k1 and k1
   //   i2 = max allowed intervening words between k1 and k2
   // ...
+  private int [] intervArray;
+  private WordForms[] wformsArray;
+  private WordForms keywordforms;
+
   private byte [] wordFormTypes;
   public static final byte WORD_TYPE = 0; 
   public static final byte LEFTWILDCARD_TYPE = 1; 
   public static final byte RIGHTWILDCARD_TYPE = 2; 
   public static final byte REGEX_TYPE = 3; 
-  private int [] intervArray;
-  private WordForms[] wformsArray;
-  private WordForms keywordforms;
+
   private Dictionary dictionary;
 
   /**
@@ -162,8 +164,8 @@ public class WordQuery {
     Horizon b = getRightHorizon();
 
 
-    System.err.println("QA= ["+modnlp.util.PrintUtil.toString(queryArray)+"]");
-    System.err.println("WT= ["+modnlp.util.PrintUtil.toString(wordFormTypes)+"]");
+    // System.err.println("QA= ["+modnlp.util.PrintUtil.toString(queryArray)+"]");
+    // System.err.println("WT= ["+modnlp.util.PrintUtil.toString(wordFormTypes)+"]");
      // at this point all words/wildcard will have been expanded and their
     // expanded forms stored in wformsArray
 

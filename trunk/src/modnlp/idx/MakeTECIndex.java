@@ -49,6 +49,7 @@ public class MakeTECIndex {
       d.setVerbose(verbose);
       // MakeTECIndex mti = new MakeTECIndex();
       CorpusList clist =  new CorpusList(args[1]);
+      //dictProps.setCorpusDir((new File((String)clist.get(0))).getParent());
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
         try {
           String fname = (String)e.nextElement();
@@ -58,7 +59,7 @@ public class MakeTECIndex {
             System.err.print("\n----- Processing: "+fname+" ------\n");
             tkr.setVerbose(verbose);
           }
-          if (d.indexed(fname)){
+          if (d.isIndexed(fname)){
             throw new AlreadyIndexedException(fname);
           }
           tkr.setIgnoredElements(props.getProperty("tokeniser.ignore.elements"));

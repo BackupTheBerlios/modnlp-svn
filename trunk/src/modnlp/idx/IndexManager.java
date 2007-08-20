@@ -16,23 +16,31 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.idx;
+
+import modnlp.idx.inverted.SubcorpusIndexer;
 import modnlp.idx.inverted.TokeniserRegex;
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.database.SubcorpusDirectory;
 import modnlp.idx.database.DictProperties;
 import modnlp.idx.database.AlreadyIndexedException;
 import modnlp.idx.database.EmptyFileException;
 import modnlp.idx.database.NotIndexedException;
+import modnlp.idx.headers.HeaderDBManager;
 import modnlp.dstruct.CorpusList;
+import modnlp.dstruct.SubcorpusMap;
 import modnlp.dstruct.TokenMap;
 import modnlp.idx.gui.IndexManagerUI;
 import modnlp.idx.gui.CorpusChooser;
 import modnlp.idx.gui.HeaderURLChooser;
+
+import com.sleepycat.je.DatabaseNotFoundException;
 
 import java.io.File;
 import java.util.Enumeration;
 
 import javax.swing.JOptionPane;
 import java.io.IOException;
+
 
 /**
  *  GUI for corpus maintainance.
@@ -43,7 +51,13 @@ import java.io.IOException;
 */
 public class IndexManager {
   private IndexManagerProperties props = new IndexManagerProperties();
+  String ignElement = props.getProperty("tokeniser.ignore.elements");
+  String subcElement = props.getProperty("subcorpusindexer.element");
+  String subcAttribute = props.getProperty("subcorpusindexer.attribute");
+  boolean indexHeaders =  props.getProperty("index.headers").equalsIgnoreCase("true");
   Dictionary dict = null;
+  SubcorpusDirectory sbcd = null;
+  HeaderDBManager hdbm = null;
   DictProperties dictProps;
   CorpusList clist;
   IndexManagerUI imui;
@@ -77,6 +91,12 @@ public class IndexManager {
     if (dict != null)
       dict.close();
     dict = new Dictionary(true,dictProps);
+    sbcd = new SubcorpusDirectory(dict);
+    if (indexHeaders){
+      try { hdbm = new HeaderDBManager(dict.getDictProps()); }
+      catch(Exception e) 
+        {imui.print("\n----- Error opening Headers DB: "+e+" ------\n");}
+    }
     imui.setCurrentDir(dictProps.getProperty("last.datafile.dir"));
     imui.setTitle("IndexManager: operating on index at "+cdir);
     imui.print("\n----- Selected corpus: "+cdir+" ------\n");
@@ -166,6 +186,8 @@ public class IndexManager {
     
     public void run() {
       activeIndexing = true;
+      String fenc = dictProps.getProperty("file.encoding");
+      //String hedhome = dictProps.getProperty("headers.home");
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
         if (stop) {
           stop = false;
@@ -178,24 +200,34 @@ public class IndexManager {
         String fname = (String)e.nextElement();
         try {
           TokeniserRegex tkr = new TokeniserRegex(new File(fname), 
-                                                  dictProps.getProperty("file.encoding"));
+                                                  fenc);
           tkr.setVerbose(debug);
-          tkr.setIgnoredElements(props.getProperty("tokeniser.ignore.elements"));
+          tkr.setIgnoredElements(ignElement);
           // if (debug) {
           imui.print("\n----- Processing: "+fname+" ------\n");
           //}
-          if (dict.indexed(fname)){
+          if (dict.isIndexed(fname)){
             throw new AlreadyIndexedException(fname);
           }
           imui.print("-- Tokenising ...\n");
           tkr.tokenise();
-
           TokenMap tm = tkr.getTokenMap();
           //System.err.print(tm.toString());
           imui.print("-- Indexing ...\n");
           dict.setVerbose(debug);
-          dict.addToDictionary(tm, fname);
+          int fid = dict.addToDictionary(tm, fname);
           dict.sync();
+          if (subcElement != null){
+            imui.print("-- Indexing sub-corpus sections.\n");
+            SubcorpusIndexer sir = new SubcorpusIndexer(tkr.getOriginalText(),subcElement, subcAttribute);
+            sir.section();
+            SubcorpusMap sm = sir.getSectionIndex();
+            sbcd.add(sm, fname);
+          }
+          if (indexHeaders) {
+            imui.print("-- Indexing Header file.\n");
+            hdbm.add(dictProps.getHeaderAbsoluteFilename(fname), fid);
+          } 
           imui.print("-- Done.\n");
           imui.addIndexedFile(fname);
         }
@@ -207,12 +239,24 @@ public class IndexManager {
           imui.print("Warning: "+ex+"\n");
           imui.print("Ignoring this entry.\n");
         }
+        catch (NotIndexedException ex){
+          imui.print("Warning: "+ex+"\n");
+          imui.print("Ignoring this entry.\n");
+        }
+        catch (org.xmldb.api.base.XMLDBException ex){
+          imui.print("Warning (headers DB): "+ex+"\n");
+          imui.print("Failed indexing header.\n");
+        }
         catch (java.io.IOException ex){
           imui.print("IO Error processing file "+fname+": "+ex+"\n");
           imui.print("Indexing stopped.\n");
           activeIndexing = false;
           imui.enableChoice(true);
           return;
+        }
+        catch (DatabaseNotFoundException ex){
+          imui.print("Warning: "+ex+"\n");
+          imui.print("Ignoring this entry.\n");
         }
       } // end for 
       imui.print("----- Indexing completed.");
@@ -245,6 +289,11 @@ public class IndexManager {
         try {
           // if (debug) {
           imui.print("\n----- De-indexing: "+fname+" ------\n");
+          if (subcElement != null){
+            imui.print("----- Removing subcorpus sections ------\n");
+            sbcd.remove(fname);
+          }
+          imui.print("----- Removing inverted index ------\n");
           dict.setVerbose(debug);
           dict.removeFromDictionary(fname);
           dict.sync();

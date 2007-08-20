@@ -24,6 +24,7 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.StringBinding;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.DatabaseNotFoundException;
 import com.sleepycat.je.DeadlockException;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.OperationStatus;
@@ -46,7 +47,8 @@ import com.sleepycat.je.LockMode;
 */
 public class WordFileTable extends Table {
 
-  public WordFileTable (Environment env, String fn, boolean write) {
+  public WordFileTable (Environment env, String fn, boolean write) 
+    throws DatabaseNotFoundException{
     super(env,fn,write);
   }
 

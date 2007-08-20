@@ -22,8 +22,7 @@ import modnlp.util.Maths;
 
 /**
  * 
- * Term Space Reduction by Information Gain.  (see dimreduct-4up.pdf
- * and termextract-4up.pdf in the 4ict2 course web page)
+ * Term Space Reduction by Information Gain (Expected Mutual Information)
  * 
  * @author  S. Luz &#60;luzs@acm.org&#62;
  * @version <font size=-1>$Id: InfoGain.java,v 1.1.1.1 2005/05/26 13:59:30 amaral Exp $</font>

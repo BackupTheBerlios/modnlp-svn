@@ -46,7 +46,8 @@ import com.sleepycat.je.LockMode;
 */
 public class WordPositionTable extends Table {
 
-  public WordPositionTable (Environment env, String fn, boolean write) {
+  public WordPositionTable (Environment env, String fn, boolean write) 
+    throws DatabaseNotFoundException {
     super(env,fn,write);
   }
 

@@ -70,7 +70,7 @@ public class TokeniserRegex extends Tokeniser {
 
   public void tokenise ()  {
     String ignregexp = "\\.\\.+|\\.+\\p{Space}";  // delete full stops.
-    if (ignoredElements.length() > 0)
+    if (ignoredElements != null && ignoredElements.length() > 0)
       ignregexp = ignregexp+"|< *"+ignoredElements+".*?>.*?</"+ignoredElements+" *>";
     if (!tagIndexing)
       ignregexp = ignregexp+"|<.*?>";

@@ -84,10 +84,6 @@ implements TCInvertedIndex
    */
   int corpusSize = 0;
 
-  private String creator;
-  String[] creatorArgs;
-
-
   /**
    * Creates a new <code>BVProbabilityModel</code> instance and
    * <code>TCInvertedIndex</code>. (See above note re. separating
@@ -166,8 +162,6 @@ implements TCInvertedIndex
     return docSet;
   }
 
-
-
   /**
    * Get the size of <code>docSet</code>
    *
@@ -241,18 +235,45 @@ implements TCInvertedIndex
     Set cs =  (Set)cTable.get(cat);
     int tss = ts == null ? 0 : ts.size();
     int css = cs == null ? 0 : cs.size();
-    int iss = 0; // intersection of ts and cs   (couldn't be done with ts.retainAll(cs) since retainAll is destructive)
+    int iss = 0; // intersection of ts and cs (couldn't be done with ts.retainAll(cs) 
+                 // since retainAll is destructive)
     if ( tss > 0 && css > 0 )
       for (Iterator i = ts.iterator(); i.hasNext(); ) 
         if ( cs.contains(i.next()) )
           iss++;
-    double t = (double) tss/corpusSize;  // p(t)
+
+    double vsize = (double)tTable.size(); // size of vocab., used for smoothing
     double c = (double) css/corpusSize;  // p(c)
-    double tc = (double) iss/corpusSize; // p(t,c)
-    double tnc = (double) (tss - iss)/corpusSize; // p(t,¬c)
-    double ntc = (double) (css - iss)/corpusSize; // p(¬t,c)
-    double ntnc = (double) (corpusSize - (css + tss - iss))/corpusSize; // p(¬t,¬c)
-    return new Probabilities(t,c,tc,tnc,ntc,ntnc);
+
+    // these will get different values depending on smoothing
+    double t = 0; 
+    double tgc = 0;
+    
+    switch (getSmoothingType()) {
+    case NOSMOOTHING: // no smoothing variant
+      t = (double) tss/corpusSize;  // p(t)
+      tgc = (double) iss/css; //  p(t|c)
+      break;
+    case LAPLACE:// Laplace [add-one] smoothing
+      //t = (double) tss/corpusSize; // need to correct for smoothing
+      // [below], otherwise inconsistency might arise. Example: for
+      // p(t) = 1 we'd get P(-t,-c) = (1 - P(t) - P(-t,c) < 0.
+      t = (double) (tss+1)/(corpusSize+2);  // p(t)
+      tgc = (double) (iss+1)/(css+2); // p(t|c) 
+      break;
+    default: // no smoothing
+      t = (double) tss/corpusSize;  // p(t)
+      tgc = (double) iss/css; //  p(t|c)
+    }
+
+    double tc = (double) tgc * c;         // p(t,c)
+    double tnc = (double) t - tc;         // p(t,¬c)
+    double ntc = (double) (1 - tgc) * c;  // p(¬t,c)
+    double ntnc = (double) (1 - t) - ntc; // p(¬t,¬c)
+    
+    Probabilities p = new Probabilities(t,c,tc,tnc,ntc,ntnc);
+    //System.out.println("-- ("+term+","+cat+") = "+p);
+    return p;
   }
 
   /**
@@ -269,6 +290,10 @@ implements TCInvertedIndex
    */
   public void trimTermSet(Set rts){
     tTable.keySet().retainAll(rts);
+  }
+
+  public Set getTermSet(){
+    return tTable.keySet();
   }
 
   /**
@@ -355,7 +380,6 @@ implements TCInvertedIndex
     return ((Map)tTable.get(term)).size();
   }
 
-
   /**
    *   Return the number of occurrences of <code>term</code> in
    *   document <code>id</code>
@@ -390,6 +414,20 @@ implements TCInvertedIndex
     return count;
   }
 
+  public int[] getCooccurrenceVector(String term, String[] terms){
+    Set ts = getDocSet(term);
+    int[] cov = new int[terms.length];
+    for (int i = 0; i < terms.length; i++) {
+      Set ts2 = new HashSet(getDocSet(terms[i]));
+      ts2.retainAll(ts);
+      cov[i] = ts2.size();
+    }
+    return cov;
+  }
+
+  private Set getDocSet(String term){
+    return ((Map)tTable.get(term)).keySet();
+  }
 
   public boolean occursInCategory(String term, String cat){
     Set ds = ((Map)tTable.get(term)).keySet();
@@ -415,62 +453,4 @@ implements TCInvertedIndex
   public void setIgnoreCase(boolean  v) {
     this.ignoreCase = v;
   }
-  
-  /**
-   * Get the value of creationInfo.
-   * @return value of creationInfo.
-   */
-  public String getCreator() {
-    return creator;
-  }
-  
-  /**
-   * Set the value of creationInfo.
-   * @param v  Value to assign to creationInfo.
-   */
-  public void setCreator(String  v) {
-    this.creator = v;
-  }
-  
-  
-  /**
-   * Get the value of creatorArgs.
-   * @return value of creatorArgs.
-   */
-  public String[] getCreatorArgs() {
-    return creatorArgs;
-  }
-
-  /**
-   * Get the value of creatorArgs as list of comma-separated values.
-   * @return value of creatorArgs.
-   */
-  public String getCreatorArgsCSV() {
-    if (creatorArgs.length == 0)
-      return "";
-    StringBuffer args = new StringBuffer(creatorArgs[0]);
-    for (int i = 1 ; i < creatorArgs.length ; i++)
-      args.append(","+creatorArgs[i]);
-    return args.toString();
-  }
-  
-  /**
-   * Set the value of creatorArgs.
-   * @param v  Value to assign to creatorArgs.
-   */
-  public void setCreatorArgs(String[]  v) {
-    this.creatorArgs = v;
-  }
-  
-  /**
-   * Get the value of creationInfo.
-   * @return value of creationInfo.
-   */
-  public String getCreationInfo() {
-    StringBuffer args = new StringBuffer();
-    for (int i = 0 ; i < creatorArgs.length ; i++)
-      args.append(" "+creatorArgs[i]);
-    return creator+args;
-  }
-
 }

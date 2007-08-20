@@ -44,7 +44,8 @@ abstract class Table  {
   protected String dbname;
   protected LogStream logf;
 
-  public Table (Environment env, String fn, boolean write) {
+  public Table (Environment env, String fn, boolean write) 
+    throws DatabaseNotFoundException {
     try {
       setup(env,fn,write, new LogStream(System.err));
     } catch(IOException e) {
@@ -52,11 +53,13 @@ abstract class Table  {
     } 
   }
 
-  public Table (Environment env, String fn, boolean write, LogStream l) {
+  public Table (Environment env, String fn, boolean write, LogStream l) 
+    throws DatabaseNotFoundException {
     setup(env,fn,write,l);
   }
-
-  public void setup (Environment env, String fn, boolean write, LogStream l) {
+  
+  public void setup (Environment env, String fn, boolean write, LogStream l) 
+    throws DatabaseNotFoundException {
     try {
       environment = env;
       logf = l;
@@ -69,10 +72,30 @@ abstract class Table  {
                                           fn,
                                           dbc);
     } catch (DatabaseNotFoundException e) {
-      logf.logMsg("DB file "+fn+" not found: ",e);
+      throw(e);
+      //logf.logMsg("DB file "+fn+" not found: ",e);
     } catch(DatabaseException e) {
       logf.logMsg("Error accessing DB "+fn,e);
     } 
+  }
+
+  public static boolean exists(Environment env, String fn){
+    Database d;
+    try {
+      DatabaseConfig dbc = new DatabaseConfig();
+      dbc.setReadOnly(true);
+      dbc.setAllowCreate(false);
+      d = env.openDatabase(null,
+                           fn,
+                           dbc);
+      d.close();
+    } catch (DatabaseNotFoundException e) {
+      return false;
+    }
+    catch(DatabaseException e) {
+      return false;
+    } 
+    return true;
   }
 
   public void finalize () {

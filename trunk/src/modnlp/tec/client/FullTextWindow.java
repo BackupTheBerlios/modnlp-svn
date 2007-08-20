@@ -69,8 +69,8 @@ public class FullTextWindow extends JFrame
   public String text[];
   private boolean testConc = true;
   private int height, width;
-  private JEditorPane outPane = new  JEditorPane("text/html", ""); // new  JTextArea(20,40);
-	private JButton dismissButton =  new JButton("Dismiss");
+  private JEditorPane outPane = new  JEditorPane("text/plain", ""); // new  JTextArea(20,40);
+  private JButton dismissButton =  new JButton("Dismiss");
   private boolean useText = false;
 
   /** Initialize Extract and/or Header window

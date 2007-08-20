@@ -21,6 +21,9 @@ package modnlp.tec.client;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.query.WordQuery;
 import modnlp.idx.query.WordQueryException;
+import modnlp.idx.headers.HeaderDBManager;
+
+
 import java.io.*;
   
 /**
@@ -32,30 +35,45 @@ import java.io.*;
  * @see  
 */
 
-public class ConcordanceProducer extends Thread {
+public class ConcordanceProducer implements Runnable {
 
   BufferedReader in = null;
   PrintWriter out = null;
   TecClientRequest request;
   Dictionary dictionary;
+  HeaderDBManager hdbm = null;
   
-  public ConcordanceProducer (Dictionary d, TecClientRequest r){
+  public ConcordanceProducer (Dictionary d){
     super();
     this.dictionary = d;
-    this.request = r;
+    //this.request = r;
     try {
-      PipedWriter pipeOut = new PipedWriter();
-      in = new BufferedReader(new PipedReader(pipeOut));
-      out = new PrintWriter(pipeOut);
-    } catch (IOException e) {
-      System.err.println("Concordancer error creating pipe: " + e);
+      hdbm = new HeaderDBManager(d.getDictProps());
+    } catch (Exception e) {
+      System.err.println("Concordancer opening header DB: " + e);
     }
   }
   
+  public void setRequest(TecClientRequest r){
+    request = r;
+  }
+
   public BufferedReader getBufferedReader (){
+    try {
+      PipedWriter pipeOut = new PipedWriter();
+      out = new PrintWriter(pipeOut);
+      in = new BufferedReader(new PipedReader(pipeOut));
+    } catch (IOException e) {
+      System.err.println("Concordancer error creating pipe: " + e);
+    }
     return in;
   }
   
+  public void start() {
+    Thread thread = new Thread(this, "Producer");
+    thread.start();
+  }
+
   public void run () {
     try {
       boolean cse = ((String)request.get("case")).equalsIgnoreCase("sensitive");
@@ -65,11 +83,17 @@ public class ConcordanceProducer extends Thread {
         (new Integer((String)request.get("context"))).intValue();
       boolean ignx = 
         ((String)request.get("sgml")).equalsIgnoreCase("no")? true : false;
-      dictionary.printConcordances(wquery, ctx, ignx, out);
+      String xquerywhere = 
+        (String)request.get("xquerywhere");
+      if (xquerywhere == null)
+        dictionary.printConcordances(wquery, ctx, ignx, out);
+      else
+        dictionary.printConcordances(wquery, ctx, ignx, out,
+                                     hdbm.getSubcorpusConstraints(xquerywhere));
     }
     catch (WordQueryException e){
       out.println(1);
-      out.println("ERROR |0|Invalid query: "+request.get("keyword")+e);
+      out.println("ERROR (Concordancer.run): Invalid query="+request.get("keyword")+e);
     }
   }
 }

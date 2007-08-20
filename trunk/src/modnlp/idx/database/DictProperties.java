@@ -17,8 +17,11 @@
 */
 package modnlp.idx.database;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  *  Load dictionary defaults
  *
@@ -29,8 +32,9 @@ import java.io.FileOutputStream;
 public class DictProperties extends java.util.Properties{
 
   public static String PROP_FNAME = "dictionary.properties";
+  public static String DEFAULT_PROP_FNAME = "idxmgr.properties";
   private static String PS = java.io.File.separator;
-  String envHome = "/tmp/tec/index/";   // a very unsafe default;
+  String envHome = "/tmp/tec/index";   // a very unsafe default;
   //String headDir = "/tmp/tec/headers/";   // a very unsafe default;
   //String headURL = "file:///tmp/tec/headers/";   //  this is really supposed to be a HTTP address
   String wFilTableName = "wfindex.db";  // word -> [fileno1, fileno2, ...]
@@ -40,6 +44,7 @@ public class DictProperties extends java.util.Properties{
   String tPosTableName = "tptable.db";  // fileno -> [offset1, offset2, ...]
   String corpusDir = ""; // the default directory for relative fileTableNames 
   String encoding  = "UTF8";
+  String headerEXT = "hed";
 
 	public DictProperties (String cd) {
     envHome = cd;
@@ -53,16 +58,12 @@ public class DictProperties extends java.util.Properties{
   private void init(){
     String pf = envHome+PS+PROP_FNAME;
     try {
-      ClassLoader cl = this.getClass().getClassLoader();
-      //InputStream fis = ((cl.getResource(pf))
-      //                   .openConnection()).getInputStream();
-       //FileInputStream fis = new FileInputStream(new File("tecli.properties"));
       this.load(new FileInputStream(pf));
     }
     catch (Exception e) {
-	    System.err.println("Error reading property file "+pf+": "+e);
-	    System.err.println("Using defaults in DictProperties.java");
-      setProperty("dictionaty.environment.home",envHome);
+      System.err.println("Error reading property file "+pf+": "+e);
+      System.err.println("Using defaults in DictProperties.java and "+DEFAULT_PROP_FNAME);
+      setProperty("dictionary.environment.home",envHome);
       //setProperty("headers.url",headURL);
       //setProperty("headers.home",headDir);
       setProperty("wfile.table.name", wFilTableName);
@@ -72,6 +73,14 @@ public class DictProperties extends java.util.Properties{
       setProperty("tpos.table.name", tPosTableName);
       setProperty("corpus.data.directory", corpusDir);
       setProperty("file.encoding", encoding);
+      setProperty("header.extension", headerEXT);
+      ClassLoader cl = this.getClass().getClassLoader();
+      try{
+        this.load(cl.getResourceAsStream(DEFAULT_PROP_FNAME));
+      }
+      catch (IOException ioe){
+        System.err.println("Error reading default property file "+DEFAULT_PROP_FNAME+": "+e);
+      }
       save();
 		}
 	}
@@ -92,8 +101,12 @@ public class DictProperties extends java.util.Properties{
   }
 
   public String getEnvHome () {
-    return getProperty("dictionaty.environment.home");
+    return getProperty("dictionary.environment.home");
   }
+
+  //public String getExistConf () {
+  //  return getProperty("dictionary.environment.home")+EXIST_CONF_NAME;
+  //}
 
   public String getHeadURL () {
     return getProperty("headers.url");
@@ -124,7 +137,38 @@ public class DictProperties extends java.util.Properties{
   }
 
   public String getCorpusDir () {
-    return getProperty("corpus.data.directory");
+    return corpusDir;
   }
+
+  public void setCorpusDir (String c){
+    if (c == null)
+      return;
+    corpusDir = c;
+    setProperty("corpus.data.directory", corpusDir);
+  }
+
+  public String getFullCorpusFileName (String fn){
+    if ( (new File(fn)).isAbsolute() )
+      return fn;
+    else
+      return corpusDir+fn;
+  }
+
+  // TODO: extend method setProperty(String p, String v) so that local variables always get updated
+  // eg if (p.equals("header.extension") {super.setProperty(p, v); headerEXT = v;} etc
+  public String getHeaderFilename(String fname) {
+    File f = new File(fname);
+    String n = f.getName();
+    return n.substring(0,n.lastIndexOf('.')+1)+getProperty("header.extension"); 
+  }
+
+  public String getHeaderAbsoluteFilename(String fname) {
+    String base = getProperty("headers.home");
+    if (base.charAt(base.length()-1) == File.separatorChar)
+      base = base.substring(0,base.length()-2);
+    return base+File.separatorChar+getHeaderFilename(fname);
+  }
+
+
 
 }

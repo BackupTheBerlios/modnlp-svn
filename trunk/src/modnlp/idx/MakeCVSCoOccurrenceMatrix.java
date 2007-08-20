@@ -59,7 +59,7 @@ public class MakeCVSCoOccurrenceMatrix {
             System.err.print("\n----- Processing: "+fname+" ------\n");
             tkr.setVerbose(verbose);
           }
-          if (d.indexed(fname)){
+          if (d.isIndexed(fname)){
             throw new AlreadyIndexedException(fname);
           }
           tkr.tokenise();

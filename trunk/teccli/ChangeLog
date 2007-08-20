@@ -1,3 +1,8 @@
+2007-06-25  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	*  (modnlp-idx): Incorporated XMLDB subcospus selection
+	functionality (through eXist)
+
 2006-07-20 Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* tec-client (Repository): implemented 'stand-alone' mode,

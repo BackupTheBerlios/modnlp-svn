@@ -25,6 +25,7 @@ import com.sleepycat.bind.tuple.IntegerBinding;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.BtreeStats;
 import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.DatabaseNotFoundException;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.DatabaseEntry;
@@ -54,7 +55,8 @@ public class FreqTable extends Table {
   SecondaryDatabase freqKeyDatabase = null;
   private int totalNoOfTokens = -1;
 
-  public FreqTable (Environment env, String fn, boolean write) {
+  public FreqTable (Environment env, String fn, boolean write)
+    throws DatabaseNotFoundException{
     super(env,fn,write);
     try {     
       // use a secondary db to keep records sorted by frequency
@@ -64,8 +66,8 @@ public class FreqTable extends Table {
       sc.setReadOnly(!write);
       sc.setAllowCreate(write);
       sc.setSortedDuplicates(true);
-      // setting the comparator sometimes causes je to throw a null pointer exception
-      // investigate why,
+      // setting the comparator sometimes causes je to throw a null pointer exception.
+      // Investigate why.
       sc.setBtreeComparator(DescIntComparator.class);
       String scname = "secfqtable.db";
       freqKeyDatabase = env.openSecondaryDatabase(null, 
@@ -256,8 +258,8 @@ public class FreqTable extends Table {
     }
     catch (DatabaseException e) {
       logf.logMsg("Error accessing secondary cursor for FreqTable" , e);
-    }     
-  } 
+    }
+  }
 
   public void close () {
     // ignore operation status

@@ -75,7 +75,7 @@ public class TokeniserGNU extends Tokeniser {
       System.err.println("matching ingore tags");
       
       String ignregexp = "";
-      if (ignoredElements.length() > 0)
+      if (ignoredElements != null && ignoredElements.length() > 0)
         ignregexp = "< *"+ignoredElements+".*?>.*?</"+ignoredElements+" *>";
       if (!tagIndexing)
         ignregexp = ignregexp+"|<.*?>";

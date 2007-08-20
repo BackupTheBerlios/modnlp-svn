@@ -293,6 +293,49 @@ public class ARFFUtil extends PrintUtil {
     PrintUtil.donePrinting();
   }
 
+
+  public static void printTermCoOccurARFF(TCInvertedIndex ii,  WordFrequencyPair[] wfp, 
+                                          PrintStream out ) 
+  {
+    // print header
+
+    String[] ta = new String[wfp.length];
+    for (int i = 0; i < wfp.length; i++)
+      ta[i] = wfp[i].getWord();
+    out.print("@RELATION word\n\n");
+    for (int i = 0; i < ta.length ; i++)
+      out.print("@ATTRIBUTE "+ta[i]+" REAL\n");
+    out.print("@ATTRIBUTE word string\n");
+    out.print("\n@DATA\n");
+    // print data
+    for (int i = 0; i < ta.length ; i++){
+      PrintUtil.printNoMove("Printing ...", i);
+      out.println(PrintUtil.toString(ii.getCooccurrenceVector(ta[i], ta)));
+      out.print(","+ta[i]);
+    }
+    PrintUtil.donePrinting();
+  }
+
+  public static void printTermCoOccurCSV(TCInvertedIndex ii, WordFrequencyPair[] wfp, 
+                                          PrintStream out ) 
+  {
+    //Set ts = ii.getTermSet();
+    //String[] ta = (String[]) ts.toArray(new String[0]);
+    String[] ta = new String[wfp.length];
+    for (int i = 0; i < wfp.length; i++)
+      ta[i] = wfp[i].getWord();
+    // print header
+    out.println(","+PrintUtil.toString(ta));
+    // print data
+    for (int i = 0; i < ta.length ; i++){
+      PrintUtil.printNoMove("Printing ...", i);
+      out.print(ta[i]+",");
+      out.println(PrintUtil.toString(ii.getCooccurrenceVector(ta[i], ta)));
+    }
+    PrintUtil.donePrinting();
+  }
+
+
   /**
    * print debug information and all possible ARFF representation this
    * class handles

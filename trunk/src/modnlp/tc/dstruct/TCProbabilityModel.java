@@ -40,6 +40,10 @@ import java.io.Serializable;
 */
 public abstract class TCProbabilityModel implements Serializable {
 
+
+  public static final byte NOSMOOTHING = 0;
+  public static final byte LAPLACE = 1;
+
   /**
    * All TC probability models must be based on an inverted index
    *
@@ -50,12 +54,18 @@ public abstract class TCProbabilityModel implements Serializable {
    * The program that created this probability model
    */
   String creator = null;
-
   /**
    * The arguments passed to this model's creator.
    */
   String[] creatorArgs = null;
-  
+  /**
+   * Smoothing techniques to be used in estimating probabilities
+   * (getProbabilities()): 0 = no smoothing (MLE), 1 = Laplace
+   * (add-one), ...
+   */
+  byte smoothingType = 0;  
+
+
   /**
    * Get a summary of probabilities associated with
    * <code>term</code> and <code>category</code>
@@ -66,35 +76,70 @@ public abstract class TCProbabilityModel implements Serializable {
    */
   public abstract Probabilities getProbabilities(String term, String category);
 
+
   /**
    * Get the value of creationInfo.
    * @return value of creationInfo.
    */
-  public abstract String getCreator();
+  public String getCreator() {
+    return creator;
+  }
   
-
   /**
    * Set the value of creationInfo.
    * @param v  Value to assign to creationInfo.
    */
-  public abstract void setCreator(String  v);
+  public void setCreator(String  v) {
+    this.creator = v;
+  }
+    
   
   /**
    * Get the value of creatorArgs.
    * @return value of creatorArgs.
    */
-  public abstract String[] getCreatorArgs();
+  public String[] getCreatorArgs() {
+    return creatorArgs;
+  }
 
   /**
    * Get the value of creatorArgs as list of comma-separated values.
    * @return value of creatorArgs.
    */
-  public abstract String getCreatorArgsCSV();
-
+  public String getCreatorArgsCSV() {
+    if (creatorArgs.length == 0)
+      return "";
+    StringBuffer args = new StringBuffer(creatorArgs[0]);
+    for (int i = 1 ; i < creatorArgs.length ; i++)
+      args.append(","+creatorArgs[i]);
+    return args.toString();
+  }
+  
   /**
-   * Get creation information (i.e. command and args that created this PM.)
+   * Set the value of creatorArgs.
+   * @param v  Value to assign to creatorArgs.
+   */
+  public void setCreatorArgs(String[]  v) {
+    this.creatorArgs = v;
+  }
+  
+  /**
+   * Get the value of creationInfo.
    * @return value of creationInfo.
    */
-  public abstract String getCreationInfo();
+  public String getCreationInfo() {
+    StringBuffer args = new StringBuffer();
+    for (int i = 0 ; i < creatorArgs.length ; i++)
+      args.append(" "+creatorArgs[i]);
+    return creator+args;
+  }
+
+  public byte getSmoothingType() {
+    return smoothingType;
+  }
+
+  public void setSmoothingType(byte s) {
+    smoothingType = s;
+  }
 
 }

@@ -3,9 +3,10 @@ TOPCLASSPATH=src:lib/MinML2.jar
 SOURCES=modnlp/util/*.java modnlp/dstruct/*.java modnlp/tc/util/*.java modnlp/tc/dstruct/*.java modnlp/tc/parser/*.java modnlp/tc/tsr/*.java modnlp/tc/evaluation/*.java modnlp/tc/induction/*.java modnlp/tc/classify/*.java 
 DOCS=doc
 SOURCEDIR=src
-DISTDIR=tc-`cat VERSION`
+DISTDIR:=modnlp-tc-`cat VERSION`
+BINDISTDIR=$(DISTDIR)-bin
 DISTFILES=BUGS COPYING ChangeLog INSTALL Makefile README TODO VERSION AUTHORS\
-	compile.sh exclude.txt run.sh doc lib $(subst modnlp/, src/modnlp/, $(SOURCES)) data
+	compile.sh exclude.txt run.sh doc lib/MinML2.jar $(subst modnlp/, src/modnlp/, $(SOURCES)) data
 #JAVA=jamvm
 #JAVAC=jikes-classpath
 JAVA=java
@@ -36,6 +37,18 @@ test:
 	@echo "Testing Classification..."
 	$(JAVA) $(JAVAFLAGS) -classpath $(TOPCLASSPATH) modnlp.tc.classify.BVBayes data/tinycorpus.lst acq /tmp/tinycorpus.pm proportional >/tmp/tinycorpus.log
 	@echo "** Classification results saved to /tmp/tinycorpus.log"
+	@echo "Testing completed. See lines starting with '**' for location of log files."
+
+bigtest:
+	@echo "Testing TSR..."
+	$(JAVA) $(JAVAFLAGS) modnlp.tc.tsr.MakeReducedTermSet data/reuters-21578-000-002.lst data/stopwds.txt 10 InfoGain acq  > /tmp/reuters-21578-000-002.tsr
+	@echo "** TSR scores saved to /tmp/reuters-21578-000-002.tsr"
+	@echo "Testing Probability Model Induction..."
+	$(JAVA) $(JAVAFLAGS) -classpath $(TOPCLASSPATH) modnlp.tc.induction.MakeProbabilityModel data/reuters-21578-000-002.lst data/stopwds.txt 10 InfoGain acq /tmp/reuters-21578-000-002.pm
+	@echo "Probability model saved to /tmp/reuters-21578-000-002.pm"
+	@echo "Testing Classification..."
+	$(JAVA) $(JAVAFLAGS) -classpath $(TOPCLASSPATH) modnlp.tc.classify.BVBayes data/reuters-21578-000-002.lst acq /tmp/reuters-21578-000-002.pm proportional >/tmp/reuters-21578-000-002.log
+	@echo "** Classification results saved to /tmp/reuters-21578-000-002.log"
 	@echo "Testing completed. See lines starting with '**' for location of log files."
 
 docs:

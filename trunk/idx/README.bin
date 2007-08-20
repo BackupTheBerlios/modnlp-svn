@@ -39,6 +39,35 @@ will be effectively read indexed as:
 "I will index this   
  as well as                             I can."
 
+If you want the header files to be indexed as an XML DB, for subcorpus
+search, set the following variables in idxmgr.properties:
+
+  index.headers=true
+
+(tell the indexer to index headers)
+
+  header.extension=hed
+
+(the file extension for header files; NB.: header files can be the
+same as the data files, if you have decided to keep data and metadata
+in the same file)
+
+  subcorpusindexer.element=(speech|writing)
+
+(the elements containing the subcorpora)
+
+  subcorpusindexer.attribute=ref
+
+(the attribute used in selecting subcorpus elements) 
+
+  xquery.root.element.path=//intervention
+  xquery.return.attribute.path=(speech|writing)/@ref
+
+(the element under which to select subcorpora [must be a parent of 
+ subcorpusindexer.element] and the attribute on which to select [must
+ match subcorpusindexer.attribute])
+
+
 Testing the index:
 ------------------
 

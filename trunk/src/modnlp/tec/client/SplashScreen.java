@@ -33,7 +33,7 @@ public class SplashScreen extends JWindow
   private JProgressBar progressBar;
   private JLabel label;
 
-  public SplashScreen (String message, int nosteps) {
+  public SplashScreen (String message, int nosteps, String iconfn) {
     super();
     windowInit();
     // make title, borders, etc invisible    
@@ -41,7 +41,7 @@ public class SplashScreen extends JWindow
     Container cp = getContentPane();
     label = new JLabel(message);
     ClassLoader cl = this.getClass().getClassLoader();
-    cp.add( new JLabel(new ImageIcon(cl.getResource("modnlp/tec/client/icons/tec.gif"))), 
+    cp.add( new JLabel(new ImageIcon(cl.getResource(iconfn))), 
             BorderLayout.NORTH);
     
     cp.add(label, BorderLayout.CENTER);

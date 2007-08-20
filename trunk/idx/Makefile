@@ -1,8 +1,8 @@
 TOPDIR=
 SOURCEDIR=$(TOPDIR)src/
-LIBSPATH=$(TOPDIR)lib/gnu-regexp.jar:$(TOPDIR)lib/je.jar
+LIBSPATH=$(TOPDIR)lib/gnu-regexp.jar:$(TOPDIR)lib/je.jar:$(TOPDIR)lib/antlr-2.7.6.jar:$(TOPDIR)lib/commons-pool-1.2.jar:$(TOPDIR)lib/exist-modules.jar:$(TOPDIR)lib/exist.jar:$(TOPDIR)lib/jgroups-all.jar:$(TOPDIR)lib/log4j-1.2.14.jar:$(TOPDIR)lib/resolver.jar:$(TOPDIR)lib/sunxacml.jar:$(TOPDIR)lib/xmldb.jar:$(TOPDIR)lib/xmlrpc-1.2-patched.jar
 LIBS=$(subst :, ,$(LIBSPATH))
-LIBLICENSES=$(subst .jar,-COPYING ,$(LIBS))
+LIBLICENSES=$(TOPDIR)lib/COPYING-libs
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
 SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
@@ -15,6 +15,8 @@ SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/dstruct/IntegerSet.java \
 	$(SOURCEDIR)modnlp/dstruct/IntOffsetArray.java \
 	$(SOURCEDIR)modnlp/dstruct/PositionSet.java \
+	$(SOURCEDIR)modnlp/dstruct/SubcorpusDelimPair.java	\
+	$(SOURCEDIR)modnlp/dstruct/SubcorpusMap.java	\
 	$(SOURCEDIR)modnlp/dstruct/StopWordList.java \
 	$(SOURCEDIR)modnlp/dstruct/StringSet.java \
 	$(SOURCEDIR)modnlp/dstruct/TokenMap.java \
@@ -35,15 +37,22 @@ SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/idx/database/StringIntKey.java \
 	$(SOURCEDIR)modnlp/idx/database/StringIntKeyBinding.java \
 	$(SOURCEDIR)modnlp/idx/database/StringSetBinding.java \
+	$(SOURCEDIR)modnlp/idx/database/SubcorpusDelimPairBinding.java \
+	$(SOURCEDIR)modnlp/idx/database/SubcorpusKeyCreator.java \
 	$(SOURCEDIR)modnlp/idx/database/Table.java \
 	$(SOURCEDIR)modnlp/idx/database/TPosTable.java \
 	$(SOURCEDIR)modnlp/idx/database/WordFileTable.java \
 	$(SOURCEDIR)modnlp/idx/database/WordPositionTable.java \
+	$(SOURCEDIR)modnlp/idx/database/SubcorpusDirectory.java \
+	$(SOURCEDIR)modnlp/idx/database/SubcorpusTable.java \
+	$(SOURCEDIR)modnlp/idx/headers/HeaderDBManager.java \
+	$(SOURCEDIR)modnlp/idx/inverted/SubcorpusIndexer.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserGNU.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserRegex.java \
 	$(SOURCEDIR)modnlp/idx/ConsumerQuery.java \
 	$(SOURCEDIR)modnlp/idx/Dump.java \
 	$(SOURCEDIR)modnlp/idx/MakeTECIndex.java \
+	$(SOURCEDIR)modnlp/idx/MakeSectionIndex.java \
 	$(SOURCEDIR)modnlp/idx/Query.java \
 	$(SOURCEDIR)modnlp/idx/IndexManager.java \
 	$(SOURCEDIR)modnlp/idx/IndexManagerProperties.java \
@@ -54,17 +63,19 @@ SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/idx/gui/IndexManagerUI.java \
 	$(SOURCEDIR)modnlp/idx/query/Horizon.java \
 	$(SOURCEDIR)modnlp/idx/query/PrepContextQuery.java \
+	$(SOURCEDIR)modnlp/idx/query/SubcorpusConstraints.java	\
 	$(SOURCEDIR)modnlp/idx/query/WordQuery.java \
 	$(SOURCEDIR)modnlp/idx/query/WordQueryException.java
 TARGETS=$(subst .java,.class,$(SOURCES))
 MAINJARS=$(subst $(SOURCEDIR),,$(TARGETS)) # doesn't work by itself: need to jar inner classess as well
 JARREDS=$(MAINJARS) \
+	eXistConf.xml \
 	'modnlp/idx/ConsumerQuery$$ConcordanceProducer.class' \
 	'modnlp/idx/IndexManager$$DeindexingThread.class' \
 	'modnlp/idx/IndexManager$$IndexingThread.class'
 DISTDIR:=modnlp-idx-`cat VERSION`
 BINDISTDIR=$(DISTDIR)-bin
-BINDISTXTRAS=$(LIBLICENSES) $(TOPDIR)*COPYING*
+BINDISTXTRAS=$(LIBLICENSES)
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
 	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SOURCEDIR)modnlp/idx/prj.el $(SOURCEDIR)idx-manifest.txt
 #JAVA=jamvm
@@ -99,10 +110,13 @@ test: $(TARGETS)
 	-mkdir /tmp/datamodnlptest
 	-cp -a data/* /tmp/datamodnlptest/
 	-rm -rf /tmp/tec/index ; mkdir -p /tmp/tec/index 
+	cp src/dictionary.properties.ISO8859_1 /tmp/tec/index/dictionary.properties
 	@echo "** Indexing datamodnlptest/short.lst"
 	$(JAVA) $(JAVAFLAGS) modnlp.idx.MakeTECIndex /tmp/tec/index $(TOPDIR)data/short.lst 
 	@echo "** Dumping index..."
 	$(JAVA) $(JAVAFLAGS) modnlp.idx.Dump /tmp/tec/index
+	@echo "** Querying concordance for word 'that'..."
+	$(JAVA) $(JAVAFLAGS) modnlp.idx.Query /tmp/tec/index -l that
 	@echo "** Testing completed"
 
 docs: $(TARGETS)
@@ -112,6 +126,8 @@ dist: clean
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	cp -aL --parents $(DISTFILES) $(DISTDIR)
+	cp $(TOPDIR)src/idxmgr.properties.ecpc $(DISTDIR)/idxmgr.properties
+	cp $(TOPDIR)src/dictionary.properties.ISO8859_1 $(DISTDIR)/dictionary.properties
 	tar cfvz /tmp/$(DISTDIR).tar.gz  --exclude-from=exclude.txt $(DISTDIR)
 	rm -rf $(DISTDIR)
 

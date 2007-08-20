@@ -20,6 +20,7 @@ package modnlp.idx.database;
 import modnlp.idx.query.WordQuery;
 import modnlp.idx.query.Horizon;
 import modnlp.idx.query.PrepContextQuery;
+import modnlp.idx.query.SubcorpusConstraints;
 
 import modnlp.util.LogStream;
 import modnlp.util.PrintUtil;
@@ -33,6 +34,7 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.DatabaseNotFoundException;
  
 import java.io.File;
 import java.io.IOException;
@@ -125,7 +127,7 @@ public class Dictionary {
       EnvironmentConfig envConfig = new EnvironmentConfig();
       envConfig.setReadOnly(!write);
       envConfig.setAllowCreate(write);
-      environment = new Environment(new File(dictProps.getEnvHome()), 
+      environment = new Environment(new File(dictProps.getEnvHome()),
                                     envConfig);
       wFilTable = new WordFileTable(environment, 
                                     dictProps.getWFilTableName(), 
@@ -145,6 +147,7 @@ public class Dictionary {
       
     } catch (Exception e) {
       logf.logMsg("Error opening Dictionaries: "+e);
+      e.printStackTrace(System.err);
     }
   }
 
@@ -158,9 +161,10 @@ public class Dictionary {
    *
    * @param tm a <code>TokenMap</code>: multiset of tokens
    * @param fou a <code>String</code>: the file whose <code>TokenMap</code> is tm 
+   * @return founo: the sequential number identiying the file added 
    * @exception AlreadyIndexedException if an error occurs
    */
-  public void addToDictionary(TokenMap tm, String fou) 
+  public int addToDictionary(TokenMap tm, String fou) 
     throws AlreadyIndexedException, EmptyFileException
   {
     if (tm == null || tm.size() == 0){
@@ -178,9 +182,17 @@ public class Dictionary {
     else 
       founo = -1*founo;
     fileTable.put(founo,fou);
-    WordPositionTable wPosTable = new WordPositionTable(environment, 
-                                                        ""+founo,
-                                                        true);
+    WordPositionTable wPosTable = null;
+    try {
+      wPosTable = new WordPositionTable(environment, 
+                                        ""+founo,
+                                        true);
+    }
+    catch (DatabaseNotFoundException e) {
+      logf.logMsg("Dictionary: Error updating WordPositionTable "+founo);
+      logf.logMsg("Dictionary: Crashing out... ");
+      System.exit(1);
+    }
     // store sorted set of positions (worst-case for basic operations
     // O(ln(n)) which should be better than storing in a vector and
     // standard merge sorting, which is O(n^2 ln(n))) 
@@ -217,6 +229,7 @@ public class Dictionary {
                        " and wrote "+
                        nf.format(tposTable.getBytesWritten())+" bytes)");
     //tposTable.dump();
+    return founo;
   }
   
 
@@ -240,22 +253,27 @@ public class Dictionary {
       logf.logMsg("Dictionary: file or URI not indexed "+fou);
       throw new NotIndexedException(fou);
     }
-    WordPositionTable wPosTable = new WordPositionTable(environment, 
-                                                        ""+founo,
-                                                        true);
-    TokenMap tm = wPosTable.removeFile();
-    wPosTable.close();
+    try {
+      WordPositionTable wPosTable = new WordPositionTable(environment, 
+                                                          ""+founo,
+                                                          true);
+      TokenMap tm = wPosTable.removeFile();
+      wPosTable.close();
     for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
-      {
-        Map.Entry kv = (Map.Entry) e.next();
-        String word = (String)kv.getKey();
-        tposTable.remove(founo);
-        wFilTable.remove(word,founo);
-        IntegerSet set = (IntegerSet) kv.getValue();
-        if (freqTable.remove(word,set.size()) == 0)
-          caseTable.remove(word);
-      }
-    
+        {
+          Map.Entry kv = (Map.Entry) e.next();
+          String word = (String)kv.getKey();
+          tposTable.remove(founo);
+          wFilTable.remove(word,founo);
+          IntegerSet set = (IntegerSet) kv.getValue();
+          if (freqTable.remove(word,set.size()) == 0)
+            caseTable.remove(word);
+        }
+    }
+    catch (DatabaseNotFoundException e){
+      logf.logMsg("Dictionary: Error removing WordPositionTable "+founo+e);
+      logf.logMsg("Dictionary: Ignoring error and continuing...");
+    }
     fileTable.remove(founo);
   }
 
@@ -265,7 +283,7 @@ public class Dictionary {
    * @param fou a <code>String</code> value
    * @return a <code>boolean</code> value
    */
-  public boolean indexed(String fou) {
+  public boolean isIndexed(String fou) {
     // check if file already exists in corpus; if so, quit and warn user
     int founo = fileTable.getKey(fou);
     if (founo >= 0)  // file has already been indexed
@@ -274,8 +292,20 @@ public class Dictionary {
       return false;
   }
 
+  public int getFileKey(String fou) {
+    return fileTable.getKey(fou);
+  }
+
+  public FileTable getFileTable() {
+    return fileTable;
+  }
+
   public String [] getIndexedFileNames () {
     return fileTable.getFileNames();
+  }
+
+  public Environment getEnvironment () {
+    return environment;
   }
  
   public int getFrequency (WordForms wforms)
@@ -311,13 +341,20 @@ public class Dictionary {
    *  file ({@link modnlp.idx.database.WordPositionTable
    *  WordPositionTable}).
    * @param pos the position (as byte offset) of the keyword on the file
-   * @param posa a position array for a specified file (ontained through {@link TPosTable#getPosArray(int)}).
+   * @param posa the entire word position array for a specified file (obtained through {@link TPosTable#getPosArray(int)}).
    * @return <code>true</code> if cline matches, false otherwise.
    */
   public boolean matchConcordance(PrepContextQuery pcq, int pos, int[] posa){
 
+    // lhisa will contain sets of positions of query words occurring
+    // to the left of the main keyword
     IntegerSet [] lhisa = null;
+    // lha is the array specifying how far (the horizon) to the left we
+    // are allowed to match each keyword to the left of the main keyword
     int [] lha =  null; 
+    // lpa will store the absolute position offsets on the searched
+    // file to match against lhisa given the horizon constraints
+    // specified in lha
     int [] lpa = null;
     Horizon lh = pcq.getLeftHorizon();
     if (lh !=null){
@@ -325,7 +362,8 @@ public class Dictionary {
       lha =  lh.getHorizonArray();
       lpa = new int[lh.getMaxSearchHorizon()];
     }
-
+    // rhisa, rha and rpa are analogous to their left-hand side
+    // counterparts explained above
     IntegerSet [] rhisa = null;
     int [] rha = null;
     int [] rpa = null;
@@ -336,7 +374,7 @@ public class Dictionary {
       rpa = new int[rh.getMaxSearchHorizon()];
     }
 
-    long bt = System.currentTimeMillis();
+    //long bt = System.currentTimeMillis();
 
     if (lh != null){// build left-hand side array
       int i = Arrays.binarySearch(posa,pos);
@@ -344,9 +382,9 @@ public class Dictionary {
       for (int j = 0; j < lpa.length; j++)
         lpa[j] = (i - j < 0) ? 0 : posa[i-j];
     }
+
     if (rh != null){// build right-hand side array
       int i = Arrays.binarySearch(posa,pos);
-      i++;
       int i2 = i+1; 
       int ml = posa.length-i2;
       for (int j = 0; j < rpa.length; j++)
@@ -355,119 +393,9 @@ public class Dictionary {
         else
           rpa[j] = 0;
     }
-    long et = System.currentTimeMillis();
-    System.err.println("Time: "+et+"-"+bt+"="+(et-bt));
+    //long et = System.currentTimeMillis();
+    //System.err.println("Time: "+et+"-"+bt+"="+(et-bt));
 
-    // match left-hand side
-    if (lh != null){
-      int bi = 0;
-      int ei = 0;
-      for (int i = 0;  i < lhisa.length; i++) {
-        boolean matched = false;
-        if (lhisa[i] == null) 
-          continue;
-        bi = ei;
-        ei = lha[i];
-        for (int k = bi; k < ei; k++) {
-          if (lhisa[i].contains(lpa[k])) { // lhisa[i] should contain a set with with pos for all  kw forms
-            matched = true;
-            break;
-          }
-        }
-        if (!matched)  // no matches for this kw, search doesn't match
-          return false; // otherwise, move on to the next kw
-      }
-    }
-    // match right-hand side
-    if (rh != null){
-      int bi = 0;
-      int ei = 0;
-      for (int i = 0;  i < rhisa.length; i++) {
-        boolean matched = false;
-        if (rhisa[i] == null) 
-          continue;
-        bi = ei;
-        ei = rha[i];
-        for (int k = bi; k < ei; k++) {
-          if (rhisa[i].contains(rpa[k])) { // rhisa[i] should contain a set with with pos for all  kw forms
-            matched = true;
-            break;
-          }
-        }
-        if (!matched)  // no matches for this kw, search doesn't match
-          return false; // otherwise, move on to the next kw
-      }
-    }
-    return true;
-  }
-
-  public boolean matchConcordance2(PrepContextQuery pcq, int pos, int[] posa){
-     
-    IntegerSet [] lhisa = null;
-    int [] lha =  null; 
-    int [] lpa = null;
-    Horizon lh = pcq.getLeftHorizon();
-    if (lh !=null){
-      lhisa =  pcq.getLeftHorizonIntegerSetArray();
-      lha =  lh.getHorizonArray();
-      lpa = new int[lh.getMaxSearchHorizon()];
-    }
-
-    IntegerSet [] rhisa = null;
-    int [] rha = null;
-    int [] rpa = null;
-    Horizon rh = pcq.getRightHorizon();
-    if (rh !=null){
-      rhisa = pcq.getRightHorizonIntegerSetArray();
-      rha = rh.getHorizonArray();
-      rpa = new int[rh.getMaxSearchHorizon()];
-    }
-
-    long bt = System.currentTimeMillis();
-
-    // this should be implemented as binary search in order to speed it up 
-    // to logarithmic levels (avoiding the current O(n) worst-case behaviour)
-    // e.g. int i = Arrays.binarySearch(posa, pos); // b-search
-    //      i--;
-    //      for (int j = 0; j < lpa.length; j++)
-    //         lpa[j] = (i - j < 0) ? 0 : posa[i-j];
-    // and replace the while loop below by b_find_index() 
-    for (int i = 0; i < posa.length; i++) {
-      if (posa[i] == pos || lh == null){
-        // reorder the left-hand side array
-        if (lh != null) {
-          int[] aux = new int[lpa.length];
-          if (i == 0)
-            for (int j = 0; j < aux.length; j++)
-              aux[j] = 0;
-          else {
-            int li = (i-1)%lpa.length;
-            for (int j = 0; j < aux.length; j++)
-              aux[j] = li-j < 0 ? lpa[lpa.length + (li-j)]  : lpa[li-j];
-          }
-          lpa = aux;
-        } // end if (lh != null)
-        if (rh == null)
-          break;
-        while (posa[i] != pos)
-          i++;
-        // build right-hand side array
-        int i2 = i+1; 
-        int ml = posa.length-i2;
-        for (int j = 0; j < rpa.length; j++)
-          if (j < ml )
-            rpa[j] = posa[j+i2];
-          else
-            rpa[j] = 0;
-        break;
-      } // end of if (posa[i] == pos || lh == null)
-      lpa[i%lpa.length] = posa[i];  // fill the lpa array 
-    } // end for
-
-    long et = System.currentTimeMillis();
-    System.err.println("Time: "+et+"-"+bt+"="+(et-bt));
-
-    
     // match left-hand side
     if (lh != null){
       int bi = 0;
@@ -548,8 +476,14 @@ public class Dictionary {
     return dictProps.getCorpusDir();
   }
 
-  public void printConcordances(WordQuery query, int ctx, boolean ignx, PrintWriter os) 
+  public void printConcordances(WordQuery query, int ctx, boolean ignx, PrintWriter os){
+    printConcordances(query, ctx, ignx, os, null);
+  }
+
+  public void printConcordances(WordQuery query, int ctx, boolean ignx, 
+                                PrintWriter os, SubcorpusConstraints sbc) 
   {
+    //System.err.println("dictio--->"+sbc);
     WordForms wforms = query.getKeyWordForms();
     if (wforms == null) {
       os.println(0);
@@ -563,11 +497,10 @@ public class Dictionary {
       lh = query.getLeftHorizon();
       rh = query.getRightHorizon();
     }
- 
     String key =  query.getKeyword();
     int frequency = getFrequency(wforms);
-    String cdir = dictProps.getCorpusDir();
-    // tell client the max no. of lines we are sending
+    //String cdir = dictProps.getCorpusDir();
+    // tell client the max no. of lines we may be sending
     os.println(frequency);
     os.flush();
     for (Iterator w = wforms.iterator(); w.hasNext(); ) {
@@ -581,28 +514,40 @@ public class Dictionary {
           WordPositionTable wpt = new WordPositionTable(environment, 
                                                         ""+fno,
                                                         false);
+          // all positions on a file
           int [] posa = tposTable.getPosArray(fno.intValue());
           IntegerSet pos  = wpt.fetch(word);
           if (pos == null)
             continue;
           PrepContextQuery pcq = new PrepContextQuery(lh, rh, wpt);
           String fn = fileTable.getFileName(fno.intValue());
+
+          SubcorpusTable sbct = null;
+          if (sbc != null){
+            try {
+              sbct = new SubcorpusTable(environment, fno.toString(), false);
+            } catch(DatabaseNotFoundException e ) { sbct = null;}
+          }
+
           CorpusFile fh = null;
           for (Iterator p = pos.iterator(); p.hasNext(); ) {
             Integer bp = (Integer)p.next();
-            if ( jkw || matchConcordance(pcq,bp.intValue(),posa)) {
-              if (fh == null) {
-                fh = new CorpusFile(cdir+fn,
-                                    dictProps.getProperty("file.encoding"));
-                fh.setIgnoreSGML(ignx);
-              } 
-              String ot = fh.getWordInContext(bp, key, ctx);
-              //              if (  query.matchConcordance(ot,ctx) )
-              //{
-              //System.err.println(fn+"|"+bp+"|"+ot);
-              os.println(fn+"|"+bp+"|"+ot);
-              os.flush();
-            }
+            int bpi = bp.intValue();
+            if ( (sbc == null || sbc.accept(fno.toString(),bpi,sbct)) 
+                 && (jkw || matchConcordance(pcq,bpi,posa))) 
+              {
+                if (fh == null) {
+                  fh = new CorpusFile(dictProps.getFullCorpusFileName(fn),
+                                      dictProps.getProperty("file.encoding"));
+                  fh.setIgnoreSGML(ignx);
+                } 
+                String ot = fh.getWordInContext(bp, key, ctx);
+                //              if (  query.matchConcordance(ot,ctx) )
+                //{
+                //System.err.println(fn+"|"+bp+"|"+ot);
+                os.println(fn+"|"+bp+"|"+ot);
+                os.flush();
+              }
             if (os.checkError()) {
               logf.logMsg("Dictionary.printConcordances: connection closed prematurely by client");
               if (fh != null)
@@ -614,6 +559,9 @@ public class Dictionary {
             fh.close();
           wpt.close();
         }
+      }
+      catch (DatabaseNotFoundException e) {
+        logf.logMsg("Error reading corpus file ", e);
       }
       catch (IOException e) {
         logf.logMsg("Error reading corpus file ", e);
@@ -628,7 +576,7 @@ public class Dictionary {
     String kw = null;
     String pos = null;
     try {
-      CorpusFile fh = new CorpusFile(dictProps.getCorpusDir()+fn,
+      CorpusFile fh = new CorpusFile(dictProps.getFullCorpusFileName(fn),
                                      dictProps.getProperty("file.encoding"));
       fh.setIgnoreSGML(ignx);
       pre = fh.getPreContext(offset,ctx);
@@ -663,11 +611,16 @@ public class Dictionary {
     for (int i = 0 ; i < fnos.length; i++){
       System.out.println("===========\n WordPositionTable for "+
                          fileTable.getFileName(fnos[i])+":\n=============");
+      try {
       WordPositionTable wPosTable = new WordPositionTable(environment, 
                                                           ""+fnos[i],
                                                           false);
       wPosTable.dump();
       wPosTable.close();
+      }
+      catch(DatabaseNotFoundException e){
+        logf.logMsg("Dictionary: Error reading WordPositionTable: "+fnos[i]+e);
+      }
     }
     System.out.println("===========\n FreqTable:\n===========");
     freqTable.dump();
@@ -720,6 +673,10 @@ public class Dictionary {
   public void finalize () {
     cleanLog();
     close();
+  }
+
+  public LogStream getLogStream(){
+    return logf;
   }
 
   public boolean getVerbose() {

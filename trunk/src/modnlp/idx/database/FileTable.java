@@ -24,6 +24,7 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.BtreeStats;
 import com.sleepycat.je.StatsConfig;
 import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.DatabaseNotFoundException;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.DatabaseEntry;
@@ -33,9 +34,9 @@ import com.sleepycat.je.LockMode;
  *  Store all files or URI currently indexed
  *
  *  <pre>  
- *       KEY        |  DATA
- *   ---------------|-------------------
- *      seq_integer    |  filename_or_uri 
+ *         KEY        |  DATA
+ *     ---------------|-------------------
+ *      seq_integer   |  filename_or_uri 
  *  </pre>
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
@@ -44,7 +45,8 @@ import com.sleepycat.je.LockMode;
 */
 public class FileTable extends Table {
 
-  public FileTable (Environment env, String fn, boolean write) {
+  public FileTable (Environment env, String fn, boolean write) 
+    throws DatabaseNotFoundException{
     super(env,fn,write);
   }
 

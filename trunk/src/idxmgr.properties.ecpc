@@ -1,3 +1,9 @@
 #modnlp.idx.IndexManager's properties (tailored to ECPC indexing)
 #Wed May 16 15:29:14 IST 2007
 tokeniser.ignore.elements=(omit|ignore|header|chair|heading|post|name)
+index.headers=true
+subcorpusindexer.attribute=ref
+subcorpusindexer.element=(speech|writing)
+xquery.root.element.path=//intervention
+xquery.return.attribute.path=(speech|writing)/@ref
+header.extension=hed
