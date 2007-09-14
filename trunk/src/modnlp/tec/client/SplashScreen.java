@@ -36,25 +36,26 @@ public class SplashScreen extends JWindow
   public SplashScreen (String message, int nosteps, String iconfn) {
     super();
     windowInit();
+    JPanel pnl = new JPanel();
     // make title, borders, etc invisible    
     //setUndecorated(true);
     Container cp = getContentPane();
+    getRootPane().setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
     label = new JLabel(message);
     ClassLoader cl = this.getClass().getClassLoader();
     cp.add( new JLabel(new ImageIcon(cl.getResource(iconfn))), 
             BorderLayout.NORTH);
-    
-    cp.add(label, BorderLayout.CENTER);
-    
+
     progressBar = new JProgressBar(0, nosteps);
     progressBar.setValue(0);
     progressBar.setStringPainted(true);
     progressBar.setString("");
-    cp.add(progressBar, BorderLayout.SOUTH);
-
+    JPanel p = new JPanel();
+    cp.add(label,BorderLayout.CENTER);
+    cp.add(progressBar,BorderLayout.SOUTH);
 
     // as of 1.4 we can use this to center the splash screen on the window
-    // setLocationRelativeTo(null);
+    setLocationRelativeTo(null);
 
     pack();
     setVisible(true);
