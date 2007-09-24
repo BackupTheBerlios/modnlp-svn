@@ -3,8 +3,8 @@
  '(jde-compile-option-nowarn t)
  '(jde-db-read-app-args t)
  '(jde-global-classpath (quote ("../../../../../lib/MinML2.jar" "../../../.." "../../../../../lib/je.jar" 
-                                "../../../../../lib/gnu-regexp-1.1.4.jar" 
-                                "../../../../../lib/jung-1.7.5.jar"
+                                "../../../../../lib/gnu-regexp.jar" 
+                                "../../../../../lib/jung.jar"
                                 "../../../../../lib/colt.jar"
                                 "../../../../../lib/commons-collections.jar"  
                                 )))

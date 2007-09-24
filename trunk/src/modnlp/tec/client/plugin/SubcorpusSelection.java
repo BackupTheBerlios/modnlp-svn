@@ -43,7 +43,7 @@ public class SubcorpusSelection extends JFrame
 {
   
   private JTextArea queryArea = new JTextArea(4, 30);
-    JCheckBox activeChecked = new JCheckBox("Enable sub-corpus constraint");
+  JCheckBox activeChecked = new JCheckBox("Enable sub-corpus constraint");
   private JFrame thisFrame = null;
   private static String title = new String("Plugin: SubcorpusSelection 0.1"); 
   private Browser parent = null;

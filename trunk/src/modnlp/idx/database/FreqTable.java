@@ -264,7 +264,10 @@ public class FreqTable extends Table {
   public void close () {
     // ignore operation status
     try {
-      freqKeyDatabase.close();
+      if (freqKeyDatabase != null){
+        freqKeyDatabase.close();
+        freqKeyDatabase = null;
+      }
       super.close();
     } catch(DatabaseException e) {
       logf.logMsg("Error closing DB "+dbname,e);

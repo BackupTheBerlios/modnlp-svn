@@ -35,7 +35,7 @@ import java.util.regex.*;
 */
 public class SubcorpusIndexer {
 
-  private String elementName = "speech|writing"; // name of sections to index
+  private String elementName = "(speech|writing)"; // name of sections to index
   private String attribtName = "ref";          // an attribute name to index (needs to be XML type ID)
   private String encoding; 
   private String originalText;

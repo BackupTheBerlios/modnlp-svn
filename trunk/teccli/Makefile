@@ -10,6 +10,7 @@ SOURCES:= $(shell find $(SOURCEDIR)modnlp/tec/client -name *.java)
 TARGETS=$(subst .java,.class,$(SOURCES))
 JARREDS=modnlp/tec/client/*.class modnlp/tec/client/gui/*.class \
 	modnlp/tec/client/plugin/*.class \
+	modnlp/gui/*.class \
 	modnlp/tec/client/icons/*.{gif,jpg,png} \
 	modnlp/tec/client/help/*.{html,jpg} tecli.properties
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`

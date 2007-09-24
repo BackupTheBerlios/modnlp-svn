@@ -17,8 +17,10 @@
 */
 package modnlp.tec.client;
 
+import modnlp.tec.client.gui.GraphicalSubcorpusSelector;
 import modnlp.tec.client.gui.RemoteCorpusChooser;
 import modnlp.tec.client.gui.PreferPanel;
+import modnlp.tec.client.gui.SplashScreen;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
 import modnlp.idx.gui.CorpusChooser;
@@ -70,7 +72,7 @@ import org.xml.sax.helpers.ParserFactory;
 */
 
 public class Browser extends JFrame
-    implements  ActionListener, ItemListener, 
+  implements  ActionListener, ItemListener,
                 ListSelectionListener, TecDefaultChangeListener
 {
 
@@ -138,11 +140,11 @@ public class Browser extends JFrame
   private JMenu  prefMenu = new JMenu("Options");
   private JCheckBoxMenuItem caseCheckBox = 
     new JCheckBoxMenuItem("Case sensitive");
-  // private JMenuItem advConcButton = 
-  //  new JMenuItem("Select Sub-corpus...");
+  private JMenuItem advConcButton = 
+    new JMenuItem("Select Sub-corpus...");
   private boolean advConcFlag = false;
-  //private JCheckBoxMenuItem advConcFlag = 
-  //  new JCheckBoxMenuItem("Activate sub-corpus selection");
+  private JCheckBoxMenuItem advConcFlagItem = 
+    new JCheckBoxMenuItem("Activate sub-corpus selection");
   private JMenuItem prefButton = new JMenuItem("Preferences...");
 
   private JMenu  pluginMenu = new JMenu("Plugins");
@@ -176,6 +178,8 @@ public class Browser extends JFrame
   private int srt_i = 0;
   //private AdvConcSearch advSearchFrame;
   private String xquerywhere;
+  private String encoding = null;
+  GraphicalSubcorpusSelector guiSelector = null;
 
   /** Create a TEC Window Object
    * @param width   window width
@@ -212,8 +216,8 @@ public class Browser extends JFrame
     fileMenu.add(quitButton);
     
     prefMenu.add(caseCheckBox);
-    //prefMenu.add(advConcButton);
-    //prefMenu.add(advConcFlag);
+    prefMenu.add(advConcButton);
+    prefMenu.add(advConcFlagItem);
     prefMenu.addSeparator();
     prefMenu.add(prefButton);
 
@@ -236,7 +240,7 @@ public class Browser extends JFrame
     keyword = new JTextField(15);
     kwd.add( keyword);
     keyword.setToolTipText("Syntax: word_1[+[[context]]word2...]. E.g. 'seen+before' will find '...never seen before...' etc; 'seen+[2]before' finds the '...seen her before...'");
-    kwd.setBorder(BorderFactory.createEtchedBorder());      
+    kwd.setBorder(BorderFactory.createEtchedBorder());
     concButton = new JButton(DOBUTT);
     kwd.add( concButton );
 
@@ -294,11 +298,7 @@ public class Browser extends JFrame
         public void actionPerformed(ActionEvent evt) {
           progressBar.setValue(srt_i++ % SRTBARMAX);
           //progressBar.setString(perct+"% completed");
-          if ( //concThread.ctRead >= concThread.noFound ||
-               //concThread.ctRead >= ConcArray.arraymax ||
-              concThread.serverResponded ||
-               ! concThread.atWork() 
-               )
+          if (concThread.serverResponded ||!concThread.atWork())
             {
               ucrt_timer.stop();
               progressBar.setString("Done");
@@ -337,14 +337,17 @@ public class Browser extends JFrame
     concButton.addActionListener( this );
     quitButton.addActionListener( this );
     prefButton.addActionListener( this );
-    //advConcButton.addActionListener( this );
-    //advConcFlag.addActionListener( this );
+    advConcButton.addActionListener( this );
+    advConcFlagItem.addActionListener( this );
     keyword.addActionListener( this );
     
     caseCheckBox.addActionListener( this );
     caseCheckBox.setState(false);
-    //advConcFlag.setState(false);
-    
+    advConcFlagItem.setState(false);
+    advConcFlagItem.addActionListener(new ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+          setAdvConcFlag(advConcFlagItem.isSelected());
+        }});
     stlButton.addActionListener(this);
     strButton.addActionListener(this);
     extractButton.addActionListener(this);
@@ -387,12 +390,10 @@ public class Browser extends JFrame
     
     // et voila'...
     addComponentListener(concList);
-    
     preferenceFrame.addDefaultChangeListener(concList);
     preferenceFrame.addDefaultChangeListener(this);
     return;
   }
-
   
   private void loadPluginMenu () {
       ClassLoader cl = this.getClass().getClassLoader();
@@ -448,6 +449,8 @@ public class Browser extends JFrame
     acs.setMenus();
     }*/
   
+
+  ///////////////////////// ACTION LISTENER ///////////////////////////////////////
   public void actionPerformed(ActionEvent evt)
   {
     String arg = evt.getActionCommand();
@@ -500,7 +503,7 @@ public class Browser extends JFrame
 	    sortThread.start();
 	    srt_timer.start();
 	    labelMessage("Sorting with context horizon "
-                         +sortContextHorizon+" (left)");
+                   +sortContextHorizon+" (left)");
 	  }
 	else if(arg.equals(STRBUT))
 	  {
@@ -514,11 +517,11 @@ public class Browser extends JFrame
 	    int sortContextHorizon = getSortRightCtxHorizon();
 	    concThread.conc.setSortContextHorizonFlag(sortContextHorizon);
 	    sortThread = new
-              SortThread(concThread.conc.concArray,
-                         0,
-                         concThread.ctRead,
-                         new RightComparer(sortContextHorizon,
-                                           preferenceFrame.maxContext/2));
+        SortThread(concThread.conc.concArray,
+                   0,
+                   concThread.ctRead,
+                   new RightComparer(sortContextHorizon,
+                                     preferenceFrame.maxContext/2));
 	    sortThread.addConcordanceDisplayListener(concList);
 	    progressBar.setMaximum(SRTBARMAX-1);
 	    progressBar.setString("Sorting");
@@ -552,11 +555,10 @@ public class Browser extends JFrame
           preferenceFrame.setSize(400,300);
           preferenceFrame.show();
         }        
-    //      else if(  evt.getSource() == advConcButton )
-    //    {
-    //      //advSearchFrame.setSize( 1000, 250 );
-    //      advSearchFrame.show();
-    //    }
+      else if(  evt.getSource() == advConcButton )
+        {
+          guiSelector.activate();
+        }
       else if(  evt.getSource() == nrcButton )
         chooseNewRemoteCorpus();
       else if(  evt.getSource() == nlcButton )
@@ -594,16 +596,28 @@ public class Browser extends JFrame
             hb.show();
         }
         if (  evt.getSource() == aboutButton ){
-          HelpBrowser hb = new HelpBrowser("modnlp/tec/client/help/about.html", "About TEC");
+          HelpBrowser hb = new HelpBrowser("modnlp/tec/client/help/about.html", "About...");
           if ( hb.ok() )
             hb.show();
         }
       else
         if (  evt.getSource() == quitButton ){
           if ( noApplet )
-						System.exit(0);
+            quit();
 				}
   }
+  ///////////////////////// END OF ACTION LISTENER /////////////////////////////////////
+
+
+  private void quit(){
+    System.err.println("BYE...");
+    if (dictionary != null)
+      dictionary.close();
+    if (guiSelector != null)
+      guiSelector.dispose();
+    System.exit(0);
+  }
+
 
   public void itemStateChanged(ItemEvent e) {
     JMenuItem source = (JMenuItem)(e.getSource());
@@ -627,14 +641,13 @@ public class Browser extends JFrame
 
 	private boolean interruptDownloading()
 	{
-
 		int stop =
 			JOptionPane.
       showConfirmDialog(this,
                         "Concordance list is not completed. "+
                         "\nInterrupt transfer and continue sorting?",
-												"Interrupt transfer and continue sorting?",
-												JOptionPane.YES_NO_OPTION);
+                        "Interrupt transfer and continue sorting?",
+                        JOptionPane.YES_NO_OPTION);
 		return stop == 0 ? true : false;
 	}
 
@@ -682,6 +695,7 @@ public class Browser extends JFrame
       request.setServerPORT(PORTNUM);
       request.setServerProgramPath("/concordancer");
       concThread = new ConcordanceThread(this, request);
+      concThread.setEncoding(encoding);
       concThread.start();
     }
     concThread.addConcordanceDisplayListener(concList);
@@ -842,18 +856,23 @@ public class Browser extends JFrame
     //HeaderReader header = new HeaderReader(HEDBAS+headerName);
     //HeaderXMLHandler parser =  new HeaderXMLHandler();
     try {
+			BufferedReader in = null;
       URL headerURL = null;
-      /*if (standAlone)
-        headerURL = new URL("file://"+dictionary.getDictProps().getHeadURL()+"/"+headerName);
-        else*/
-      headerURL = new URL(HEDBAS+"/"+headerName);
-			BufferedReader in
-				= new BufferedReader(new InputStreamReader(headerURL.
-                                                   openConnection().
-                                                   getInputStream(),
-                                                   "UTF-8"));
+      if (standAlone) {
+        in = 
+          new BufferedReader(new InputStreamReader(new FileInputStream(HEDBAS+
+                                                                       java.io.File.separator+
+                                                                       headerName)));
+      }
+      else {
+        headerURL = new URL(HEDBAS+java.io.File.separator+headerName);
+        in = new BufferedReader(new InputStreamReader(headerURL.
+                                                      openConnection().
+                                                      getInputStream(),
+                                                      "UTF-8"));
+      }
       InputSource source = new InputSource(in);
-      source.setEncoding("UTF8");
+      source.setEncoding(encoding);
       /*
       if ( preferenceFrame.stSGML.equals("no") ) {
         parser.parse(source);
@@ -927,10 +946,9 @@ public class Browser extends JFrame
 	}  
 
   public void setAdvConcFlag (boolean f){
-    //if ( advConcFlag.isSelected() != f ) {
-    //  advConcFlag.doClick();
+    if (advConcFlagItem.isSelected() != f)
+      advConcFlagItem.doClick();
     advConcFlag = f;
-    //}
   }
   
   public boolean isStandAlone() {
@@ -948,8 +966,6 @@ public class Browser extends JFrame
     if (r == CorpusChooser.CANCEL_OPTION)
       return;
     String cdir = ncc.getSelectedFile().toString();
-    clProperties.setProperty("last.index.dir", cdir);
-    clProperties.save();
     setLocalCorpus(cdir);
   }
 
@@ -958,11 +974,21 @@ public class Browser extends JFrame
     if (dictionary != null)
       dictionary.close();
     dictionary = new Dictionary(false,dictProps);
+
+    clProperties.setProperty("last.index.dir", cdir);
+    standAlone = true;
+    clProperties.setProperty("stand.alone","yes");
+
     setTitle(getBrowserName()+": index at "+cdir);
     dictionary.setVerbose(debug);
     setHeadersURL(dictProps);
+    encoding = dictProps.getProperty("file.encoding");
+    if (guiSelector != null)
+      guiSelector.dispose();
+    guiSelector = null;
+    System.gc();
+    guiSelector = new GraphicalSubcorpusSelector(dictionary, this);
     concordanceProducer = new ConcordanceProducer(dictionary);
-    standAlone = true;
   }
 
   private void setHeadersURL(DictProperties dictProps){
@@ -985,7 +1011,7 @@ public class Browser extends JFrame
         dictProps.setProperty("headers.home", hh);
         dictProps.save();
       }
-    HEDBAS = "file://"+hh;
+    HEDBAS = hh;
     clProperties.setProperty("tec.client.headers", HEDBAS);
     preferenceFrame.setHeaderBaseURL(HEDBAS);
   }
@@ -1001,12 +1027,16 @@ public class Browser extends JFrame
       return;
     else
       firstRemoteFlag = false;
-      
-    SERVER = rcc.getServer();
-    PORTNUM =  rcc.getPort();
-    clProperties.setProperty("tec.client.server",SERVER);
-    clProperties.setProperty("tec.client.port",PORTNUM+"");
-    clProperties.save();
+
+    String s = rcc.getServer();
+    int p =  rcc.getPort();
+    setRemoteCorpus(s,p);
+    clProperties.setProperty("stand.alone","no");
+  }
+
+  public void setRemoteCorpus(String s, int p){
+    SERVER = s;
+    PORTNUM = p;
     setTitle(getBrowserName()+": index at "+SERVER+":"+PORTNUM);
     standAlone = false;
     TecClientRequest request = new TecClientRequest();
@@ -1015,6 +1045,11 @@ public class Browser extends JFrame
     request.put("request","headerbaseurl");
     request.setServerProgramPath("/headerbaseurl");
     try {
+      if (dictionary != null)
+        dictionary.close();
+      if (guiSelector != null)
+        guiSelector.dispose();
+      guiSelector = new GraphicalSubcorpusSelector(null, this);
       URL exturl = new URL(request.toString());
       HttpURLConnection exturlConnection = (HttpURLConnection) exturl.openConnection();
       //exturlConnection.setUseCaches(false);
@@ -1023,20 +1058,30 @@ public class Browser extends JFrame
         BufferedReader(new
                        InputStreamReader(exturlConnection.getInputStream() ));
       HEDBAS = input.readLine();
-      System.err.println(">>>>"+HEDBAS);
+      System.err.println("HEDBAS=>>>>"+HEDBAS);
       if (HEDBAS == null || HEDBAS.equals(""))
         HEDBAS = "http://"+SERVER+"/tec/headers";
-    preferenceFrame.setHeaderBaseURL(HEDBAS);
+      preferenceFrame.setHeaderBaseURL(HEDBAS);
+      encoding = input.readLine();
+      System.err.println("encoding=>>>>"+encoding);
+      encoding = encoding == null? "---UTF8---" : encoding;
+      clProperties.setProperty("tec.client.server",SERVER);
+      clProperties.setProperty("tec.client.port",PORTNUM+"");
+      clProperties.setProperty("stand.alone","no");
+      clProperties.save();
+      concordanceProducer = null;
     }
     catch(IOException e)
       {
+        if (guiSelector != null)
+          guiSelector.dispose();
         System.err.println("Exception: couldn't create URL input stream: "+e);
         HEDBAS = "http://"+SERVER+"/tec/headers";
         System.err.println("Setting URL to "+HEDBAS);
         preferenceFrame.setHeaderBaseURL(HEDBAS);
       }
   }
-
+  
   public boolean workOffline() {
     int option;
     if ((clProperties.getProperty("stand.alone")).equals("yes"))
@@ -1057,45 +1102,88 @@ public class Browser extends JFrame
       }
   }
 
+  public void initialCorpusSelection() {
+    int option = -1;
+    String sal = clProperties.getProperty("stand.alone");
+    
+    String lc = (sal != null && sal.equals("yes")) ?
+      clProperties.getProperty("last.index.dir") :
+      clProperties.getProperty("tec.client.server")+":"+clProperties.getProperty("tec.client.port");
+
+    String [] opts = {"Use last corpus", "Choose new remote corpus", "Choose new local corpus"};
+    JPanel pl = new JPanel();
+    pl.setLayout(new BorderLayout());
+    pl.add(new JLabel("The corpus you used last time was "+lc), BorderLayout.NORTH);
+    pl.add(new JLabel("What would you like to do?"), BorderLayout.SOUTH);
+    String op = 
+      (String )JOptionPane.showInputDialog(this,
+                                           pl,
+                                           "Corpus selection",
+                                           JOptionPane.QUESTION_MESSAGE,
+                                           null,
+                                           opts,
+                                           "Use last corpus");
+    for (int i = 0; i < opts.length; i++) {
+      if (opts[i].equals(op)) {
+        option = i;
+        break;
+      }
+    }
+
+    switch (option)
+      {
+      case 0:
+         if (sal != null && sal.equals("yes"))
+           setLocalCorpus(clProperties.getProperty("last.index.dir"));
+         else
+           setRemoteCorpus(clProperties.getProperty("tec.client.server"),
+                           (new Integer(clProperties.getProperty("tec.client.port"))).intValue());
+         break;
+      case 1:
+        chooseNewRemoteCorpus();
+        break;
+      case 2:
+        chooseNewLocalCorpus();
+        break;
+      default:
+        setTitle(getBrowserName()+": No index selected");
+        break;
+      }
+    clProperties.save();
+  }
+
   public Dictionary getDictionary(){
     return dictionary;
   }
 
   public static void main(String[] args) {
     try {
-      //System.err.println(System.getProperty("file.encoding"));
       splashScreen = new SplashScreen("Initialising. Please wait...", 20,
                                       "modnlp/tec/client/icons/modnlp-small.jpg");
       splashScreen.incProgress();
-      Browser f = new Browser(FRAME_WIDTH, FRAME_HEIGHT);
+      final Browser f = new Browser(FRAME_WIDTH, FRAME_HEIGHT);
       if (f.clProperties.getProperty("browser.brand") != null) {
-        f.setBrand(f.clProperties.getProperty("browser.brand")+" (v. "+RELEASE+")");
+        f.setBrand(f.clProperties.getProperty("browser.brand"));
       }
 
 
       f.addWindowListener(new WindowAdapter() {
           public void windowClosing(WindowEvent e) {
-            System.exit(0);
+            f.quit();
           }
         });
       
       if (args.length > 0 && args[0] != null)
-        if (args[0].equals("-standalone") || f.workOffline() ) {
+        if (args[0].equals("-standalone") ) {
           f.standAlone = true;
           f.chooseNewLocalCorpus();
           //f.dictionary = new Dictionary();
         }
         else
           f.SERVER = args[0];
-      // SL: all this needs to be revamped to allow user to choose which
-      // corpus server(s) to connect to. 
-      else if ( f.workOffline() )
-        if ( f.clProperties.getProperty("last.index.dir") == null)
-          f.chooseNewLocalCorpus();
-        else
-          f.setLocalCorpus(f.clProperties.getProperty("last.index.dir"));
-      else if ( f.clProperties.getProperty("tec.client.server") != null )
-        f.SERVER = f.clProperties.getProperty("tec.client.server");
+      else
+        f.initialCorpusSelection();
+      
       f.HEDBAS = "http://"+f.SERVER+"/tec/headers";
       if ( f.clProperties.getProperty("tec.client.headers") != null )
         f.HEDBAS = f.clProperties.getProperty("tec.client.headers");

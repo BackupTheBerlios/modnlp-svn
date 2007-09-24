@@ -1,9 +1,12 @@
-#modnlp.idx.IndexManager's properties (tailored to ECPC indexing)
-#Wed May 16 15:29:14 IST 2007
-tokeniser.ignore.elements=(omit|ignore|header|chair|heading|post|name)
+#modnlp.idx.IndexManager's properties
+#Thu Sep 13 09:22:16 IST 2007
 index.headers=true
-subcorpusindexer.attribute=ref
-subcorpusindexer.element=(speech|writing)
-xquery.root.element.path=//intervention
 xquery.return.attribute.path=(speech|writing)/@ref
+tokeniser.ignore.elements=(omit|ignore|header|chair|heading|post|name)
+subcorpusindexer.attribute=ref
+xquery.root.element.path=//intervention
+subcorpusindexer.element=(speech|writing)
 header.extension=hed
+last.index.dir=/tmp/iep
+xquery.max.cache.size=23
+xquery.attribute.chooser.specs=File name;../../header/@filename;Spoken language;speech/@language;Written language;writing/@language;Affiliation;(speaker|writer)/affiliation/@EPparty

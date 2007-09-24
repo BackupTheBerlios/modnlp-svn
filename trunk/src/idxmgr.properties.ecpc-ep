@@ -1,0 +1,15 @@
+#modnlp.idx.IndexManager's properties (tailored to ECPC indexing)
+#Wed May 16 15:29:14 IST 2007
+tokeniser.ignore.elements=(omit|ignore|header|chair|heading|post|name)
+index.headers=true
+subcorpusindexer.attribute=ref
+subcorpusindexer.element=(speech|writing)
+xquery.root.element.path=//intervention
+xquery.return.attribute.path=(speech|writing)/@ref
+## specs and paths all relative to xquery.root.element.path
+## form: description_1;path_1;description_2;path_2,...
+xquery.attribute.chooser.specs=File name;../../header/@filename;Spoken language;speech/@language;Written language;writing/@language;Affiliation;(speaker|writer)/affiliation/@EPparty
+header.extension=hed
+## the maximum number of subcorpus constraint query results to be stored (by HeaderDBManager)
+xquery.max.cache.size=23
+file.encoding=UTF8

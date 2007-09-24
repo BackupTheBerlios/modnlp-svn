@@ -44,7 +44,7 @@ import java.util.Iterator;
  *
  * Usage:
  * <pre>
- BVBayes corpus_list categ prob_model 
+ BVBayes corpus_list categ prob_model [parser [smoothing]]
 
 SYNOPSIS:
   Categorise each news item in corpus_list according to categ using
@@ -53,12 +53,14 @@ SYNOPSIS:
 ARGUMENTS
  corpus_list: list of files to be classified
 
- categ: target category (e.g. 'acq'.) The classifier will define CSV 
-        as CSV_{categ}
+ categ:       target category (e.g. 'acq'.) The classifier will define CSV 
+              as CSV_{categ}
 
- pmfile: file containing a  probability model generated via, say, 
-         modnlp.tc.induction.MakeProbabilityModel.
+ pmfile:      file containing a  probability model generated via, say, 
+              modnlp.tc.induction.MakeProbabilityModel.
 
+ parser:      LingspamEmailParser, NewsParser [default: NewsParser]
+ smoothing:   0: MLE (no smoothing), 1: Laplace, ...
   </pre>
  * @author  Saturnino Luz &#60;luzs@acm.org&#62;
  * @version <font size=-1>$Id: BVBayes.java,v 1.1.1.1 2005/05/26 13:59:30 amaral Exp $</font>
@@ -148,6 +150,8 @@ public class BVBayes
       String parser = args.length > 4 ? args[4] : "NewsParser";
       System.err.println("Loading probability model...");
       BVBayes f = new BVBayes(clistfn, pmfile);
+      if (args.length > 5)
+        f.pm.setSmoothingType((new Byte(args[5])).byteValue());
       System.out.println("Probability model description:\n "
                          +f.pm.getCreationInfo());
       CSVTable csvt = new CSVTable(category);
@@ -209,7 +213,7 @@ public class BVBayes
     }
     catch (Exception e){
       System.err.println("USAGE:");
-      System.err.println(" BVBayes corpus_list categ prob_model threshold [parser]\n");
+      System.err.println(" BVBayes corpus_list categ prob_model threshold [parser [smoothing]]\n");
       System.err.println("SYNOPSIS:");
       System.err.println("  Categorise each news item in corpus_list according to categ using");
       System.err.println("  Boolean Vector Naive Bayes (see lecture notes ctinduction.pdf, p 7)\n");
@@ -224,9 +228,9 @@ public class BVBayes
       System.err.println("      - 'proportional': choose threshold s.t. that g_Tr(ci) is");
       System.err.println("         closest to g_Tv(ci). [DEFAULT]");
       System.err.println("      - ...");
-      System.err.println(" PARSER: parser to be used [default: 'news']");
+      System.err.println(" PARSER: parser to be used [default: 'NewsParser']");
       System.err.println("   see modnlp.tc.parser.* for other options ");
-
+      System.err.println(" SMOOTHING: 0: no smoothing, 1: Laplace, ...  [default: 0]");
       e.printStackTrace();
     } 
   }

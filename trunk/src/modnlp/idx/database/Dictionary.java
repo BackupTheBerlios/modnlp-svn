@@ -332,7 +332,7 @@ public class Dictionary {
    * <code>queryArray</code> and <code>intervArray</code>)
    *
    * <p>
-   * N.B.: as binary search in order to speed it up to logarithmic
+   * N.B.: used binary search in order to speed it up to logarithmic
    * levels (avoiding the current O(n) worst-case behaviour)
    * 
    * @param pcq the 'pre-processed' query object, containing the

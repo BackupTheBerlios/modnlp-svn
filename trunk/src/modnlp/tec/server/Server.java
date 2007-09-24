@@ -28,6 +28,7 @@ package modnlp.tec.server;
 
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
+import modnlp.idx.headers.HeaderDBManager;
 
 import java.io.*;
 import java.net.*;
@@ -52,18 +53,17 @@ import java.util.Enumeration;
 public class Server extends Thread {
 
   private static final boolean DEBUG = false;
-  private final int MAXCTX = 130;
-  private final int MAXEXT = 600;
+  private static final int MAXCTX = 130;
+  private static final int MAXEXT = 600;
   private static final int  PORTNUM = 1240;
   // These are feaaults to be chaged in main() 
-	private static ServerProperties sprop = new ServerProperties();
+  private static ServerProperties sprop = new ServerProperties();
   private static String LOGF = sprop.getProperty("log.file");
   
   private static ServerSocket serverSocket;
   private static Dictionary dtab;
   private static TecLogFile logf;
-  //private Connection conn;
-  //private CategTextHandler handler;
+  private HeaderDBManager hdbm;
 	
 	
   /** Initialize the server
@@ -94,9 +94,10 @@ public class Server extends Thread {
 
   public void run() {
     try {
+      hdbm = new HeaderDBManager(dtab.getDictProps());
     while (true)
       {
-        new TecConnection( serverSocket.accept(), dtab, logf);
+        new TecConnection( serverSocket.accept(), dtab, logf, hdbm);
       }
     }
     catch (IOException e) {
@@ -134,12 +135,10 @@ public class Server extends Thread {
    *                file to be used by the server
    */
   public static void main(String[] arg) throws IOException {
-    System.out.println("hey");
+    //System.out.println("hey");
     Server server = new Server();
     //server.setDaemon(true);
     server.start();
   }
 	
 }
-
-

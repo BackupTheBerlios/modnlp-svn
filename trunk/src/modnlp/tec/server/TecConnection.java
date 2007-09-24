@@ -5,7 +5,7 @@
  *
 
  * Copyright (c) 2006 S.Luz (TCD)
- *           (with contributions by Noel Skehan)
+ *           (with contributions from Noel Skehan)
  *           (c) 1998 S.Luz (DLE-UMIST) 
  *           All Rights Reserved.
  *
@@ -24,10 +24,11 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *     
- */ 
+ */
 package modnlp.tec.server;
 
 import modnlp.idx.database.Dictionary;
+import modnlp.idx.headers.HeaderDBManager;
 import modnlp.idx.query.WordQuery;
 import modnlp.idx.query.WordQueryException;
 
@@ -36,7 +37,7 @@ import java.net.*;
 import java.lang.*;
 import java.util.StringTokenizer;
 import java.util.Hashtable; 
-import java.util.Vector; 
+import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
@@ -53,19 +54,21 @@ import java.util.StringTokenizer;
  */
 public class TecConnection extends Thread {
 
-  private final int MAXCTX = 130;
-  private final int MAXEXT = 600;
+  private static final int MAXCTX = 130;
+  private static final int MAXEXT = 600;
   Socket  cSokt = null;
+  HeaderDBManager hdbm = null;
   Dictionary dtab;
   TecLogFile logf;
   String sqlquery = "";
 
   /** Initialize a new connection thread
    */
-  public TecConnection(Socket s, Dictionary d, TecLogFile f) {
+  public TecConnection(Socket s, Dictionary d, TecLogFile f, HeaderDBManager h) {
     cSokt = s;
     dtab = d;
     logf = f;
+    hdbm = h;
     setPriority(NORM_PRIORITY - 1);
     start();
   }
@@ -75,17 +78,23 @@ public class TecConnection extends Thread {
    */
   public void run() {
 
-    BufferedReader is = null; 
+    BufferedReader is = null;
     PrintWriter os = null;
+    //PrintWriter os = null;
     //SQLConnection sc;
-		InetAddress inaddrr;
-
-		try {
-			os = new PrintWriter
-				(new BufferedOutputStream(cSokt.getOutputStream()));
-			is = new BufferedReader
-				(new InputStreamReader(cSokt.getInputStream()));
-			//sc = new SQLConnection();
+    InetAddress inaddrr;
+    
+    try {
+      os = 
+        new PrintWriter(new OutputStreamWriter(cSokt.getOutputStream(),
+                                               dtab.getDictProps().getProperty("file.encoding")),
+                        true);
+      //os = new PrintWriter
+      //  (new BufferedOutputStream(cSokt.getOutputStream()));
+      is = new BufferedReader
+        (new InputStreamReader(cSokt.getInputStream(), 
+                               dtab.getDictProps().getProperty("file.encoding")));
+      //sc = new SQLConnection();
       inaddrr = cSokt.getInetAddress();
       String inLine, outLine;
       if ((inLine = is.readLine()) != null) 
@@ -101,10 +110,10 @@ public class TecConnection extends Thread {
       is.close();
       os.close();
       cleanUp(cSokt);
-    }
+                }
 		catch (WordQueryException e) {
-      logf.logMsg("doConcordance: Malformed query: |"+e.getOriginalQuery());
-			os.println(-1);
+                  logf.logMsg("doConcordance: Malformed query: |"+e.getOriginalQuery());
+                  os.println(-1);
 			os.println("Error: Malformed query:"+e.getOriginalQuery());
 			os.println("");
 			os.flush();
@@ -161,6 +170,12 @@ public class TecConnection extends Thread {
       case Request.HEADERBASEURL:
         getHeaderBaseURL(os);
         break;
+      case Request.ATTCHOPTSPECS:
+        sendAttributeChooserSpecs(os);
+        break;
+      case Request.ATTCHOSPTIONS:
+        sendAttOptionSet(req,os);
+        break;
       default:
         logf.logMsg("TecServ: couldn't understand req "+
                     req.get("request")+req.typeOfRequest());
@@ -187,7 +202,13 @@ public class TecConnection extends Thread {
       int ctx = getSafeInteger((String)req.get("context"),MAXCTX).intValue();
       boolean ignx = 
         ((String)req.get("sgml")).equalsIgnoreCase("no")? true : false;
-      dtab.printConcordances(wquery, ctx, ignx, os);
+      String xquerywhere = (String)req.get("xquerywhere");
+      System.err.println("xquerywhere->"+xquerywhere);
+      if (xquerywhere == null)
+        dtab.printConcordances(wquery, ctx, ignx, os);
+      else
+        dtab.printConcordances(wquery, ctx, ignx, os,
+                               hdbm.getSubcorpusConstraints(xquerywhere));
     }
     catch (WordQueryException e) {
       logf.logMsg("doConcordance: Malformed query: |"+wquery+"|"+e);
@@ -204,6 +225,26 @@ public class TecConnection extends Thread {
     }
   }
 	
+  private void sendAttributeChooserSpecs(PrintWriter os) 
+		throws IOException
+  {
+    os.println(dtab.getDictProps().getProperty("xquery.attribute.chooser.specs"));
+    os.flush();
+  }
+
+  private void sendAttOptionSet(Request req, PrintWriter os) 
+		throws IOException
+  {
+    String xqueryattribs = (String)req.get("xqueryattribs");
+    String s = hdbm.getOptionSetString(xqueryattribs);
+    if (s.length() < 6) // a little hack to force transmission of very short option lists
+      os.println(s+"_,__,_");
+    else
+      os.println(s);
+    os.flush();
+  }
+
+
   /** Retrieve a bit of text surrounding a given keyword
    *  
    * @param req    A pre-parsed client request (key-value pairs)
@@ -233,6 +274,7 @@ public class TecConnection extends Thread {
   public void getHeaderBaseURL(PrintWriter os){
     System.err.println(dtab.getDictProps().getProperty("headers.url"));
     os.println(dtab.getDictProps().getProperty("headers.url"));
+    os.println(dtab.getDictProps().getProperty("file.encoding"));
     os.flush();
   }
 

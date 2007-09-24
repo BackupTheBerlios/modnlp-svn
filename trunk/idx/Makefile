@@ -5,7 +5,8 @@ LIBS=$(subst :, ,$(LIBSPATH))
 LIBLICENSES=$(TOPDIR)lib/COPYING-libs
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
-SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
+SOURCES=$(SOURCEDIR)modnlp/Constants.java \
+	$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/util/LogStream.java \
 	$(SOURCEDIR)modnlp/util/Tokeniser.java \
 	$(SOURCEDIR)modnlp/util/IOUtil.java \
@@ -46,6 +47,7 @@ SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/idx/database/SubcorpusDirectory.java \
 	$(SOURCEDIR)modnlp/idx/database/SubcorpusTable.java \
 	$(SOURCEDIR)modnlp/idx/headers/HeaderDBManager.java \
+	$(SOURCEDIR)modnlp/idx/headers/ConstraintCache.java \
 	$(SOURCEDIR)modnlp/idx/inverted/SubcorpusIndexer.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserGNU.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserRegex.java \
@@ -60,6 +62,7 @@ SOURCES=$(SOURCEDIR)modnlp/util/PrintUtil.java \
 	$(SOURCEDIR)modnlp/idx/gui/CorpusChooser.java \
 	$(SOURCEDIR)modnlp/idx/gui/CorpusFilesChooser.java \
 	$(SOURCEDIR)modnlp/idx/gui/HeaderURLChooser.java \
+	$(SOURCEDIR)modnlp/idx/gui/IndexConfigChooser.java \
 	$(SOURCEDIR)modnlp/idx/gui/IndexManagerUI.java \
 	$(SOURCEDIR)modnlp/idx/query/Horizon.java \
 	$(SOURCEDIR)modnlp/idx/query/PrepContextQuery.java \
@@ -134,7 +137,23 @@ dist: clean
 bindist: jar
 	mkdir $(BINDISTDIR)
 	cp README.bin $(BINDISTDIR)/README
-	cp $(TOPDIR)src/idxmgr.properties.ecpc $(BINDISTDIR)/idxmgr.properties
+	cp $(TOPDIR)src/idxmgr.properties $(BINDISTDIR)/idxmgr.properties
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)
+
+bindisthc: jar
+	mkdir $(BINDISTDIR)-hc
+	cp README.bin $(BINDISTDIR)-hc/README
+	cp $(TOPDIR)src/idxmgr.properties.ecpc-hc $(BINDISTDIR)-hc/idxmgr.properties
+	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)-hc
+	tar cfvz /tmp/$(BINDISTDIR)-hc.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-hc
+	rm -rf $(BINDISTDIR)-hc
+
+bindistep: jar
+	mkdir $(BINDISTDIR)-ep
+	cp README.bin $(BINDISTDIR)-ep/README
+	cp $(TOPDIR)src/idxmgr.properties.ecpc-ep $(BINDISTDIR)-ep/idxmgr.properties
+	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)-ep
+	tar cfvz /tmp/$(BINDISTDIR)-ep.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-ep
+	rm -rf $(BINDISTDIR)-ep

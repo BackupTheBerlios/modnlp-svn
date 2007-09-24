@@ -242,11 +242,11 @@ implements TCInvertedIndex
         if ( cs.contains(i.next()) )
           iss++;
 
-    double vsize = (double)tTable.size(); // size of vocab., used for smoothing
+    double vsize = (double) getTermSetSize(); // size of vocab., used for smoothing
     double c = (double) css/corpusSize;  // p(c)
 
     // these will get different values depending on smoothing
-    double t = 0; 
+    double t = 0;
     double tgc = 0;
     
     switch (getSmoothingType()) {
@@ -255,9 +255,10 @@ implements TCInvertedIndex
       tgc = (double) iss/css; //  p(t|c)
       break;
     case LAPLACE:// Laplace [add-one] smoothing
-      //t = (double) tss/corpusSize; // need to correct for smoothing
+      //t = (double) tss/corpusSize; 
+      // need to correct for smoothing 5-4-3
       // [below], otherwise inconsistency might arise. Example: for
-      // p(t) = 1 we'd get P(-t,-c) = (1 - P(t) - P(-t,c) < 0.
+      // p(t) = 1 we'd get P(-t,-c) = 1 - P(t) - P(-t,c) < 0.
       t = (double) (tss+1)/(corpusSize+2);  // p(t)
       tgc = (double) (iss+1)/(css+2); // p(t|c) 
       break;

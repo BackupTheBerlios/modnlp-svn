@@ -51,7 +51,7 @@ import java.util.Iterator;
  *
  * Usage:
  * <pre>
- DSNormalisedBayes corpus_list categ prob_model 
+ DSNormalisedBayes corpus_list categ prob_model [parser [smoothing]]
 
 SYNOPSIS:
   Categorise each news item in corpus_list according to categ using
@@ -66,6 +66,9 @@ ARGUMENTS
  pmfile: file containing a  probability model generated via, say, 
          modnlp.tc.induction.MakeProbabilityModel.
 
+ parser:      LingspamEmailParser, NewsParser [default: NewsParser]
+
+ smoothing:   0: MLE (no smoothing), 1: Laplace, ...
   </pre>
  * @author  Saturnino Luz &#60;luzs@acm.org&#62;
  * @version <font size=-1>$Id: DSNormalisedBayes.java,v 1.1.1.1 2005/05/26 13:59:30 amaral Exp $</font>
@@ -146,7 +149,11 @@ public class DSNormalisedBayes
       String parser = args.length > 4 ? args[4] : "NewsParser";
       System.err.println("Loading probability model...");
       DSNormalisedBayes f = new DSNormalisedBayes(clistfn, pmfile);
+      if (args.length > 5)
+        f.pm.setSmoothingType((new Byte(args[5])).byteValue());
       CSVTable csvt = new CSVTable(category);
+      int catcount = 0;
+      int csize = 0;
       for (Enumeration e = f.clist.elements(); e.hasMoreElements() ;)
 			{
         String fname = (String)e.nextElement();
@@ -158,25 +165,49 @@ public class DSNormalisedBayes
           ParsedDocument pni = (ParsedDocument)g.nextElement();
           double csv = f.computeCSV(category, pni);
           csvt.setCSV(pni.getId(), csv);
-          if (pni.isOfCategory(category))
+          if (pni.isOfCategory(category)) {
             csvt.addToTargetDocSet(pni.getId());
+            catcount++;
+          }
         }
+        csize += i-1;
         PrintUtil.donePrinting();
       }
-
       System.out.println("TARGET DOCS for "+category+": "+csvt.getTargetDocSet());
       System.out.println("CSV RESULTS:\n"+csvt);
       Set selected = csvt.applyThreshold(tmethod, f.pm.getCatGenerality(category));
       System.out.println("SELECTED DOCS:\n"+selected);
+      double acc = csvt.getAccuracy(), prc = csvt.getPrecision(), 
+        rec = csvt.getRecall(), fot = csvt.getFallout();
+      int tp = csvt.getTPsize(), fp = csvt.getFPsize(), 
+        tn = csvt.getTNsize(), fn = csvt.getFNsize();
+      MaxMinCSV mmcsv = csvt.getMaxMinCSV();
       System.out.println("EFFECTIVENESS:\n"
-                         +"  accuracy = "+csvt.getAccuracy()
-                         +"  precision = "+csvt.getPrecision()
-                         +"  recall = "+csvt.getRecall()
+                         +"  accuracy =  "+acc
+                         +"  precision = "+prc
+                         +"  recall = "+rec
+                         +"  fallout = "+fot
+                         +"\n  TP = "+tp+" FP = "+fp
+                         +" TN = "+tn+" FN = "+fn
+                         +"\n  max(CSV) = "+mmcsv.max+" min(CSV) = "+mmcsv.min
+                         );
+      System.out.println("STATSHEADER:acc,prc,rec,fot,gen,tp,fp,tn,fn,clist,model,tshold,cl2,swlist,aggr,tsr,pcateg,pmodel,parser");
+      System.out.println("STATSLINE:"+
+                         acc+
+                         ","+prc+
+                         ","+rec+
+                         ","+fot+
+                         ","+((double)catcount/csize)+
+                         ","+tp+","+fp+","+tn+","+fn+
+                         ","+clistfn+
+                         ","+pmfile+
+                         ","+tmethod+
+                         ","+f.pm.getCreatorArgsCSV()
                          );
     }
     catch (Exception e){
       System.err.println("USAGE:");
-      System.err.println(" DSNormalisedBayes corpus_list categ prob_model threshold\n");
+      System.err.println(" DSNormalisedBayes corpus_list categ prob_model threshold [parser [smoothing]]\n");
       System.err.println("SYNOPSIS:");
       System.err.println("  Categorise each news item in corpus_list according to categ using");
       System.err.println("  Boolean Vector Naive Bayes (see lecture notes ctinduction.pdf, p 7)\n");
@@ -193,7 +224,7 @@ public class DSNormalisedBayes
       System.err.println("      - ...");
       System.err.println(" PARSER: parser to be used [default: 'news']");
       System.err.println("   see modnlp.tc.parser.* for other options ");
-      e.printStackTrace();
+      System.err.println(" SMOOTHING: 0: MLE (no smoothing), 1: Laplace, ...  [default: 0]");      e.printStackTrace();
     } 
   }
 }

@@ -17,6 +17,7 @@
 */
 package modnlp.idx.headers;
 
+import modnlp.Constants;
 import modnlp.idx.query.SubcorpusConstraints;
 import modnlp.idx.database.DictProperties;
 
@@ -52,15 +53,22 @@ import java.util.HashSet;
 
 public class HeaderDBManager {
 
+  /**
+   * Identifier for variable to which header queries will bind. 
+   */
+  public static final String XQVAR = "$s";
+  public static final int DEFAULTMAXCACHESIZE = 20;
+
   Database database = null;
   Collection collection = null;
   public static final String EXIST_CONF_NAME = "eXistConf.xml";
-  static final String RELATIVE_EXIST_DB_PATH = "eXistMNLP/data";
   private static String PS = java.io.File.separator;
+  static final String RELATIVE_EXIST_DB_PATH = "eXistMNLP"+PS+"data";
   static final String URI = "xmldb:exist://";
   static final String colName = "xmldb:exist:///db/headers";
   String queryRootElementPath = null;  // e.g. //intervention
   String queryReturnSIDAttPath = null; // e.g. (speech|writing)/@ref
+  ConstraintCache cache;
 
   public HeaderDBManager (DictProperties dp)
     throws ClassNotFoundException,
@@ -68,6 +76,18 @@ public class HeaderDBManager {
            InstantiationException,
            XMLDBException
   {
+    String mcs = dp.getProperty("xquery.max.cache.size");
+    if (mcs == null) {
+      cache = new ConstraintCache(DEFAULTMAXCACHESIZE);
+    }
+    else {
+      try {
+        cache = new ConstraintCache((new Integer(mcs)).intValue());
+      } catch (java.lang.NumberFormatException e) {
+        cache = new ConstraintCache(DEFAULTMAXCACHESIZE);
+      }
+    }
+
     String envHome = dp.getEnvHome();
     queryRootElementPath = dp.getProperty("xquery.root.element.path");
     queryReturnSIDAttPath = dp.getProperty("xquery.return.attribute.path");
@@ -131,21 +151,26 @@ public class HeaderDBManager {
     System.out.println("ok.");    
   }
 
+
   public SubcorpusConstraints getSubcorpusConstraints(String where){
     try {
+      SubcorpusConstraints sc;
       if (where == null)
         return null;
+      if ( (sc = cache.get(where)) != null )
+        return sc;
       String resources[] = collection.listResources();
-      SubcorpusConstraints sc = new SubcorpusConstraints();
+      sc = new SubcorpusConstraints();
       for (int i = 0; i < resources.length; i++) {
-        //System.out.println(resources[i]);
         XQueryService service =
           (XQueryService) collection.getService("XQueryService", "1.0");
         //service.setProperty("indent", "yes");
-        CompiledExpression compiled = service.compile("for $s in doc('"+
-                                                      resources[i]+"')"+queryRootElementPath+
-                                                      " where "+where+
-                                                      " return data($s/"+queryReturnSIDAttPath+")");
+        String xq = "for "+XQVAR+" in doc('"+
+          resources[i]+"')"+queryRootElementPath+
+          " let $a := 'a' "+  // need to include this nonsensical let clause (possibly a bug in eXist
+          " where "+where+
+          " return data("+XQVAR+"/"+queryReturnSIDAttPath+")";
+        CompiledExpression compiled = service.compile(xq);
         ResourceSet result = service.execute(compiled);
         ResourceIterator ri = result.getIterator();
         HashSet hs = new HashSet();
@@ -156,6 +181,8 @@ public class HeaderDBManager {
         if (!hs.isEmpty())
           sc.put(resources[i], hs);
       }
+      cache.cache(where,sc);
+      //System.out.println(sc);
       return sc; //.isEmpty()? null : sc;
     }
     catch (Exception ex){
@@ -164,6 +191,44 @@ public class HeaderDBManager {
       return new SubcorpusConstraints();
     }
   }
+
+  public String[] getOptionSet(String attchsr){
+    try {
+      if (attchsr == null)
+        return null;
+      XQueryService service =
+        (XQueryService) collection.getService("XQueryService", "1.0");
+      //service.setProperty("indent", "yes");
+      CompiledExpression compiled = 
+        service.compile("for $s in distinct-values("+queryRootElementPath+"/"+
+                        attchsr+") order by $s return data($s)");
+      ResourceSet result = service.execute(compiled);
+      int s = (int)result.getSize();
+      String[] out = new String[s];
+      for (int i = 0; i < s; i++) {
+        out[i] = (String)result.getResource(i).getContent();
+      }
+      return out;
+    }
+    catch (Exception ex){
+      System.err.println("Error (HeaderDBManager.geSubcorpusConstrints): "+ex+" ATTCHRS: "+attchsr);
+      ex.printStackTrace();
+      return null;
+    }
+  }
+
+  public String getOptionSetString(String attchsr){
+    String[] osa = getOptionSet(attchsr);
+    if (osa == null)
+      return null;
+    StringBuffer sb = new StringBuffer(osa[0]);
+    for (int i = 1; i < osa.length; i++) {
+      sb.append(Constants.ATTRIBUTE_OPTION_SEP+osa[i]);
+    }
+    //System.err.println("------------>"+sb);
+    return sb.toString();
+  }
+
 
   public void finalize() {
     try {
@@ -180,7 +245,10 @@ public class HeaderDBManager {
     try {
       HeaderDBManager hm = new HeaderDBManager(new DictProperties(args[0]));
       // shut down the database
-      System.err.println(hm.getSubcorpusConstraints(args[1]));
+      String[] a = hm.getOptionSet(args[1]);
+      for (int i = 0; i < a.length; i++) {
+        System.err.println(a[i]);
+      }
       DatabaseInstanceManager manager = (DatabaseInstanceManager)
         hm.collection.getService("DatabaseInstanceManager", "1.0"); 
       manager.shutdown();

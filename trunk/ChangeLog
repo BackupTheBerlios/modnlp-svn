@@ -1,3 +1,11 @@
+2007-09-21  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* idx, teccli, tecser: improved subcorpus search, implemented
+	basic GUI subcorpus selector, fixed several bugs, tested on HC and
+	CD corpora, implemented server-side subcorpus selection and
+	extended protocol. Backward compatibility with old TEC system has
+	been abadoned as of idx-0.1.2 and teccli-0.5.2. 
+
 2007-08-20  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* Fixed some bugs in tc, added basic sub-corpus serch

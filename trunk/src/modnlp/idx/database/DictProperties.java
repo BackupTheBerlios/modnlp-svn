@@ -17,6 +17,8 @@
 */
 package modnlp.idx.database;
 
+import modnlp.idx.IndexManagerProperties;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,7 +34,7 @@ import java.io.IOException;
 public class DictProperties extends java.util.Properties{
 
   public static String PROP_FNAME = "dictionary.properties";
-  public static String DEFAULT_PROP_FNAME = "idxmgr.properties";
+  //public static String DEFAULT_PROP_FNAME =  "idxmgr.properties";
   private static String PS = java.io.File.separator;
   String envHome = "/tmp/tec/index";   // a very unsafe default;
   //String headDir = "/tmp/tec/headers/";   // a very unsafe default;
@@ -46,15 +48,15 @@ public class DictProperties extends java.util.Properties{
   String encoding  = "UTF8";
   String headerEXT = "hed";
 
-	public DictProperties (String cd) {
+  public DictProperties (String cd) {
     envHome = cd;
     init();
   }
-
-	public DictProperties (){
+  
+  public DictProperties (){
     init();
   }
-
+  
   private void init(){
     String pf = envHome+PS+PROP_FNAME;
     try {
@@ -62,7 +64,7 @@ public class DictProperties extends java.util.Properties{
     }
     catch (Exception e) {
       System.err.println("Error reading property file "+pf+": "+e);
-      System.err.println("Using defaults in DictProperties.java and "+DEFAULT_PROP_FNAME);
+      System.err.println("Using defaults in DictProperties.java and "+IndexManagerProperties.PROP_FNAME);
       setProperty("dictionary.environment.home",envHome);
       //setProperty("headers.url",headURL);
       //setProperty("headers.home",headDir);
@@ -74,12 +76,13 @@ public class DictProperties extends java.util.Properties{
       setProperty("corpus.data.directory", corpusDir);
       setProperty("file.encoding", encoding);
       setProperty("header.extension", headerEXT);
-      ClassLoader cl = this.getClass().getClassLoader();
+      //ClassLoader cl = this.getClass().getClassLoader();
       try{
-        this.load(cl.getResourceAsStream(DEFAULT_PROP_FNAME));
+        this.load(new FileInputStream(IndexManagerProperties.PROP_FNAME));
+        //this.load(cl.getResourceAsStream(IndexManagerProperties.PROP_FNAME));
       }
       catch (IOException ioe){
-        System.err.println("Error reading default property file "+DEFAULT_PROP_FNAME+": "+e);
+        System.err.println("Error reading default property file "+IndexManagerProperties.PROP_FNAME+": "+e);
       }
       save();
 		}
@@ -138,6 +141,14 @@ public class DictProperties extends java.util.Properties{
 
   public String getCorpusDir () {
     return corpusDir;
+  }
+
+  public String[] getAttributeChooserSpecs(){
+    return parseAttributeChooserSpecs(getProperty("xquery.attribute.chooser.specs"));
+  }
+
+  public static String[] parseAttributeChooserSpecs(String a){
+    return a.split(";");
   }
 
   public void setCorpusDir (String c){

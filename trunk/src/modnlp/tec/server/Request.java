@@ -45,7 +45,9 @@ public class Request extends Hashtable {
   public static final int SQLMETAQ = 4;
   public static final int FREQLIST = 5;
   public static final int HEADERBASEURL = 6;
-  //public static final int ISSQL = 4;
+  public static final int ATTCHOPTSPECS = 7;
+  public static final int ATTCHOSPTIONS = 8;
+  //public static final int SERVERINFO = 7;
   public static final int NOTREQ = 999;
   public String reqString = null;
 
@@ -98,6 +100,10 @@ public class Request extends Hashtable {
       return FREQLIST;
     if (rq.equalsIgnoreCase("headerbaseurl"))
       return HEADERBASEURL;
+    if (rq.equalsIgnoreCase("attchooserspecs"))
+      return ATTCHOPTSPECS;
+    if (rq.equalsIgnoreCase("attoptions"))
+      return ATTCHOSPTIONS;
 
     // add more ifs here as your range of services grow
     return NOTREQ;

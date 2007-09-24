@@ -34,7 +34,7 @@ import java.util.regex.*;
 */
 public class TokeniserRegex extends Tokeniser {
 
-  private String bigWordRegexp = "[\\p{L}-.]+'?s?"; // include dots for abbrev. (e.g. U.S.A.)
+  private String bigWordRegexp = "\\p{L}[\\p{L}-.]*'?s?"; // include dots for abbrev. (e.g. U.S.A.)
   private String wordRegexp = "[\\p{L}.]+|'s?";
   private String ignoredElements = "(omit|ignore)";
   
@@ -69,12 +69,13 @@ public class TokeniserRegex extends Tokeniser {
   }
 
   public void tokenise ()  {
-    String ignregexp = "\\.\\.+|\\.+\\p{Space}";  // delete full stops.
+    String ignregexp = "--+|\\.\\.+|\\.+\\p{Space}";  // delete full stops and dashes .
     if (ignoredElements != null && ignoredElements.length() > 0)
       ignregexp = ignregexp+"|< *"+ignoredElements+".*?>.*?</"+ignoredElements+" *>";
     if (!tagIndexing)
       ignregexp = ignregexp+"|<.*?>";
-    
+    //ignregexp = ignregexp+"|\\W\\W+";
+
     Pattern p = Pattern.compile(ignregexp);
     Matcher igns = p.matcher(originalText);
 
@@ -110,7 +111,7 @@ public class TokeniserRegex extends Tokeniser {
       if ( iofd >= 0) {      // word is an acronym, possibly with a missing dot or ...
         //System.out.println("-->"+word+"<-- iofd="+iofd+" iolc="+iolc+" hogc="+hogc);
         if (iofd == iolc)    // ... a normal word with a trailing dot
-          tokenMap.putPos(word.substring(0,iolc), pos); 
+          tokenMap.putPos(word.substring(0,iolc), pos);
         else if (iofd == 0)    // ... a normal word with a leading dot
           tokenMap.putPos(word.substring(1,iolc+1), pos); 
         else if (word.charAt(iolc) == '.' || hogc) // right, this is a complete acronym. hyphenated or genitive

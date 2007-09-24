@@ -45,19 +45,20 @@ public class ConcordanceThread
   public int updateThreshold = 40;
   public Browser parent;
   private String commandToServer = null;
-	/** default port; normally reset by Browser */
+  /** default port; normally reset by Browser */
   public int noFound = 0;
   public int noActuallyFound = 0;
   public ConcArray conc = new ConcArray();
   public int ctRead;
-	boolean stop = false;
-	public boolean serverResponded = false;
-	private ConcordanceDisplayListener concList = null;
-	private TecClientRequest request = null;
-
+  boolean stop = false;
+  public boolean serverResponded = false;
+  private ConcordanceDisplayListener concList = null;
+  private TecClientRequest request = null;
+  
   Socket  socket = null;
   PrintStream output;
   BufferedReader input = null;
+  String encoding = "UTF-8";  // the name of the charset
   //DataInputStream input;
 
 
@@ -70,21 +71,25 @@ public class ConcordanceThread
    * @param ch      The request to be passed on to <code> server</code>
    */
   public ConcordanceThread(Browser pa, TecClientRequest cr)
-	{
-		request = cr;
+  {
+    request = cr;
     parent = pa;
     serverResponded = false;
     // initConcordanceThread();
-	}
+  }
 
   public ConcordanceThread(Browser pa, BufferedReader in, TecClientRequest cr)
-	{
-		input = in;
+  {
+    input = in;
     parent = pa;
-		request = cr;
+    request = cr;
     serverResponded = false;
     // initConcordanceThread();
-	}
+  }
+  
+  public void setEncoding (String e){
+    encoding = e;
+  }
 
   /** Starts a new connection and performs a request to
    *  be displayed in the <code>ListDisplay</code> provided.
@@ -94,9 +99,9 @@ public class ConcordanceThread
    * @param ch      The request to be passed on to <code> server</code>
    */
   private void initConcordanceThread( )
-	{
-		try {
-			noFound = -1;
+  {
+    try {
+      noFound = -1;
       if (input == null) {
         //socket = new Socket(InetAddress.getByName(SERVER), PORTNUM);
         URL concurl = new URL( request.toString());
@@ -107,35 +112,36 @@ public class ConcordanceThread
         concurlConnection.connect();  
         input = new
           BufferedReader(new
-                         InputStreamReader(concurlConnection.getInputStream() ));
+                         InputStreamReader(concurlConnection.getInputStream(),
+                                           encoding));
       }
       String temp = input.readLine();
       serverResponded = true;
       noFound = (new Integer(temp)).intValue();
       System.out.println("____noFound_____"+noFound);
       if (noFound < 0)
-				{
-					String mes = input.readLine();
-					System.out.println("________"+mes);
-					ctRead = noFound;
-					parent.updateStatusLabel(mes);
-					stop();
-				}
-		}
-		catch (java.io.IOException e){
-			parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
-			stop();
-		}
-		catch (Exception e){
+        {
+          String mes = input.readLine();
+          System.out.println("________"+mes);
+          ctRead = noFound;
+          parent.updateStatusLabel(mes);
+          stop();
+        }
+    }
+    catch (java.io.IOException e){
+      parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
+      stop();
+    }
+    catch (Exception e){
       e.printStackTrace();
-			stop();
-		}
+      stop();
+    }
   }
 
   public void run() {
     boolean fshow = false;
     boolean notru = true;
-		stop = false;
+    stop = false;
     ctRead = 0;
     try {
       initConcordanceThread();
@@ -143,48 +149,48 @@ public class ConcordanceThread
       int ctsz = request.getContextSize();
       //System.out.println("_________context size: "+ctsz);
       while (!stop && 
-						 ctRead < noFound && 
-						 (concordance = input.readLine()) != null &&
-						 conc.assertElement(concordance, 0,  ctsz ) )
-				{
-					//System.err.println("Found---: "+noFound+" Read---:"+ctRead);
-					//System.err.println("conc="+concordance);
-					ctRead++;
-					if ( conc.index > updateThreshold || ctRead >= noFound)
-						if ( !fshow )
-							{
-								fireDisplayEvent(0);
+             ctRead < noFound && 
+             (concordance = input.readLine()) != null &&
+             conc.assertElement(concordance, 0,  ctsz ) )
+        {
+          //System.err.println("Found---: "+noFound+" Read---:"+ctRead);
+          //System.err.println("conc="+concordance);
+          ctRead++;
+          if ( conc.index > updateThreshold || ctRead >= noFound)
+            if ( !fshow )
+              {
+                fireDisplayEvent(0);
                 parent.displayConcord();
-								//parent.concList.displayArraySegment(conc, 0);
-								fshow = true;
-							}
-				}
+                //parent.concList.displayArraySegment(conc, 0);
+                fshow = true;
+              }
+        }
       noActuallyFound =  (ctRead == ConcArray.arraymax) ? noFound : ctRead;
       noFound = ctRead;
-			if ( !fshow )
-				{
-					fireDisplayEvent(0);
-					//parent.concList.displayArraySegment(conc, 0);
+      if ( !fshow )
+        {
+          fireDisplayEvent(0);
+          //parent.concList.displayArraySegment(conc, 0);
           parent.displayConcord();
-					fshow = true;
-				}
-			if (noFound > 0) {
-				parent.updateStatusLabel(" Returned "+
+          fshow = true;
+        }
+      if (noFound > 0) {
+        parent.updateStatusLabel(" Returned "+
                                  noActuallyFound+
                                  " lines matching your query");
-				fireListSizeEvent(noFound);
-			}
+        fireListSizeEvent(noFound);
+      }
       stop();
     }
     catch (java.io.IOException e){
-      parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
-			if (noFound > 0) {
+      //parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
+      if (noFound > 0) {
         noActuallyFound =  (ctRead == ConcArray.arraymax) ? noFound : ctRead;
         noFound = ctRead;
-				parent.updateStatusLabel(" Returned "+
+        parent.updateStatusLabel(" Returned "+
                                  noActuallyFound+
                                  " lines matching your query");
-				fireListSizeEvent(noFound);
+        fireListSizeEvent(noFound);
         fireDisplayEvent(0);
         parent.displayConcord();
       }

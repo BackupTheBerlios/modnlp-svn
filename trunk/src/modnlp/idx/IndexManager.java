@@ -50,11 +50,11 @@ import java.io.IOException;
  * @see  
 */
 public class IndexManager {
-  private IndexManagerProperties props = new IndexManagerProperties();
-  String ignElement = props.getProperty("tokeniser.ignore.elements");
-  String subcElement = props.getProperty("subcorpusindexer.element");
-  String subcAttribute = props.getProperty("subcorpusindexer.attribute");
-  boolean indexHeaders =  props.getProperty("index.headers").equalsIgnoreCase("true");
+  private IndexManagerProperties props;
+  String ignElement;
+  String subcElement;
+  String subcAttribute;
+  boolean indexHeaders;
   Dictionary dict = null;
   SubcorpusDirectory sbcd = null;
   HeaderDBManager hdbm = null;
@@ -66,8 +66,19 @@ public class IndexManager {
   boolean stop = false;
   boolean activeIndexing = false;
   boolean debug = false; // print debug info on stderr?
+
   public IndexManager () {
+    props =  new IndexManagerProperties();
+    setProperties();
     imui = new IndexManagerUI(this);
+  }
+
+
+  public void setProperties(){
+    ignElement = props.getProperty("tokeniser.ignore.elements");
+    subcElement = props.getProperty("subcorpusindexer.element");
+    subcAttribute = props.getProperty("subcorpusindexer.attribute");
+    indexHeaders =  props.getProperty("index.headers").equalsIgnoreCase("true");
   }
 
   public void setStop(boolean b){

@@ -60,5 +60,7 @@ bindist:
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)
 
+
+
 nosvn: clean
         tar cfvz /tmp/modnlp.tgz --exclude-from=exclude.txt .
