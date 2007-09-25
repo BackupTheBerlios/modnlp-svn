@@ -1,0 +1,13 @@
+#modnlp.idx.IndexManager's properties
+#Thu Sep 13 09:31:50 IST 2007
+index.headers=true
+xquery.return.attribute.path=speech/@ref
+tokeniser.ignore.elements=(omit|ignore|header|chair|heading|post|name|gender|status)
+subcorpusindexer.attribute=ref
+xquery.root.element.path=//intervention
+subcorpusindexer.element=(speech)
+header.extension=hed
+last.index.dir=/tmp/a
+xquery.max.cache.size=23
+xquery.attribute.chooser.specs=File name;../../header/@filename;Language;speech/@language;Affiliation;(speaker|writer)/affiliation/@nationalparty;Speaker gender;(speaker|writer)/gender;Post;(speaker|writer)/post;Speaker;(speaker|writer)/name
+file.encoding=UTF8

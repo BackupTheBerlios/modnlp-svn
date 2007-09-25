@@ -1,0 +1,26 @@
+2007-09-21  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* HeaderDBManager, etc: improved subcorpus search, implemented a
+	basic form of subcorpus query caching, fixed a few bugs, tested on
+	HC and CD corpora
+	
+2007-06-25  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	*  (modnlp-idx): Incorporated XMLDB subcospus selection
+	functionality (through eXist)
+
+2006-08-22  S. Luz  <luzs@cs.tcd.ie>
+
+	* (modnlp) Ready for SVN.
+
+2006-08-20  S. Luz  <luzs@cs.tcd.ie>
+
+	* (All) Moved modnlp.idx.{InterSet,WordForms} to modnlp.dstruct
+	  so they can be shared with tc and tec.
+
+2006-07-15  S. Luz  <luzs@cs.tcd.ie>
+
+	* (All) Started idx as a sub-module of modnlp, with its separate
+	  Makefile etc. Changed directory structure in preparation for
+	  SVN. 
+

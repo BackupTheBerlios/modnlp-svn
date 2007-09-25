@@ -1,0 +1,7 @@
+Owner: CN=S. Luz, OU=Dept of Computer Science, O="University of Dublin, Trinity College", L=Dublin, ST=Unknown, C=ie
+Issuer: CN=S. Luz, OU=Dept of Computer Science, O="University of Dublin, Trinity College", L=Dublin, ST=Unknown, C=ie
+Serial number: 3b66b5fe
+Valid from: Tue Jul 31 14:43:26 GMT+01:00 2001 until: Mon Jul 21 14:43:26 GMT+01:00 2003
+Certificate fingerprints:
+	 MD5:  22:6F:17:97:82:A3:C1:16:7F:61:56:12:2D:79:14:6A
+	 SHA1: 1F:F1:67:EA:98:C7:EE:C5:1D:76:23:E6:F0:09:01:5E:6E:76:9B:41

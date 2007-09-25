@@ -1,0 +1,68 @@
+TOPDIR=
+SOURCEDIR=$(TOPDIR)src/
+LIBSPATH=$(TOPDIR)lib/je.jar:$(TOPDIR)lib/MinML2.jar:$(TOPDIR)lib/idx.jar:$(TOPDIR)lib/jung.jar:$(TOPDIR)lib/antlr-2.7.6.jar:$(TOPDIR)lib/commons-pool-1.2.jar:$(TOPDIR)lib/exist-modules.jar:$(TOPDIR)lib/exist.jar:$(TOPDIR)lib/jgroups-all.jar:$(TOPDIR)lib/log4j-1.2.14.jar:$(TOPDIR)lib/resolver.jar:$(TOPDIR)lib/sunxacml.jar:$(TOPDIR)lib/xmldb.jar:$(TOPDIR)lib/xmlrpc-1.2-patched.jar
+LIBS=$(subst :, ,$(LIBSPATH))
+LIBLICENSES=$(TOPDIR)lib/COPYING-libs
+DOCS=$(TOPDIR)doc
+DATA=$(TOPDIR)data
+MANIFEST=teccli-manifest.txt
+SOURCES:= $(shell find $(SOURCEDIR)modnlp/tec/client -name *.java)
+TARGETS=$(subst .java,.class,$(SOURCES))
+JARREDS=modnlp/tec/client/*.class modnlp/tec/client/gui/*.class \
+	modnlp/tec/client/plugin/*.class \
+	modnlp/gui/*.class \
+	modnlp/tec/client/icons/*.{gif,jpg,png} \
+	modnlp/tec/client/help/*.{html,jpg} tecli.properties
+PRJFILES:=`find $(SOURCEDIR) -name prj.el`
+DISTDIR:=modnlp-teccli-`cat VERSION`
+DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
+	$(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)tecli.properties* \
+	$(SOURCEDIR)modnlp/tec/client $(SOURCEDIR)$(MANIFEST) $(SOURCEDIR)modnlp/tec/prj.el
+#JAVA=jamvm
+JAVA=java
+#JAVAC=javac
+#JAVAC=jikes-jsdk
+JAVAC=jikes-classpath
+JAR=jar
+JARFLAGS= cvmf $(MANIFEST)
+JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JARTARGET=$(TOPDIR)lib/teccli.jar
+BINDISTDIR=$(DISTDIR)-bin
+BINDISTXTRAS=$(LIBLICENSES) $(TOPDIR)*COPYING*
+
+#VPATH=$(SOURCEDIR)
+
+.PHONY: build jar test docs dist
+
+all: build jar test 
+
+%.class: %.java
+		$(JAVAC) $(JAVAFLAGS) $?
+
+build: $(TARGETS)
+
+clean:
+	find -L . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f
+
+jar: $(TARGETS)
+	cd $(SOURCEDIR) && $(JAR) $(JARFLAGS) ../$(JARTARGET) $(JARREDS)
+
+docs: $(TARGETS)
+	javadoc -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp.tec.client 
+
+## distribution building, the joy of life...
+dist:
+	rm -rf $(DISTDIR)
+	mkdir $(DISTDIR)
+	cp -aL --parents $(DISTFILES) $(DISTDIR)
+	tar cfvz /tmp/$(DISTDIR).tar.gz  --exclude-from=exclude.txt $(DISTDIR)
+	rm -rf $(DISTDIR)
+
+bindist: jar
+	mkdir $(BINDISTDIR)
+	cp README.bin $(BINDISTDIR)/README
+	cp src/teclipluginlist.txt $(BINDISTDIR)/
+	cp $(LIBS) $(JARTARGET) $(LIBLICENSES) $(BINDISTDIR)
+	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
+	rm -rf $(BINDISTDIR)
