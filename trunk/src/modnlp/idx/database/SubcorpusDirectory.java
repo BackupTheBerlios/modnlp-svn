@@ -102,7 +102,7 @@ public class SubcorpusDirectory {
     }
     catch (DatabaseException e)
       {
-        System.out.println("Warning removing "+fou+": "+e);
+        System.out.println("Warning: trouble removing "+fou+": "+e);
       }
   }
 

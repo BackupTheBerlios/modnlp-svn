@@ -1,4 +1,4 @@
-TEC-CLIENT - Translational English Concordancer
+TEC-CLIENT - A simple, 'pluggable' Concordancer
 ===============================================
 
 For installation instructions see INSTALL.
@@ -120,8 +120,8 @@ As mentioned above, any expression that can appear in the WHERE clause
 of an XQuery FLOWR expression can be used to select subcorpora. So,
 consulting an XQuery reference manual might be a good idea. 
 
-ABOUT TEC
-==========
+ABOUT TEC and ECPC
+==================
 
 TEC is a project aimed at gathering a corpus of translational English
 and building tools for indexing, storing, sharing and browsing

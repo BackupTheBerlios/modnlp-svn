@@ -30,18 +30,28 @@ import modnlp.dstruct.IntegerSet;
 import modnlp.dstruct.TokenMap;
 import modnlp.dstruct.IntOffsetArray;
 
+
+import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.DatabaseNotFoundException;
+import com.sleepycat.je.Cursor;
+import com.sleepycat.je.SecondaryCursor;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.je.LockMode;
+import com.sleepycat.je.OperationStatus;
 import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.DatabaseNotFoundException;
- 
+import com.sleepycat.bind.tuple.StringBinding;
+import com.sleepycat.bind.tuple.IntegerBinding;
+
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -56,7 +66,7 @@ import java.util.Vector;
  */
 public class Dictionary {
 
-  public static final String TTOKENS_LABEL = "Total Number of tokens";
+  public static final String TTOKENS_LABEL = "No. of tokens";
   public static final String TTRATIO_LABEL = "Type-token ratio";
 
   DictProperties dictProps;
@@ -341,7 +351,8 @@ public class Dictionary {
    *  file ({@link modnlp.idx.database.WordPositionTable
    *  WordPositionTable}).
    * @param pos the position (as byte offset) of the keyword on the file
-   * @param posa the entire word position array for a specified file (obtained through {@link TPosTable#getPosArray(int)}).
+   * @param posa the entire word position array for a specified file
+   *             (obtained through {@link TPosTable#getPosArray(int)}).
    * @return <code>true</code> if cline matches, false otherwise.
    */
   public boolean matchConcordance(PrepContextQuery pcq, int pos, int[] posa){
@@ -458,18 +469,110 @@ public class Dictionary {
     os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio());
   }
 
-  public double getTypeTokenRatio(){
-    return 
-      (double)caseTable.getTotalNoOfTypes()/freqTable.getTotalNoOfTokens();
+  public void printSubCorpusStats (PrintWriter os, int notokens, int notypes) {
+    os.println(0+"\t"+TTOKENS_LABEL+"\t"+notokens);
+    os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio(notypes,notokens));
   }
 
+  public double getTypeTokenRatio(){
+    return 
+      getTypeTokenRatio(caseTable.getTotalNoOfTypes(),freqTable.getTotalNoOfTokens());
+  }
+
+  public double getTypeTokenRatio(int notypes, int notokens){
+    return 
+      (double)notypes/notokens;
+  }
+
+  /**
+   * Print the entire frequency list onto os
+   *
+   * @param os a <code>PrintWriter</code> value
+   */
   public void printSortedFreqList (PrintWriter os) {
     printSortedFreqList(os, 0);
   }
 
+  /**
+   * Print the max topmost frequent types onto os.
+   *
+   * @param os a <code>PrintWriter</code> value
+   * @param max an <code>int</code> value
+   */
   public void printSortedFreqList (PrintWriter os, int max) {
     printCorpusStats(os);
     freqTable.printSortedFreqList(os, max);
+  }
+
+  /**
+   * Print the max topmost frequent types occurring in the subcorpus
+   * denoted by sbc onto os.
+   *
+   * @param os a <code>PrintWriter</code> value
+   * @param max an <code>int</code> value
+   * @param sbc a <code>SubcorpusConstraints</code> value
+   */
+  public void printSortedFreqList (PrintWriter os, int max, SubcorpusConstraints sbc) {
+    int tokencount = 0;  // 2^32 should be enough (we're not quite competing with google yet) 
+    int typecount = 0;
+    HashMap ft = new HashMap();
+    try {
+      DatabaseEntry key = new DatabaseEntry();
+      DatabaseEntry skey = new DatabaseEntry();
+      DatabaseEntry data = new DatabaseEntry();
+      SecondaryCursor c = freqTable.getSecondaryCursor();
+      int i = 1;
+      while (c.getNext(skey, key, data, LockMode.READ_UNCOMMITTED) == 
+             OperationStatus.SUCCESS && (max == 0  || i <= max) ) {
+        String word = StringBinding.entryToString(key);
+        //System.err.println("word ->"+word);
+        if (word.length() == 0)
+          continue;
+        IntegerSet files =  wFilTable.fetch(word);
+        for (Iterator f = files.iterator(); f.hasNext(); ) {
+          Integer fno = (Integer)f.next();
+          WordPositionTable wpt = new WordPositionTable(environment, 
+                                                        ""+fno,
+                                                        false);
+          // all positions on a file
+          IntegerSet pos  = wpt.fetch(word);
+          if (pos == null)
+            continue;
+          SubcorpusTable sbct = null;
+          if (sbc != null){
+            try {
+              //System.err.println("File ->"+fno);
+              sbct = new SubcorpusTable(environment, fno.toString(), false);
+            } catch(DatabaseNotFoundException e ) { sbct = null;}
+          }
+          for (Iterator p = pos.iterator(); p.hasNext(); ) {
+            Integer bp = (Integer)p.next();
+            int bpi = bp.intValue();
+            if ( (sbc == null || sbc.accept(fno.toString(),bpi,sbct)) ) {
+              Integer fqi = (Integer)ft.get(word);
+              int fq = (fqi == null)? 0 : fqi.intValue();
+              ft.put(word, new Integer(fq+1));
+              tokencount++;
+            }
+          } 
+          if (sbct != null) 
+            sbct.finalize();
+        }
+      }
+      c.close();
+    }
+    catch (DatabaseException e) {
+      logf.logMsg("Error accessing secondary cursor for FreqTable" , e);
+    }
+    int i = 1;
+    printSubCorpusStats(os,ft.size(),tokencount);
+    for (Iterator e = ft.entrySet().iterator(); e.hasNext() ;){
+      Map.Entry kv = (Map.Entry) e.next();
+      String sik = (String)kv.getKey();
+      Integer freq  = (Integer)kv.getValue();
+      os.println(i+++"\t"+sik+"\t"+freq);
+    }
+    os.flush();
   }
   
   public String getCorpusDir() {
@@ -596,6 +699,21 @@ public class Dictionary {
     return pre+kw+pos;
   }    
 
+  public DictProperties getDictProps() {
+    return dictProps;
+  }
+
+  /**
+   * 
+   *
+   * @param word a <code>String</code> the query word (type)
+   * @return an <code>IntegerSet</code> the set of keys to files in
+   * which word occurs
+   */
+  public IntegerSet getOccurringFiles(String word) {
+    return  wFilTable.fetch(word);
+  }
+ 
   public void  dump () {
     System.out.println("===========\n FileTable:\n===========");
     fileTable.dump();
@@ -624,10 +742,6 @@ public class Dictionary {
     }
     System.out.println("===========\n FreqTable:\n===========");
     freqTable.dump();
-  }
-
-  public DictProperties getDictProps() {
-    return dictProps;
   }
 
   public void sync () {

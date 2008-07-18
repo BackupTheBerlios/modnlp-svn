@@ -157,8 +157,10 @@ public class HeaderDBManager {
       SubcorpusConstraints sc;
       if (where == null)
         return null;
-      if ( (sc = cache.get(where)) != null )
+      if ( (sc = cache.get(where)) != null ){
+        System.err.println("Found cached query: "+where);
         return sc;
+      }
       String resources[] = collection.listResources();
       sc = new SubcorpusConstraints();
       for (int i = 0; i < resources.length; i++) {
@@ -240,7 +242,7 @@ public class HeaderDBManager {
       System.err.println("Warning (HeaderDBManager.finalize): "+e);
     }
   }
-
+  
   public static void main(String[] args) {
     try {
       HeaderDBManager hm = new HeaderDBManager(new DictProperties(args[0]));

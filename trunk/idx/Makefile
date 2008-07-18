@@ -82,7 +82,8 @@ BINDISTXTRAS=$(LIBLICENSES)
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
 	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SOURCEDIR)modnlp/idx/prj.el $(SOURCEDIR)idx-manifest.txt
 #JAVA=jamvm
-JAVAC=jikes-classpath
+#JAVAC=javac
+JAVAC=jikes -bootclasspath /usr/lib/jvm/java-6-sun/jre/lib/rt.jar
 JAVA=java
 #JAVAC=javac
 JAR=jar
@@ -141,6 +142,14 @@ bindist: jar
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)
+
+bindistec: jar
+	mkdir $(BINDISTDIR)-tec
+	cp README.bin $(BINDISTDIR)-tec/README
+	cp $(TOPDIR)src/idxmgr.properties.tec $(BINDISTDIR)-tec/idxmgr.properties
+	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)-tec
+	tar cfvz /tmp/$(BINDISTDIR)-tec.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-tec
+	rm -rf $(BINDISTDIR)-tec
 
 bindisthc: jar
 	mkdir $(BINDISTDIR)-hc

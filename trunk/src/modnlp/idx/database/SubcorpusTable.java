@@ -271,7 +271,7 @@ public class SubcorpusTable extends Table {
   }
 
   public void finalize () {
-    close();
+      close();
   }
 
 

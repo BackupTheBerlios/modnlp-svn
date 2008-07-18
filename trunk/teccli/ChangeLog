@@ -1,13 +1,17 @@
+2008-07-18  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* FqListBrowser: Added subcorpus-selection sensitivity
+
 2007-09-21  Saturnino Luz  <luzs@cs.tcd.ie>
 
-	* GraphicalSubcorpusSelector, MultipleAttributeSelection, AttributeChooser: implemented
-	basic GUI subcorpus selector, fixed bugs, tested on HC and
-	CD corpora. Backward compatibility with old TEC system has
-	been abadoned as of teccli-0.5.2. 
+	* GraphicalSubcorpusSelector, MultipleAttributeSelection,
+	AttributeChooser: implemented basic GUI subcorpus selector, fixed
+	bugs, tested on HC and CD corpora. Backward compatibility with old
+	TEC system has been abadoned as of teccli-0.5.2.
 
 2007-06-25  Saturnino Luz  <luzs@cs.tcd.ie>
 
-	*  (modnlp-idx): Incorporated XMLDB subcospus selection
+	* modnlp-idx: Incorporated XMLDB subcospus selection
 	functionality (through eXist)
 
 2006-07-20 Saturnino Luz  <luzs@cs.tcd.ie>

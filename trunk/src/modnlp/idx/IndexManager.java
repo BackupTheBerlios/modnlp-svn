@@ -199,6 +199,7 @@ public class IndexManager {
       activeIndexing = true;
       String fenc = dictProps.getProperty("file.encoding");
       //String hedhome = dictProps.getProperty("headers.home");
+      long stt = (new java.util.Date()).getTime();
       for (Enumeration e = clist.elements(); e.hasMoreElements() ;) {
         if (stop) {
           stop = false;
@@ -270,7 +271,11 @@ public class IndexManager {
           imui.print("Ignoring this entry.\n");
         }
       } // end for 
-      imui.print("----- Indexing completed.");
+      long tsec = ((new java.util.Date()).getTime()-stt)/1000;
+      if (tsec > 60)
+        imui.print("----- Indexing completed in "+(tsec/60)+ " minutes.");
+      else
+        imui.print("----- Indexing completed in "+(tsec)+ " seconds.");
       activeIndexing = false;
       imui.enableChoice(true);
     } // end run()

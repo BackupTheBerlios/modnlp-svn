@@ -59,20 +59,18 @@ public class GraphicalSubcorpusSelector extends JFrame {
   private Timer timer;
   private boolean remoteServer = false;
   private boolean interrupted = false;
+  final JButton doneButton = new JButton("OK");
+  final JButton applyButton = new JButton("Apply");
+  final JButton clearButton = new JButton("Clear");
 
-  public GraphicalSubcorpusSelector(Dictionary d, Object p){
+
+  public GraphicalSubcorpusSelector(Object p){
     super("Sub-corpus selector");
     thisFrame = this;
     parent = (Browser)p;
-    if (parent.isStandAlone() && d != null){
-      try {
-        DictProperties dp = d.getDictProps();
-        attChsrSpecs = dp.getAttributeChooserSpecs();
-        hdbm = new HeaderDBManager(dp);
-      } catch (Exception e) {
-        System.err.println("GraphicalSubcorpusSelector: error opening header DB: " + e);
-        e.printStackTrace(System.err);
-      }
+    if (parent.isStandAlone() ){
+      attChsrSpecs = parent.getDictionary().getDictProps().getAttributeChooserSpecs();
+      hdbm = parent.getHeaderDBManager();
       remoteServer = false;
     }
     else {
@@ -135,9 +133,6 @@ public class GraphicalSubcorpusSelector extends JFrame {
     //JPanel pa1 = new JPanel();
     //pa1.add(activeChecked);
     JPanel pa2 = new JPanel();
-    final JButton doneButton = new JButton("Hide window");
-    final JButton applyButton = new JButton("Apply");
-    final JButton clearButton = new JButton("Clear");
     pa2.add(doneButton);
     pa2.add(applyButton);
     pa2.add(clearButton);
@@ -208,6 +203,8 @@ public class GraphicalSubcorpusSelector extends JFrame {
         mas.add(new AttributeChooser(attChsrSpecs[i], attChsrSpecs[++i],o));
       }
       loadingDone = true;
+      //hdbm.finalize();
+      //hdbm = null;
     }
   }
 
@@ -218,12 +215,15 @@ public class GraphicalSubcorpusSelector extends JFrame {
       String q = mas.getSelection();
       if (q != null && q.length() > 0 ){
         parent.setXQueryWhere(q);
+        parent.setAdvConcFlag(true);
+        activeChecked.setSelected(true);
       }
       else {
         parent.setAdvConcFlag(false);
         activeChecked.setSelected(false);
         //activeChecked.doClick();
       }
+      applyButton.setEnabled(false);
       thisFrame.setVisible(false);
       //dispose();
     }

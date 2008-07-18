@@ -6,7 +6,8 @@
                                 "../../../../../lib/gnu-regexp.jar" 
                                 "../../../../../lib/jung.jar"
                                 "../../../../../lib/colt.jar"
-                                "../../../../../lib/commons-collections.jar"  
+                                "../../../../../lib/commons-collections.jar"
+                                "../../../../../lib/xmldb.jar"
                                 )))
  '(jde-run-working-directory "../../../../")
  '(jde-run-option-vm-args (quote ("-Dfile.encoding=UTF8")))

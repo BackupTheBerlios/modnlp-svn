@@ -20,7 +20,7 @@ JAVA=java
 JAVAC=javac
 JAR=jar
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
-JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JAVACFLAGS=-encoding ISO-8859-1 -classpath $(SOURCEDIR):$(LIBSPATH)
 
 #VPATH=$(SOURCEDIR)
 
@@ -29,7 +29,7 @@ JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 all: build jar test dist
 
 %.class: %.java
-		$(JAVAC) $(JAVAFLAGS) $?
+		$(JAVAC) $(JAVACFLAGS) $?
 
 build: $(TARGETS)
 

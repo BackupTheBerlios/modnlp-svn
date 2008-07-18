@@ -17,31 +17,39 @@
 */
 package modnlp.tec.client.plugin;
 
+import modnlp.idx.headers.HeaderDBManager;
+import modnlp.tec.client.Plugin;
+import modnlp.tec.client.Browser;
+import modnlp.tec.client.TecClientRequest;
+import modnlp.idx.database.Dictionary;
+
 import java.awt.Font;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.FocusListener;
+import java.awt.event.FocusEvent;
+
 import java.net.URL;
 import java.net.HttpURLConnection;
 import javax.swing.JFrame;
-import modnlp.tec.client.Plugin;
 import java.io.BufferedReader;
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import javax.swing.Timer;
 import java.io.PrintWriter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.JTable;
-import modnlp.tec.client.Browser;
 import javax.swing.table.JTableHeader;
 import javax.swing.JScrollPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JLabel;
 import java.util.StringTokenizer;
 import java.io.PipedWriter;
 import java.io.PipedReader;
-import modnlp.tec.client.TecClientRequest;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import javax.swing.JOptionPane;
@@ -66,7 +74,7 @@ import java.text.NumberFormat;
  * @see  
 */
 public class FqListBrowser extends JFrame
-  implements  Runnable, Plugin
+  implements  Runnable, Plugin, FocusListener
 {
   
   private Thread ftwThread;
@@ -78,6 +86,11 @@ public class FqListBrowser extends JFrame
   private int NOCOLUMNS = 40;
   private HttpURLConnection exturlConnection;
   int maxListSize = 500;
+  int dldCount = 0;
+  double ttratio = 0;
+  int notokens = 0;
+  int dldi = 0;
+  Timer dld_timer;
   JTextField maxListField = new JTextField(""+maxListSize, 4);
   JButton saveButton = new JButton("Save");
 
@@ -87,8 +100,10 @@ public class FqListBrowser extends JFrame
   DefaultTableModel noCaseModel = null; 
   JTable table = new JTable(model);
   JLabel statsLabel = new JLabel("...");
+  JLabel scorpusLabel = new JLabel(" full corpus ");
+  private JProgressBar progressBar;
 
-  private static String title = new String("TEC Plugin: FqListBrowser 0.1"); 
+  private static String title = new String("MODNLP Plugin: FqListBrowser 0.1"); 
   private Browser parent = null;
   private boolean guiLayoutDone = false;
 
@@ -128,8 +143,7 @@ public class FqListBrowser extends JFrame
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     JTableHeader header = table.getTableHeader();
     
-    header.addMouseListener(new ColumnHeaderListener());
-    
+    header.addMouseListener(new ColumnHeaderListener());    
     
     JScrollPane scrollPane = new JScrollPane(table);
     JButton dismissButton = new JButton("Quit");
@@ -138,24 +152,42 @@ public class FqListBrowser extends JFrame
     saveButton.addActionListener(new SaveListener());
     JButton go = new JButton("Get list");
     go.addActionListener(new GoListener());
-    maxListField.setToolTipText("Limit list size to this number of types.");
-    
-    
+    maxListField.setToolTipText("Limit list size to this many types. Set to 0 for whole list.");
+        
     JPanel pa = new JPanel();
     pa.add(go);
     pa.add(new JLabel(" of "));
     pa.add(maxListField);
-    pa.add(new JLabel(" most frequent types"));
+    pa.add(new JLabel("most frequent words in"));
+    pa.add(scorpusLabel);
     pa.add(saveButton);
     pa.add(new JLabel("     "));
     pa.add(dismissButton);
+    progressBar = new JProgressBar(0,800);
+    progressBar.setStringPainted(true);
+    dld_timer = new Timer(300, new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+          //Int perct = (Int) (progressBar.getPercentComplete()*100);
+          progressBar.setValue(dldi++ % 6);
+          if ( dldCount > 0 )
+            {
+              dld_timer.stop();
+              progressBar.setString("Done");
+              progressBar.setValue(progressBar.getMaximum());
+             
+            }
+        }
+      });
 
     JPanel pa2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    pa2.add(progressBar);
     pa2.add(statsLabel);
+    
     getContentPane().add(pa, BorderLayout.NORTH);
     getContentPane().add(scrollPane, BorderLayout.CENTER);
     getContentPane().add(pa2, BorderLayout.SOUTH);
 
+    addFocusListener(this);
     //textArea.setFont(new Font("Courier", Font.PLAIN, parent.getFontSize()));
     saveButton.setEnabled(false);
     pack();
@@ -163,34 +195,56 @@ public class FqListBrowser extends JFrame
     guiLayoutDone = true;
   }
 
+  public void focusGained(FocusEvent e){
+    checkSubCorpusSelectionStatus();
+  }
+  public void focusLost(FocusEvent e){
+    checkSubCorpusSelectionStatus();
+  }
+
+  private void checkSubCorpusSelectionStatus (){
+    System.err.println("----------------");
+    if (parent.isSubCorpusSelectionON())
+      scorpusLabel.setText(" subcorpus ");
+    else
+      scorpusLabel.setText(" full corpus ");
+  }
 
   public void run() {
     String textLine = "";
+    StringBuffer cstats = new StringBuffer();
     try {
       int i= 0;
-      int j = 0;
+      dldCount = 0;
       int rank = 1;
       int ttok = 0;
       if (parent.isStandAlone()) {
         (new FqlPrinter()).start();
       }
-      NumberFormat nf =  NumberFormat.getInstance(); //new java.text.DecimalFormat("###,###,###,###.#####");
-      //NumberFormat pf =  NumberFormat.getIntegerInstance(); // new java.text.DecimalFormat("###.###");
-      StringBuffer cstats = new StringBuffer();
-      while (j < maxListSize && ( textLine = input.readLine()) != null) {
+      NumberFormat nf =  NumberFormat.getInstance(); 
+      //new java.text.DecimalFormat("###,###,###,###.#####");
+      //NumberFormat pf =  NumberFormat.getIntegerInstance(); 
+      // new java.text.DecimalFormat("###.###");
+
+      while ((maxListSize == 0 || dldCount < maxListSize) && (textLine = input.readLine()) != null) {
         if ( i < MAXCHUNKSIZE ) {
           StringTokenizer st = new StringTokenizer(textLine, "\t");
           Object [] row = {new Integer(st.nextToken()), st.nextToken(), st.nextToken(), null};
           if (row[0].toString().equals("0")) {
-            cstats.append(row[1]+": "+nf.format((new Double(row[2].toString())).doubleValue())+";  ");
-            if (row[1].equals(modnlp.idx.database.Dictionary.TTOKENS_LABEL))
-              ttok = (new Integer(row[2].toString())).intValue();
+            ttratio = (new Double(row[2].toString())).doubleValue();
+            cstats.append(row[1]+": "+nf.format(ttratio)+";  ");
+            if (row[1].equals(modnlp.idx.database.Dictionary.TTOKENS_LABEL)){
+              notokens = (new Integer(row[2].toString())).intValue();
+              progressBar.setString("Displaying list...");
+              progressBar.setMaximum((int)(notokens*ttratio));
+              progressBar.setValue(dldCount++);
+            }
           }
           else {
             row[2] = new Integer(row[2].toString());
-            row[3] = new Float((float)((Integer)row[2]).intValue()/ttok);
+            row[3] = new Float((float)((Integer)row[2]).intValue()/notokens);
             model.addRow(row);
-            j++;
+            progressBar.setValue(dldCount++);
           }
         }
         else{
@@ -203,6 +257,8 @@ public class FqListBrowser extends JFrame
     }
     catch (Exception e)
       {
+        statsLabel.setText(cstats.toString());
+        saveButton.setEnabled(true);
         System.err.println("Exception: " + e);
         System.err.println("Line: " + textLine);
         e.printStackTrace();
@@ -211,6 +267,7 @@ public class FqListBrowser extends JFrame
 
   public void start() {
     model.setRowCount(0);
+
     try {
       if (parent.isStandAlone()) {
         PipedWriter pipeOut = new PipedWriter();
@@ -357,7 +414,11 @@ public class FqListBrowser extends JFrame
     {
       stop();
       Integer i;
-      statsLabel.setText("Retrieving frequency list...");
+      dld_timer.start();
+      progressBar.setString("Building index (be patient)");
+      progressBar.setMaximum(5);
+      progressBar.setValue(0);
+      //statsLabel.setText("Retrieving frequency list...");
       try {
         i = new Integer(maxListField.getText());
         maxListSize = i.intValue();
@@ -365,7 +426,7 @@ public class FqListBrowser extends JFrame
       catch (NumberFormatException ex){
         maxListField.setText(""+maxListSize);
       }
-			start();
+      start();
     }
   }
 
@@ -404,7 +465,19 @@ public class FqListBrowser extends JFrame
       super("Frequency list producer");
     }
     public void run (){
-      parent.getDictionary().printSortedFreqList(fqlout, maxListSize);
+      try {
+        Dictionary d = parent.getDictionary();
+        if (parent.subCorpusSelected()){
+          HeaderDBManager hdbm = parent.getHeaderDBManager();
+          d.printSortedFreqList(fqlout, maxListSize,
+                                hdbm.getSubcorpusConstraints(parent.getXQueryWhere())); 
+        }
+        else
+          d.printSortedFreqList(fqlout, maxListSize);
+      } catch (Exception e) {
+        System.err.println("FqListBrowser opening header DB: " + e);
+        e.printStackTrace();
+      }
     }
   }
 

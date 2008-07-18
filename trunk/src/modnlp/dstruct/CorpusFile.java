@@ -88,15 +88,18 @@ public class CorpusFile {
     for (int i = 0; i < ctx; i++) {
       k = findNextLeftIndex(k); // find next allowed index (possibly ignoring tags
       lc[cp-i] = k < 0 || Character.isISOControl(fileArray[k])? 
-        ' ' : fileArray[k--];
+        ' ' : fileArray[k];
+      k--;
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
       rc[i] = j < 0 || j >= fileArray.length || Character.isISOControl(fileArray[j])? 
-        ' ' : fileArray[j++];
+        ' ' : fileArray[j];
+      j++;
     }
     for (int i = 0; i < wrd.length(); i++ ){
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
       rc[ctx+i] = j < 0 || j >= fileArray.length ||  Character.isISOControl(fileArray[j])? 
-        ' ' : fileArray[j++];
+        ' ' : fileArray[j];
+      j++;
     }
     return (new String(lc))+(new String(rc));
   }
@@ -109,6 +112,7 @@ public class CorpusFile {
     boolean ignore = i < 0 || fileArray[i] == '<' ? true : false;
     while (ignore){
       while ( ++i < fileArray.length && fileArray[i] != '>' ) {}
+      i++;
       if (fileArray[i] != '<')
         return i;
       else
@@ -127,10 +131,11 @@ public class CorpusFile {
     boolean ignore = fileArray[i] == '>' ? true : false;
     while (ignore){
       while ( i >= 0 && fileArray[i--] != '<' ) {}
+      if (i < 0 )
+        return -1;
       if (fileArray[i] != '>')
         return i;
-      if (i == fileArray.length)
-        return -1;
+
     }
     return i;
   }

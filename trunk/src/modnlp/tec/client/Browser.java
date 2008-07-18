@@ -23,6 +23,7 @@ import modnlp.tec.client.gui.PreferPanel;
 import modnlp.tec.client.gui.SplashScreen;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
+import modnlp.idx.headers.HeaderDBManager;
 import modnlp.idx.gui.CorpusChooser;
 import modnlp.idx.query.WordQuery;
 import modnlp.util.IOUtil;
@@ -87,6 +88,7 @@ public class Browser extends JFrame
   private SortThread sortThread = null;
 
   private Dictionary dictionary = null;
+  private HeaderDBManager hdbmanager = null;
   /** Deafult location of TecServer (a valid DNS where the server lives) */
   public String SERVER;
 	/** Default port */
@@ -190,12 +192,14 @@ public class Browser extends JFrame
     super();
     setTitle(getBrowserName());
     clProperties = new ClientProperties();
+    setSize(width,height);
+    
+  }
+
+  public void initGUI(){
 
     Container contentPane = getContentPane();
-    setSize(width,height);
     setFont(new Font("Helvetica",Font.PLAIN, 12));
-    
-    
     splashScreen.incProgress();
     // this will eventually be moved into a plugin
     //advSearchFrame = new AdvConcSearch(this);
@@ -675,7 +679,7 @@ public class Browser extends JFrame
     String casestate = caseCheckBox.getState()? "sensitive" : "insensitive";
     request.put("case",casestate);
     request.put("request","concord");
-    if (advConcFlag && xquerywhere != null )
+    if ( subCorpusSelected() )
       request.put("xquerywhere",xquerywhere);
     if ( (concThread != null) ) {
       concThread.stop();
@@ -710,6 +714,10 @@ public class Browser extends JFrame
   
   public void setXQueryWhere(String w){
     xquerywhere = w;
+  }
+
+  public String getXQueryWhere(){
+    return xquerywhere;
   }
 
   public void displaySortedList (String msg)
@@ -950,7 +958,18 @@ public class Browser extends JFrame
       advConcFlagItem.doClick();
     advConcFlag = f;
   }
+
+  public boolean isSubCorpusSelectionON (){
+    return advConcFlag;
+  }
   
+  public boolean subCorpusSelected() {
+    if (advConcFlag && xquerywhere != null )
+      return true;
+    else
+      return false;
+  }
+
   public boolean isStandAlone() {
     return standAlone;
   }
@@ -974,7 +993,6 @@ public class Browser extends JFrame
     if (dictionary != null)
       dictionary.close();
     dictionary = new Dictionary(false,dictProps);
-
     clProperties.setProperty("last.index.dir", cdir);
     standAlone = true;
     clProperties.setProperty("stand.alone","yes");
@@ -987,7 +1005,16 @@ public class Browser extends JFrame
       guiSelector.dispose();
     guiSelector = null;
     System.gc();
-    guiSelector = new GraphicalSubcorpusSelector(dictionary, this);
+    try {
+      hdbmanager = new HeaderDBManager(dictProps);
+    }
+    catch (Exception e) {
+      JOptionPane.showMessageDialog(this, "Header DB error: Subcorpus selection disabled",
+                                    "ERROR", JOptionPane.ERROR_MESSAGE);
+      System.err.println("Browser: error opening header DB: " + e);
+      e.printStackTrace(System.err);
+    }
+    guiSelector = new GraphicalSubcorpusSelector(this);
     concordanceProducer = new ConcordanceProducer(dictionary);
   }
 
@@ -1049,7 +1076,7 @@ public class Browser extends JFrame
         dictionary.close();
       if (guiSelector != null)
         guiSelector.dispose();
-      guiSelector = new GraphicalSubcorpusSelector(null, this);
+      guiSelector = new GraphicalSubcorpusSelector(this);
       URL exturl = new URL(request.toString());
       HttpURLConnection exturlConnection = (HttpURLConnection) exturl.openConnection();
       //exturlConnection.setUseCaches(false);
@@ -1156,16 +1183,20 @@ public class Browser extends JFrame
     return dictionary;
   }
 
+  public HeaderDBManager getHeaderDBManager(){
+    return hdbmanager;
+  }
+
   public static void main(String[] args) {
     try {
+      final Browser f = new Browser(FRAME_WIDTH, FRAME_HEIGHT);
       splashScreen = new SplashScreen("Initialising. Please wait...", 20,
                                       "modnlp/tec/client/icons/modnlp-small.jpg");
       splashScreen.incProgress();
-      final Browser f = new Browser(FRAME_WIDTH, FRAME_HEIGHT);
+
       if (f.clProperties.getProperty("browser.brand") != null) {
         f.setBrand(f.clProperties.getProperty("browser.brand"));
       }
-
 
       f.addWindowListener(new WindowAdapter() {
           public void windowClosing(WindowEvent e) {
@@ -1181,8 +1212,10 @@ public class Browser extends JFrame
         }
         else
           f.SERVER = args[0];
-      else
+      else{
         f.initialCorpusSelection();
+      }
+      f.initGUI();
       
       f.HEDBAS = "http://"+f.SERVER+"/tec/headers";
       if ( f.clProperties.getProperty("tec.client.headers") != null )

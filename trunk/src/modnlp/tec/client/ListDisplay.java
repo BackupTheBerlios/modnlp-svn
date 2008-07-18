@@ -47,39 +47,39 @@ public class ListDisplay extends JPanel
   public static int MAXCOL = 180;
   public static int OFFSET = 40;
   public static String HSEP = " | "; 
-	/** Width of the scroll pane and list (to be used in resizing events etc) */
-	public static int LWIDTH  = 888;
-	/** Height of the scroll pane and list (to be used in resizing events etc) */
-	public static int LHEIGHT = 473;
-	/** Height of the scroll button panel  */
-	public static int BWIDTH  = 32;
-	/** Height of the scroll button panel  */
-	public static int BHEIGHT = 400;
-	public int NOROWS = 25;
-	// distance to beginning of array 
-	public int  concArrayOffset = 0;
-	public int  nowDisplayingfrom = 0;
-	private DefaultListModel listModel;
+  /** Width of the scroll pane and list (to be used in resizing events etc) */
+  public static int LWIDTH  = 888;
+  /** Height of the scroll pane and list (to be used in resizing events etc) */
+  public static int LHEIGHT = 473;
+  /** Height of the scroll button panel  */
+  public static int BWIDTH  = 32;
+  /** Height of the scroll button panel  */
+  public static int BHEIGHT = 400;
+  public int NOROWS = 25;
+  // distance to beginning of array 
+  public int  concArrayOffset = 0;
+  public int  nowDisplayingfrom = 0;
+  private DefaultListModel listModel;
   private JButton ffwdb = null;
-	private JButton rwndb = null;
-	private JButton sfwdb = null;
-	private JButton swndb = null;
-	private ListDisplayRenderer renderer = new ListDisplayRenderer();
-	private boolean resizePending = false;
-	private JProgressBar scrollProgress;
-	ListSelectionModel listSelectionModel;
-
+  private JButton rwndb = null;
+  private JButton sfwdb = null;
+  private JButton swndb = null;
+  private ListDisplayRenderer renderer = new ListDisplayRenderer();
+  private boolean resizePending = false;
+  private JProgressBar scrollProgress;
+  ListSelectionModel listSelectionModel;
+  
   public ListDisplay(Browser parent) 
   {
     super();
-		parentFrame = parent;
+    parentFrame = parent;
     ClassLoader cl = this.getClass().getClassLoader();
     ffwdb = new JButton(new ImageIcon(cl.getResource("modnlp/tec/client/icons/ffwd.gif")));
     rwndb = new JButton(new ImageIcon(cl.getResource("modnlp/tec/client/icons/rwnd.gif")));
     sfwdb = new JButton(new ImageIcon(cl.getResource("modnlp/tec/client/icons/sfwd.gif")));
     swndb = new JButton(new ImageIcon(cl.getResource("modnlp/tec/client/icons/swnd.gif")));
-
-    font = new Font("Courier", Font.PLAIN, parentFrame.getFontSize());
+    
+    font = new Font("Monospaced", Font.PLAIN, parentFrame.getFontSize());
     //setPreferredSize(new Dimension(LWIDTH+50, LHEIGHT+30));
     ffwdb.setPreferredSize(new Dimension(30,60));
     rwndb.setPreferredSize(new Dimension(30,60));

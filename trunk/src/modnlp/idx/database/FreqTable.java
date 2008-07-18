@@ -17,6 +17,8 @@
 */
 package modnlp.idx.database;
 
+import modnlp.idx.query.SubcorpusConstraints;
+
 import java.io.PrintWriter;
 
 import com.sleepycat.je.Environment;
@@ -27,6 +29,7 @@ import com.sleepycat.je.BtreeStats;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.DatabaseNotFoundException;
 import com.sleepycat.je.Cursor;
+import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.LockMode;
@@ -259,6 +262,14 @@ public class FreqTable extends Table {
     catch (DatabaseException e) {
       logf.logMsg("Error accessing secondary cursor for FreqTable" , e);
     }
+  }
+
+  public Cursor getCursor() throws DatabaseException{
+    return database.openCursor(null, null);
+  }
+
+  public SecondaryCursor getSecondaryCursor() throws DatabaseException{
+    return freqKeyDatabase.openSecondaryCursor(null, CursorConfig.READ_COMMITTED);
   }
 
   public void close () {

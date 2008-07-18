@@ -11,8 +11,11 @@ TARGETS=$(subst .java,.class,$(SOURCES))
 JARREDS=modnlp/tec/client/*.class modnlp/tec/client/gui/*.class \
 	modnlp/tec/client/plugin/*.class \
 	modnlp/gui/*.class \
-	modnlp/tec/client/icons/*.{gif,jpg,png} \
-	modnlp/tec/client/help/*.{html,jpg} tecli.properties
+	modnlp/tec/client/icons/*.gif \
+	modnlp/tec/client/icons/*.jpg \
+	modnlp/tec/client/icons/*.png \
+	modnlp/tec/client/help/*.html \
+	modnlp/tec/client/help/*.jpg tecli.properties
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`
 DISTDIR:=modnlp-teccli-`cat VERSION`
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
@@ -22,7 +25,8 @@ DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt 
 JAVA=java
 #JAVAC=javac
 #JAVAC=jikes-jsdk
-JAVAC=jikes-classpath
+#JAVAC=jikes-classpath
+JAVAC=jikes -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar
 JAR=jar
 JARFLAGS= cvmf $(MANIFEST)
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
@@ -66,3 +70,12 @@ bindist: jar
 	cp $(LIBS) $(JARTARGET) $(LIBLICENSES) $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)
+
+bindistec: jar
+	mkdir $(BINDISTDIR)-tec
+	cp README.bin $(BINDISTDIR)-tec/README
+	cp src/teclipluginlist.txt $(BINDISTDIR)-tec/
+	cp $(LIBS) $(JARTARGET) $(LIBLICENSES) $(BINDISTDIR)-tec
+	cp src/tecli.properties.tec $(BINDISTDIR)-tec/tecli.properties
+	tar cfvz /tmp/$(BINDISTDIR)-tec.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-tec
+	rm -rf $(BINDISTDIR)-tec

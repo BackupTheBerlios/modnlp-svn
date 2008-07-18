@@ -22,9 +22,13 @@ import modnlp.dstruct.SubcorpusMap;
 import modnlp.dstruct.SubcorpusDelimPair;
 
 import java.net.URL;
-import java.io.*;
-
-import java.util.regex.*;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *  Tokenise a chunk of text and record the position of each token
@@ -112,7 +116,7 @@ public class SubcorpusIndexer {
     //System.out.println("-->"+text+"<--");
     Matcher bwre = (Pattern.compile("< *"+elementName+" .*?"
                                     +attribtName+"=['\"](.+?)['\"][^>]*>(.*?)</ *"
-                                    +elementName+" *>")).matcher(originalText);
+                                    +elementName+" *>", Pattern.DOTALL)).matcher(originalText);
     int ct = 1;
     while (bwre.find()) {
       if (verbose)
