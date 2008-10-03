@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- JNLP File for TEC Browser -->
+<jnlp
+  spec="1.0+"
+  codebase="http://ronaldo.cs.tcd.ie/tec/jnlp/"
+  href="tec.jnlp">
+  <information>
+    <title>TEC Browser</title>
+    <vendor>TCD, Computer Science &amp; Univ. of Manchester</vendor>
+    <homepage href="http://ronaldo.cs.tcd.ie/tec/"/>
+    <description>TEC Browser: An Open-Source Concordancing Tool</description>
+    <description kind="short">TEC Concordancing Tool</description>
+    <icon href="tec.jpg"/>
+    <offline-allowed/>
+  </information>
+  <security>
+      <all-permissions/>
+  </security>
+  <resources>
+    <property name="tec.client.runmode" value="jnlp"/>
+    <j2se version="1.3+"/>
+    <jar href="teccli.jar"/>
+  </resources>
+  <application-desc main-class="modnlp.tec.client.Browser"/>
+</jnlp>

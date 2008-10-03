@@ -1,0 +1,82 @@
+2008-10-03  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* FqListBrowser, Dictionary, FreqTable, etc (release 0.5.4): performance
+	improvements, a few bug fixes. 
+
+2008-07-18  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* FqListBrowser: Added subcorpus-selection sensitivity
+
+2007-09-21  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* GraphicalSubcorpusSelector, MultipleAttributeSelection,
+	AttributeChooser: implemented basic GUI subcorpus selector, fixed
+	bugs, tested on HC and CD corpora. Backward compatibility with old
+	TEC system has been abadoned as of teccli-0.5.2.
+
+2007-06-25  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* modnlp-idx: Incorporated XMLDB subcospus selection
+	functionality (through eXist)
+
+2006-07-20 Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* tec-client (Repository): implemented 'stand-alone' mode,
+	accessing local modnlp.idx.database.Dictionary; TecClient renamed
+	to Browser; de-activated sub-corpus selection plugin
+	
+2003-08-06 Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* tec-client (Repository): added simple frequency list plugin and
+	  splash screen; fixed minor bugs.
+
+2003-06-22 Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* tec-client (Repository): * Both client and server have been
+	revamped. The main changes are:
+
+	o client now requires java 1.3
+	
+	o The query language has been improved: wildcards are back,
+	  sequence queries now work correctly (number of intervening words
+	  now mean just that); (take a look at the browser's new help
+	  function for a description of the syntax)
+
+	o retrieval efficiency (server side) has been improved: the search
+	  engine now chooses the least frequent word to guide the search;
+
+        o Noel's SQL search code (sub-corpus specification) has been
+	  cleaned up and fixed (the browser now responds dynamically to
+	  server-side changes on the metadata by querying the server at
+	  start-up, with the undesirable but unavoidable side-effect of
+	  increasing start-up time);
+
+        o the client interface has been improved; new features include menus
+          and infrastructure for help files;
+    
+        o we've move one step closer to a proper plug-in architecture
+
+2001-10-24 Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* INSTALL: Added documentation on how to set up a sample server on
+	localhost 
+
+2001-07-31 Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* tec-client (Repository): Changed the client to tunnel all
+	connections through HTTP, in order to allow the client to use HTTP
+	proxies on machines located behing firewalls. Created code to
+	support automatic deployment with Java Web Start (jnlp). Minor bug
+	fixes 
+
+2000-07-07 Saturnino Luz  <luzs@acm.org>
+	* Added configire, Makefiles etc. Tidied up code.
+	  Packed the first release (0.2) of the new client.
+
+2000-04-12 Saturnino Luz  <luzs@acm.org>
+
+        * Started version 0.2. Swing replaces AWT.  New (log time) Merger
+	  sort algoritm replaces polynomial-time quicksort algorithm 
+	  (...tecclient.TecQSort.java). ListDisplay now has its own 
+	  cell renderer ListDisplayRenderer, which highlights keywords,
+	  colorizes sort words and other bells and whistles.   

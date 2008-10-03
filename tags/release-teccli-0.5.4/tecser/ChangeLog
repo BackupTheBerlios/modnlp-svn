@@ -1,0 +1,7 @@
+2007-09-21  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* TecConnection.java: implemented server-side subcorpus selection
+	and extended communication protocol. Backward compatibility with
+	old TEC system has been now been abandoned, though this version
+	(0.0.2) still preserves it.
+ 

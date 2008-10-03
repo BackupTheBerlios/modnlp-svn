@@ -1,0 +1,42 @@
+2008-07-18  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* Makefile (TOPDIR): fixed section tokenisation bug in
+	SubcorpusIndexer (dot regexp didn't extend across lines); added
+	subcorpus-selection sensitivity to the FqListBrowser (implemented
+	in Dictionary#printSortedFreqList(PrintWriter,int,SubcorpusConstraints));
+	fixed concordance line display (CorpusFile couldn't read past
+	non-ascii characters)
+
+2007-09-21  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* idx, teccli, tecser: improved subcorpus search, implemented
+	basic GUI subcorpus selector, fixed several bugs, tested on HC and
+	CD corpora, implemented server-side subcorpus selection and
+	extended protocol. Backward compatibility with old TEC system has
+	been abadoned as of idx-0.1.2 and teccli-0.5.2. 
+
+2007-08-20  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* Fixed some bugs in tc, added basic sub-corpus serch
+	functionality to idx, tec-server
+
+2007-06-07  S. Luz  <luzs@cs.tcd.ie>
+
+	* all: Fixed a number of bugs, improved performance of conjunctive
+	search.
+
+2006-11-28  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* modnlp/idx, modnlp/dstruct/CorpusFile.java: Fixed UTF-8 encoding
+	issues, fixed search, implemented frequency list plugin, fixed
+	minor bugs. 
+
+2006-08-23  S. Luz  <luzs@cs.tcd.ie>
+
+	* idx/Makefile, tc/Makefile, tec/Makefile (modnlp): tidied up
+	make files; tested sub-package builds.	
+
+2006-08-22  S. Luz  <luzs@cs.tcd.ie>
+
+	* ChangeLog (modnlp): added changelog.
+
