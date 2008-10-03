@@ -33,35 +33,35 @@ public class ConcArray {
   public int index = 0;
   public String SEPTOKEN = " |'`\"-_,.?!;:<>{}[]=+/\\%$*&()";
 
-	public ConcordanceObject[] concArray = new ConcordanceObject[arraymax];
+  public ConcordanceObject[] concArray = new ConcordanceObject[arraymax];
   public int longFileName = 0;
 
 
-	public ConcArray () {
-		super();
-		for(int i = 0; i < arraymax ; i++)
-			concArray[i] = null;
-	}
-
+  public ConcArray () {
+    super();
+    for(int i = 0; i < arraymax ; i++)
+      concArray[i] = null;
+  }
+  
   public boolean assertElement(String inputString)
   {
     if (index >= arraymax)  // too many concordances!!! 
       return false;
-
-		ConcordanceObject co = new ConcordanceObject(inputString);
-		
+    
+    ConcordanceObject co = new ConcordanceObject(inputString);
+    
     if( co.concordance.equals("null") )
       {
-				return false;
+        return false;
       }
-		else {
-			co.index = index;
-			concArray[index] = co;
-			index++;
-			return true;
-		}
-	}
-	
+    else {
+      co.index = index;
+      concArray[index] = co;
+      index++;
+      return true;
+    }
+  }
+  
   public boolean assertElement(String inputString, int srtctx, int halfctx)
   {
     //System.out.println("HERE|"+inputString);

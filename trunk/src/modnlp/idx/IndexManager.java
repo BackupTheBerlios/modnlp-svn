@@ -63,16 +63,47 @@ public class IndexManager {
   IndexManagerUI imui;
   IndexingThread indexingThread;
   DeindexingThread deindexingThread;
+  boolean guiEnabled = true;
   boolean stop = false;
   boolean activeIndexing = false;
   boolean debug = false; // print debug info on stderr?
 
+  // GUI-enabled version
   public IndexManager () {
-    props =  new IndexManagerProperties();
+    try {
+      props =  new IndexManagerProperties(IndexManagerProperties.PROP_FNAME);
+    }
+    catch (IOException e){
+      String msg =  "Error: Index properties not set.\n"+
+        "Please set the values in idxmgr.properties.PLEASEEDIT\n"+
+        "according to your corpus and rename it to idxmgr.properties.";
+      JOptionPane.showMessageDialog(null, msg, "ERROR!", JOptionPane.ERROR_MESSAGE);
+      System.exit(1);
+    }
     setProperties();
     imui = new IndexManagerUI(this);
   }
 
+  // command line version
+  public IndexManager (String cdir) {
+    dictProps =  new DictProperties(cdir);
+    dict = new Dictionary(true,dictProps);
+    sbcd = new SubcorpusDirectory(dict);
+    indexHeaders =  dictProps.getProperty("index.headers").equalsIgnoreCase("true");
+    if (indexHeaders){
+      System.err.println("\n----- Opening Headers DB:  ------\n");
+      try { hdbm = new HeaderDBManager(dict.getDictProps()); }
+      catch(Exception e) 
+        {System.err.println("\n----- Error opening Headers DB: "+e+" ------\n");}
+    }
+    ignElement = dictProps.getProperty("tokeniser.ignore.elements");
+    subcElement = dictProps.getProperty("subcorpusindexer.element");
+    subcAttribute = dictProps.getProperty("subcorpusindexer.attribute");
+    // we can use imui to print our progress messages
+    // but never actually make it visible
+    imui = new IndexManagerUI(this);
+    guiEnabled = false;
+  }
 
   public void setProperties(){
     ignElement = props.getProperty("tokeniser.ignore.elements");
@@ -82,7 +113,13 @@ public class IndexManager {
   }
 
   public void setStop(boolean b){
-    imui.print("-- Stop requested. I will finish indexing current file before stopping...\n");
+    if (b){
+      imui.print("-- Stop requested. ");
+      if (activeIndexing)
+        imui.print("I will finish indexing current file before stopping...\n");
+      else
+        imui.print("\n");
+    }
     stop = b;
   }
 
@@ -136,15 +173,31 @@ public class IndexManager {
     dict.setVerbose(debug);
   }
 
+  public void setDebug(boolean v){
+    debug = v;
+  }
+
   public void indexSelectedFiles (File[] files) {
     dictProps.setProperty("last.datafile.dir", files[0].getParent());
     indexingThread = new IndexingThread(new CorpusList(files));
     indexingThread.start();
   }
 
+  public synchronized void indexSelectedFiles (String flist) {//throws InterruptedException{
+    System.err.println("=="+flist);
+    indexingThread = new IndexingThread(new CorpusList(flist));
+    indexingThread.run();
+    //indexingThread.join();
+  }
+
   public void deindexSelectedFiles (Object[] files) {
     deindexingThread = new DeindexingThread(new CorpusList(files));
     deindexingThread.start();
+  }
+
+  public void deindexSelectedFiles (String flist) {
+    deindexingThread = new DeindexingThread(new CorpusList(flist));
+    deindexingThread.run();
   }
 
 
@@ -166,26 +219,55 @@ public class IndexManager {
   }
 
   public static void main(String[] args) {
-    IndexManager im = new IndexManager();
+    IndexManager im = null;
+
     try {
-      im.chooseNewCorpus();
-      if (im.dict == null)
+      if (args.length > 0 && args[0].equals("-h")){
+        usage();
         System.exit(0);
-      im.imui.pack();
-      im.imui.setVisible(true);
+      }
+      if (args.length > 1)
+        // assuming command-line execution: args[0] is directory index 
+        // args[1] is corpuslist
+        {
+          im = new IndexManager(args[0]);
+          if (args.length > 2 && args[2].equals("-v") ) 
+            im.setDebug(true);
+          if (args.length > 3 && args[3].equals("-d") ) 
+            im.deindexSelectedFiles(args[1]);
+          else
+            im.indexSelectedFiles(args[1]);
+          im.exit(0);
+        }
+      else {
+        im = new IndexManager();
+        im.chooseNewCorpus();
+        if (im.dict == null)
+          System.exit(0);
+        im.imui.pack();
+        im.imui.setVisible(true);
+      }
     } // end try
     catch (Exception ex){
-      System.err.println(ex);
+      System.err.println(ex+"\n-->"+args[0]+"--"+args[1]);
       ex.printStackTrace();
       if (im.dict != null)
         im.dict.close();
       usage();
+      System.exit(1);
     }
   }
 
   public static void usage() {
-    System.err.println("\nUSAGE: IndexManager ");
-    System.err.println("\tGUI for index maintainance");
+    System.err.println("\nUSAGE:\n   modnlp.idx.IndexManager [indexdir filelist] [-v] [-d]\n");
+    System.err.println("   With no parameters, starts GUI for index maintainance,");
+    System.err.println("   otherwise run (de)indexer from the command line.\n");
+    System.err.println("OPTIONS: ");
+    System.err.println("\t indexdir: the directory where dictionary.properties lives");
+    System.err.println("\t\t and the indices will be stored.");
+    System.err.println("\t filelist: list of files to be indexed/deindexed.");
+    System.err.println("\t -v: verbose output.");
+    System.err.println("\t -d: deindex files in filelist.");
   }
   
   class IndexingThread extends Thread {
@@ -241,7 +323,8 @@ public class IndexManager {
             hdbm.add(dictProps.getHeaderAbsoluteFilename(fname), fid);
           } 
           imui.print("-- Done.\n");
-          imui.addIndexedFile(fname);
+          if (guiEnabled)
+            imui.addIndexedFile(fname);
         }
         catch (EmptyFileException ex){
           imui.print("Warning: "+ex+"\n");
@@ -278,8 +361,9 @@ public class IndexManager {
         imui.print("----- Indexing completed in "+(tsec)+ " seconds.");
       activeIndexing = false;
       imui.enableChoice(true);
+      //notifyFinishedIndexing();
     } // end run()
-
+    
   } // end IndexingThread
 
 

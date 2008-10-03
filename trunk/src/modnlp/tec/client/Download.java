@@ -46,10 +46,10 @@ public class Download extends PrintWriter {
       return;
     for(int count = 0; count < conc.index ; count++)
       {
-				//String fn = conc.concArray[count].filename;
-				//String offs = adjustOffSet(lfn,fn.length());
-				//this.println(fn+offs+"|"+conc.concArray[count].concordance);
-				this.println(conc.concArray[count].textConcLine(lfn));
+        //String fn = conc.concArray[count].filename;
+        //String offs = adjustOffSet(lfn,fn.length());
+        //this.println(fn+offs+"|"+conc.concArray[count].concordance);
+        this.println(conc.concArray[count].textConcLine(lfn));
       }
     this.close();
   }

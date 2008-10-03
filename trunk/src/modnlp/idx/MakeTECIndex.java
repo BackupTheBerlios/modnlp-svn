@@ -33,7 +33,8 @@ import java.util.Enumeration;
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
  * @version <font size=-1>$Id: MakeTECIndex.java,v 1.2 2006/05/22 17:26:02 amaral Exp $</font>
- * @see  
+ * @deprecated Use <code>IndexManager indexdir flist</code> instead 
+ * @see IndexManager
 */
 public class MakeTECIndex {
   private static boolean verbose = true;

@@ -87,18 +87,18 @@ public class ListDisplayRenderer extends JLabel
 		g.setColor(Color.green.darker());
 		HighlightString hls = cobjct.indexOfKeyword();
 		g.drawString(hls.string, 
-								 fm.stringWidth(filename+concordance.substring(0, hls.position)),
-								 fm.getAscent());
+                             fm.stringWidth(filename+concordance.substring(0, hls.position)),
+                             fm.getAscent());
 		// highlight sort keyword (if needed)
 		if ( cobjct.sortContextHorizon != 0) {
-			g.setColor(Color.blue.darker());
-	 		hls = cobjct.indexOfSortContext();
-			g.drawString(hls.string, 
-									 fm.stringWidth(filename+concordance.substring(0, hls.position)),
-									 fm.getAscent());
+                  g.setColor(Color.blue.darker());
+                  hls = cobjct.indexOfSortContext();
+                  g.drawString(hls.string, 
+                               fm.stringWidth(filename+concordance.substring(0, hls.position)),
+                               fm.getAscent());
 		}
 	}
-	
+  
 }
 
 

@@ -32,7 +32,8 @@ import org.xmldb.api.modules.XPathQueryService;
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
  * @version <font size=-1>$Id: $</font>
- * @see  
+ * @see IndexManager for a program the does the full job of indexing
+ * words and (header) metadata
 */
 
 public class MakeHeaderIndex {

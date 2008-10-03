@@ -29,6 +29,7 @@ import modnlp.dstruct.CorpusFile;
 import modnlp.dstruct.IntegerSet;
 import modnlp.dstruct.TokenMap;
 import modnlp.dstruct.IntOffsetArray;
+import modnlp.dstruct.FrequencyHash;
 
 
 import com.sleepycat.je.DatabaseEntry;
@@ -465,21 +466,34 @@ public class Dictionary {
   } 
 
   public void printCorpusStats (PrintWriter os) {
-    os.println(0+"\t"+TTOKENS_LABEL+"\t"+freqTable.getTotalNoOfTokens());
-    os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio());
+    printCorpusStats(os, true);
   }
 
-  public void printSubCorpusStats (PrintWriter os, int notokens, int notypes) {
+  public void printCorpusStats (PrintWriter os, boolean nocase) {
+    os.println(0+"\t"+TTOKENS_LABEL+"\t"+freqTable.getTotalNoOfTokens());
+    os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio(nocase));
+  }
+
+  public static final void printSubCorpusStats (PrintWriter os, int notypes , int notokens) {
     os.println(0+"\t"+TTOKENS_LABEL+"\t"+notokens);
     os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio(notypes,notokens));
   }
 
-  public double getTypeTokenRatio(){
-    return 
-      getTypeTokenRatio(caseTable.getTotalNoOfTypes(),freqTable.getTotalNoOfTokens());
+  public double getTypeTokenRatio(boolean nocase){
+    return nocase?
+      getTypeTokenRatio(caseTable.getTotalNoOfTypes(),
+                        freqTable.getTotalNoOfTokens()) :
+      freqTable.getTypeTokenRatio();
   }
 
-  public double getTypeTokenRatio(int notypes, int notokens){
+  // default: case insensitive
+  public double getTypeTokenRatio(){
+    return 
+      getTypeTokenRatio(caseTable.getTotalNoOfTypes(),
+                        freqTable.getTotalNoOfTokens());
+  }
+
+  public static final double getTypeTokenRatio(int notypes, int notokens){
     return 
       (double)notypes/notokens;
   }
@@ -490,7 +504,7 @@ public class Dictionary {
    * @param os a <code>PrintWriter</code> value
    */
   public void printSortedFreqList (PrintWriter os) {
-    printSortedFreqList(os, 0);
+    printSortedFreqList(os, 0, 0, true);
   }
 
   /**
@@ -501,8 +515,23 @@ public class Dictionary {
    */
   public void printSortedFreqList (PrintWriter os, int max) {
     printCorpusStats(os);
-    freqTable.printSortedFreqList(os, max);
+    freqTable.printSortedFreqList(os, 0, max, true);
   }
+
+ /**
+   * Print the max topmost frequent types onto os.
+   *
+   * @param os a <code>PrintWriter</code> value
+   * @param max an <code>int</code> value
+   */
+  public void printSortedFreqList (PrintWriter os, int from, int max, 
+                                   boolean nocase) {
+    if (!nocase){
+      printCorpusStats(os,nocase);
+    }
+    freqTable.printSortedFreqList(os, from, max, nocase);
+  }
+
 
   /**
    * Print the max topmost frequent types occurring in the subcorpus
@@ -512,40 +541,72 @@ public class Dictionary {
    * @param max an <code>int</code> value
    * @param sbc a <code>SubcorpusConstraints</code> value
    */
-  public void printSortedFreqList (PrintWriter os, int max, SubcorpusConstraints sbc) {
+  public void printSortedFreqList (PrintWriter os, int from, int max, 
+                                   SubcorpusConstraints sbc, boolean nocase) 
+  {
     int tokencount = 0;  // 2^32 should be enough (we're not quite competing with google yet) 
     int typecount = 0;
-    HashMap ft = new HashMap();
+    FrequencyHash ft = new FrequencyHash();
     try {
       DatabaseEntry key = new DatabaseEntry();
       DatabaseEntry skey = new DatabaseEntry();
       DatabaseEntry data = new DatabaseEntry();
+      System.err.println("Requested secondary cursor");
       SecondaryCursor c = freqTable.getSecondaryCursor();
-      int i = 1;
+      System.err.println("Got secondary cursor");
+      int i = 0;
+      boolean totheend = (max == 0);
+      max += from+1;
       while (c.getNext(skey, key, data, LockMode.READ_UNCOMMITTED) == 
-             OperationStatus.SUCCESS && (max == 0  || i <= max) ) {
+             OperationStatus.SUCCESS && ( totheend  || i <= max) ) {
+        if (i++ < from)
+          continue;
         String word = StringBinding.entryToString(key);
-        //System.err.println("word ->"+word);
         if (word.length() == 0)
           continue;
         IntegerSet files =  wFilTable.fetch(word);
+        //System.err.println("starting counting for:"+word); 
         for (Iterator f = files.iterator(); f.hasNext(); ) {
-          Integer fno = (Integer)f.next();
+          String fno = ((Integer)f.next()).toString();
+          if (sbc != null && !sbc.acceptFile(fno) ){
+            //System.err.println("-------------------SKIP:"+word); 
+            continue;
+          }
           WordPositionTable wpt = new WordPositionTable(environment, 
-                                                        ""+fno,
+                                                        fno,
                                                         false);
           // all positions on a file
           IntegerSet pos  = wpt.fetch(word);
+          wpt.close();
           if (pos == null)
             continue;
           SubcorpusTable sbct = null;
+          int nooc = 0;
           if (sbc != null){
             try {
-              //System.err.println("File ->"+fno);
-              sbct = new SubcorpusTable(environment, fno.toString(), false);
+              sbct = new SubcorpusTable(environment, fno, false, false);
+              nooc = sbc.getTokenCount(fno,pos,sbct);
+              sbct.close();
             } catch(DatabaseNotFoundException e ) { sbct = null;}
           }
-          for (Iterator p = pos.iterator(); p.hasNext(); ) {
+          else {
+            nooc = pos.size();
+          }
+          //System.err.println("word ->"+word+" = "+nooc);
+          if (nooc == 0)
+            continue;
+          tokencount += nooc;
+          ft.add(word,nooc,nocase);
+          /*
+          if (nocase)
+            word = word.toLowerCase();
+          Integer fqi = (Integer)ft.get(word);
+          int fq = (fqi == null)? 0 : fqi.intValue();
+          ft.put(word, new Integer(fq+nooc));
+          */
+
+          // this is very inefficient
+          /*for (Iterator p = pos.iterator(); p.hasNext(); ) {
             Integer bp = (Integer)p.next();
             int bpi = bp.intValue();
             if ( (sbc == null || sbc.accept(fno.toString(),bpi,sbct)) ) {
@@ -554,10 +615,10 @@ public class Dictionary {
               ft.put(word, new Integer(fq+1));
               tokencount++;
             }
-          } 
-          if (sbct != null) 
-            sbct.finalize();
+          }
+          */
         }
+        //System.err.println("Counting done"); 
       }
       c.close();
     }
@@ -565,13 +626,20 @@ public class Dictionary {
       logf.logMsg("Error accessing secondary cursor for FreqTable" , e);
     }
     int i = 1;
-    printSubCorpusStats(os,ft.size(),tokencount);
-    for (Iterator e = ft.entrySet().iterator(); e.hasNext() ;){
+    printSubCorpusStats(os,ft.size(),ft.getTokenCount()); // send corpus stats
+    for (Iterator p = (ft.getKeysSortedByValue(false)).iterator(); p.hasNext(); ) {
+      String w = (String)p.next();
+      Integer f = (Integer)ft.get(w);
+      os.println(i+++"\t"+w+"\t"+f);
+    }
+    /*
+    for (Iterator e = ft.entrySet().iterator(); e.hasNext() ;){ // send frequency table
       Map.Entry kv = (Map.Entry) e.next();
       String sik = (String)kv.getKey();
       Integer freq  = (Integer)kv.getValue();
       os.println(i+++"\t"+sik+"\t"+freq);
     }
+    */
     os.flush();
   }
   
@@ -730,11 +798,11 @@ public class Dictionary {
       System.out.println("===========\n WordPositionTable for "+
                          fileTable.getFileName(fnos[i])+":\n=============");
       try {
-      WordPositionTable wPosTable = new WordPositionTable(environment, 
-                                                          ""+fnos[i],
-                                                          false);
-      wPosTable.dump();
-      wPosTable.close();
+        WordPositionTable wPosTable = new WordPositionTable(environment, 
+                                                            ""+fnos[i],
+                                                            false);
+        wPosTable.dump();
+        wPosTable.close();
       }
       catch(DatabaseNotFoundException e){
         logf.logMsg("Dictionary: Error reading WordPositionTable: "+fnos[i]+e);

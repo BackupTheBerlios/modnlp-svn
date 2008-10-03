@@ -39,7 +39,7 @@ public class Tokeniser {
   
   protected String encoding = "UTF8";
 
-	public static final char[] SEPTKARR = {' ',
+  public static final char[] SEPTKARR = {' ',
                                          '|',
                                          '\'',
                                          '`',

@@ -1,3 +1,8 @@
+2008-10-03  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* FqListBrowser, Dictionary, FreqTable, etc (release 0.5.4): performance
+	improvements, a few bug fixes. 
+
 2008-07-18  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* FqListBrowser: Added subcorpus-selection sensitivity

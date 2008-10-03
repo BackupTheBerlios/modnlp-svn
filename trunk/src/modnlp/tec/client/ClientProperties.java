@@ -34,29 +34,29 @@ public class ClientProperties extends Properties{
   static final String DEF_PORT = "1240";
   static final String DEF_HDURL = "http://ronaldo.cs.tcd.ie/tec/headers";
 
-	public ClientProperties () 
-	{
+  public ClientProperties () 
+  {
     super();
     try {
       //ClassLoader cl = this.getClass().getClassLoader();
       //InputStream fis = ((cl.getResource("tecli.properties")).openConnection()).getInputStream();
-       FileInputStream fis = new FileInputStream(FNAME);
+      FileInputStream fis = new FileInputStream(FNAME);
       this.load(fis);
     }
     catch (Exception e) {
-	    System.err.println("Warning" + e);
-	    System.err.println("Creating new property file" + FNAME);
+      System.err.println("Warning" + e);
+      System.err.println("Creating new property file" + FNAME);
       System.err.println("Setting default to remote access to main TEC site");
       setProperty("tec.client.server", DEF_SERVER);
       setProperty("tec.client.port", DEF_PORT);
       setProperty("tec.client.headers", DEF_HDURL);
       setProperty("stand.alone", "no");
       save();
-	    //e.printStackTrace(System.out);
-			//System.exit(1);
-		}
-	}
-
+      //e.printStackTrace(System.out);
+      //System.exit(1);
+    }
+  }
+  
   public void save () {
     try {
       store(new FileOutputStream(FNAME), 
@@ -66,10 +66,10 @@ public class ClientProperties extends Properties{
       System.err.println("Error writing property file "+FNAME+": "+e);
     }
   }
-
+  
   protected void finalize () throws java.lang.Throwable {
     save();
     super.finalize();
   }
-
+  
 }

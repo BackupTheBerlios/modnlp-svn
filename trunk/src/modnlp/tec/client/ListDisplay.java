@@ -110,69 +110,69 @@ public class ListDisplay extends JPanel
     scrollProgress.setOrientation(JProgressBar.VERTICAL);
     //scrollProgress.setAlignmentX(Component.CENTER_ALIGNMENT);
     scrollProgress.
-			setBorder(BorderFactory.
-								createCompoundBorder(BorderFactory.createEmptyBorder(2,14,2,0),
-																		 scrollProgress.getBorder()));
-		bp.add(rwndb);
-		bp.add(swndb);
-		bp.add(scrollProgress);
-		bp.add(sfwdb);
-		bp.add(ffwdb);
-		add(bp);
-		add(jscroll);
-		setNOROWS();
-		listSelectionModel = list.getSelectionModel();
-		listSelectionModel.addListSelectionListener(parent);
-	}
-	
-	
+      setBorder(BorderFactory.
+                createCompoundBorder(BorderFactory.createEmptyBorder(2,14,2,0),
+                                     scrollProgress.getBorder()));
+    bp.add(rwndb);
+    bp.add(swndb);
+    bp.add(scrollProgress);
+    bp.add(sfwdb);
+    bp.add(ffwdb);
+    add(bp);
+    add(jscroll);
+    setNOROWS();
+    listSelectionModel = list.getSelectionModel();
+    listSelectionModel.addListSelectionListener(parent);
+  }
+  
+  
   public void actionPerformed(ActionEvent evt)
-	{
+  {
     if(evt.getSource() == sfwdb)
-			displayArraySegment(parentFrame.concThread.conc, concArrayOffset-NOROWS+1);
+      displayArraySegment(parentFrame.concThread.conc, concArrayOffset-NOROWS+1);
     if(evt.getSource() == swndb)
-			displayArraySegment(parentFrame.concThread.conc, concArrayOffset-NOROWS-1);
+      displayArraySegment(parentFrame.concThread.conc, concArrayOffset-NOROWS-1);
     if(evt.getSource() == ffwdb)
-			displayArraySegment(parentFrame.concThread.conc, concArrayOffset);
-		if(evt.getSource() == rwndb){
-			int from = concArrayOffset - 2 * NOROWS;
-			displayArraySegment(parentFrame.concThread.conc, from);
-		}
-	}
-
-	private void initialiseList(){
-		for(int count = concArrayOffset; count < NOROWS ; count++)
+      displayArraySegment(parentFrame.concThread.conc, concArrayOffset);
+    if(evt.getSource() == rwndb){
+      int from = concArrayOffset - 2 * NOROWS;
+      displayArraySegment(parentFrame.concThread.conc, from);
+    }
+  }
+  
+  private void initialiseList(){
+    for(int count = concArrayOffset; count < NOROWS ; count++)
       {
         listModel.addElement(null);
-			}
-	}
-
-	/**
-	 * Display conc array (providind for aligment with respect to filenames)
-	 * @param conc     the concordance array
-	 */
+      }
+  }
+  
+  /**
+   * Display conc array (providind for aligment with respect to filenames)
+   * @param conc     the concordance array
+   */
   public void displayArraySegment (ConcArray conc, int from)
   {
     int lfn_size = conc.getLengthLongestFname();
-		//		String[] coa = new String[NOROWS];
-		ConcordanceObject[] coa = new ConcordanceObject[NOROWS];
-		if (from == 0)
-			setNumberOfFoundDisplay();
-		ffwdb.setEnabled(true);
-		sfwdb.setEnabled(true);
-		if (from <= 0) {
-			from = 0;
-			rwndb.setEnabled(false);
-			swndb.setEnabled(false);
-		}
-		else{
-			rwndb.setEnabled(true);
-			swndb.setEnabled(true);
-		}
-		concArrayOffset = from;
-		nowDisplayingfrom = from;
-		int to = from + NOROWS;
-		//System.out.println("Displayin till: "+from );
+    //		String[] coa = new String[NOROWS];
+    ConcordanceObject[] coa = new ConcordanceObject[NOROWS];
+    if (from == 0)
+      setNumberOfFoundDisplay();
+    ffwdb.setEnabled(true);
+    sfwdb.setEnabled(true);
+    if (from <= 0) {
+      from = 0;
+      rwndb.setEnabled(false);
+      swndb.setEnabled(false);
+    }
+    else{
+      rwndb.setEnabled(true);
+      swndb.setEnabled(true);
+    }
+    concArrayOffset = from;
+    nowDisplayingfrom = from;
+    int to = from + NOROWS;
+    //System.out.println("Displayin till: "+from );
     if ( conc == null )
       return;
     for(int count = concArrayOffset; count < to ; count++)

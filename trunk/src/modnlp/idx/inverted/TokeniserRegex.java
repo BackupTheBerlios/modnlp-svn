@@ -60,6 +60,15 @@ public class TokeniserRegex extends Tokeniser {
   }
 
   /**
+   * Get the <code>bigWordRegexp</code> value.
+   *
+   * @return a <code>String</code> value
+   */
+  public final String getBigWordRegexp() {
+    return bigWordRegexp;
+  }
+
+  /**
    * Set the <code>IgnoredElements</code> value.
    *
    * @param newIgnoredElements The new IgnoredElements value.
@@ -69,7 +78,7 @@ public class TokeniserRegex extends Tokeniser {
   }
 
   public void tokenise ()  {
-    String ignregexp = "--+|\\.\\.+|\\.+\\p{Space}";  // delete full stops and dashes .
+    String ignregexp = "--+|\\.\\.+|\\.+\\p{Space}";  // delete full stops and dashes (typically not used).
     if (ignoredElements != null && ignoredElements.length() > 0)
       ignregexp = ignregexp+"|< *"+ignoredElements+".*?>.*?</"+ignoredElements+" *>";
     if (!tagIndexing)

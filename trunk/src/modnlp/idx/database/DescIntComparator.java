@@ -28,7 +28,8 @@ import java.util.Comparator;
  * @see  
 */
 
-public class DescIntComparator implements Comparator{
+public class DescIntComparator implements Comparator//<byte[]> 
+{
 
   /**
    * Compare two objects for sorting in descending order.  Should
@@ -39,8 +40,8 @@ public class DescIntComparator implements Comparator{
    * @param d2 an <code>Object</code> value
    * @return an <code>int</code> value
    */
-  public int compare(Object d1, Object d2) {
-    
+  public int compare(Object d1, Object d2) {  
+  //public int compare(byte[] key2, byte[] key1) {
     byte[] key2 = (byte[])d1;
     byte[] key1 = (byte[])d2;
 

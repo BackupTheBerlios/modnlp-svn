@@ -20,6 +20,7 @@ package modnlp.idx;
 import  modnlp.idx.gui.IndexConfigChooser;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  *  Properties for IndexManager
@@ -31,35 +32,29 @@ import java.io.FileOutputStream;
 
 public class IndexManagerProperties extends java.util.Properties{
 
-  public static final String PROP_FNAME = System.getProperty("user.dir")+
-    java.io.File.separator+"idxmgr.properties";
+  public static final String PROP_FNAME = 
+    System.getProperty("user.dir")+java.io.File.separator+"idxmgr.properties";
   public static final String EXIST_CONF_FNAME = "eXistConf.xml";
   String propertyFileName;
 
   public IndexManagerProperties () 
   {
     super();
-    //propertyFileName = PROP_FNAME;
     try {
-      //ClassLoader cl = this.getClass().getClassLoader();
-      //FileInputStream fis = 
-        //((cl.getResource(PROP_FNAME))
-        //               .openConnection()).getInputStream();
-      //if (propertyFileName == null){
-        //IndexConfigChooser icc = new IndexConfigChooser(PROP_FNAME);
-        //icc.chooseIdxManagerProperties();
-        //propertyFileName = icc.getSelectedFile().toString();
-      //}
       this.load(new FileInputStream(PROP_FNAME));
     }
     catch (Exception e) {
-	    System.err.println("Error reading property file "+propertyFileName+": "+e);
-      
-	    System.err.println("Creating new property file");
+      System.err.println("Error reading property file "+propertyFileName+": "+e);    
+      System.err.println("Creating new property file");
       setProperty("last.directory",System.getProperty("user.dir"));
-		}
-	}
-
+    }
+  }
+  
+  public IndexManagerProperties (String propfname) throws IOException 
+  {
+    super();
+    this.load(new FileInputStream(propfname));
+  }
 
   /**
    * Return the number of corpora currently maintained by the

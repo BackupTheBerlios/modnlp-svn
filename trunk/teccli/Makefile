@@ -79,3 +79,12 @@ bindistec: jar
 	cp src/tecli.properties.tec $(BINDISTDIR)-tec/tecli.properties
 	tar cfvz /tmp/$(BINDISTDIR)-tec.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-tec
 	rm -rf $(BINDISTDIR)-tec
+
+bindistecpc: jar
+	mkdir $(BINDISTDIR)-ecpc
+	cp README.bin $(BINDISTDIR)-ecpc/README
+	cp src/teclipluginlist.txt $(BINDISTDIR)-ecpc/
+	cp $(LIBS) $(JARTARGET) $(LIBLICENSES) $(BINDISTDIR)-ecpc
+	cp src/tecli.properties.ecpc $(BINDISTDIR)-ecpc/tecli.properties
+	tar cfvz /tmp/$(BINDISTDIR)-ecpc.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-ecpc
+	rm -rf $(BINDISTDIR)-ecpc

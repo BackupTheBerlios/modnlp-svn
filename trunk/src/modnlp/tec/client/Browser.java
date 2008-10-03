@@ -1,5 +1,5 @@
 /** 
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  © 1999, 2006, 2007 S Luz <luzs@acm.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -13,7 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, 59 Temple Place - Sui
+te 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
 
@@ -76,9 +77,8 @@ public class Browser extends JFrame
   implements  ActionListener, ItemListener,
                 ListSelectionListener, TecDefaultChangeListener
 {
-
-  
-  public static final String RELEASE = "0.5.1";
+ 
+  public static final String RELEASE = "0.5.4";
   public static final String REVISION = "$Revision: 1.9 $";
   String BRANDNAME = "MODNLP/TEC";
   /* The next 2 thread objects will eventually become plug-in's */
@@ -188,12 +188,14 @@ public class Browser extends JFrame
    * @param height   window height
    */
   public Browser(int width, int height){
-
     super();
     setTitle(getBrowserName());
     clProperties = new ClientProperties();
     setSize(width,height);
-    
+  }
+
+  public ClientProperties getClientProperties(){
+    return clProperties;
   }
 
   public void initGUI(){
@@ -663,6 +665,8 @@ public class Browser extends JFrame
                                   JOptionPane.ERROR_MESSAGE);
 	}
 
+
+
   /** Manage the main concordance interaction with the server
    *  and builds a list of concordances into <code>array</code>
    *  @see #array
@@ -963,6 +967,10 @@ public class Browser extends JFrame
     return advConcFlag;
   }
   
+  public boolean isCaseInsensitive (){
+    return !caseCheckBox.getState();
+  }
+
   public boolean subCorpusSelected() {
     if (advConcFlag && xquerywhere != null )
       return true;

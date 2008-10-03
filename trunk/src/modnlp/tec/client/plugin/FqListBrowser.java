@@ -1,5 +1,5 @@
 /**
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  © 2007 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +29,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
+import java.awt.font.TextAttribute;
 
 import java.net.URL;
 import java.net.HttpURLConnection;
@@ -59,13 +60,18 @@ import java.awt.event.MouseAdapter;
 import javax.swing.table.TableColumnModel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Color;
 import javax.swing.JFileChooser;
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Comparator;
+import java.util.Map;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.text.NumberFormat;
+
 /**
  *  Basic Frequency list browser
  *
@@ -74,24 +80,39 @@ import java.text.NumberFormat;
  * @see  
 */
 public class FqListBrowser extends JFrame
-  implements  Runnable, Plugin, FocusListener
+  implements  Runnable, Plugin, FocusListener, WindowFocusListener
 {
   
+  public static final String FULLCORPUSTIP = "to select subcorpus, use Preferences -> Select subcorpus on main window.";
+  public static final String SCOFFTIP = "frequency table for full corpus";
+  public static final String SCONTIP = "frequency table for subcorpus";
+  public static final String CASEOFFTIP = "case insensitive table";
+  public static final String CASEONTIP = "case sensitive table";
+  public static final String SCOFF = "fc";
+  public static final String SCON = "sc";
+  public static final String CASEOFF = "ci";
+  public static final String CASEON = "cs";
+
   private Thread ftwThread;
 
+  
   private BufferedReader input;
   private JFrame thisFrame = null;
 
+  // MAXCHUNKSIZE controls how often we notify the GUI that the table contents have changed
   private int MAXCHUNKSIZE = 900;
   private int NOCOLUMNS = 40;
+  
   private HttpURLConnection exturlConnection;
-  int maxListSize = 500;
+  int skipFirst = 0;      // print from the startItem^{th} most frequent word
+  int maxListSize = 500;   // print at most maxListSize items (0 means print until the last item)
   int dldCount = 0;
   double ttratio = 0;
   int notokens = 0;
   int dldi = 0;
   Timer dld_timer;
   JTextField maxListField = new JTextField(""+maxListSize, 4);
+  JTextField skipFirstField = new JTextField(""+skipFirst, 4);
   JButton saveButton = new JButton("Save");
 
   private PrintWriter fqlout = null;
@@ -99,8 +120,10 @@ public class FqListBrowser extends JFrame
   DefaultTableModel model = new DefaultTableModel();
   DefaultTableModel noCaseModel = null; 
   JTable table = new JTable(model);
-  JLabel statsLabel = new JLabel("...");
-  JLabel scorpusLabel = new JLabel(" full corpus ");
+  JLabel statsLabel = new JLabel("                            ");
+  JLabel scStatusLabel = new JLabel(SCOFF);
+  JLabel caseStatusLabel = new JLabel(CASEOFF);
+  JLabel scorpusLabel = new JLabel("<html><u>full corpus</u></html>");
   private JProgressBar progressBar;
 
   private static String title = new String("MODNLP Plugin: FqListBrowser 0.1"); 
@@ -155,14 +178,29 @@ public class FqListBrowser extends JFrame
     maxListField.setToolTipText("Limit list size to this many types. Set to 0 for whole list.");
         
     JPanel pa = new JPanel();
+    //pa.setLayout(new BorderLayout());
+    //JPanel pa0 = new JPanel();
+    //JPanel pa1 = new JPanel();
     pa.add(go);
-    pa.add(new JLabel(" of "));
+    pa.add(new JLabel("  Skip "));
+    pa.add(skipFirstField);
+    pa.add(new JLabel(" and print "));
     pa.add(maxListField);
-    pa.add(new JLabel("most frequent words in"));
+    pa.add(new JLabel("commonest words in"));
+    scorpusLabel.setForeground(Color.RED);
+
+    scorpusLabel.setToolTipText(FULLCORPUSTIP);
+    scorpusLabel.setForeground(Color.BLUE);
+    Map map = scorpusLabel.getFont().getAttributes();
+    map.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+    scorpusLabel.setFont(new Font(map));
+
     pa.add(scorpusLabel);
     pa.add(saveButton);
     pa.add(new JLabel("     "));
     pa.add(dismissButton);
+    //pa.add(pa0,BorderLayout.NORTH);
+    //pa.add(pa1,BorderLayout.SOUTH);
     progressBar = new JProgressBar(0,800);
     progressBar.setStringPainted(true);
     dld_timer = new Timer(300, new ActionListener() {
@@ -179,15 +217,28 @@ public class FqListBrowser extends JFrame
         }
       });
 
+    JPanel pabottom = new JPanel();
+    pabottom.setLayout(new BorderLayout());
     JPanel pa2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel pa3 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     pa2.add(progressBar);
     pa2.add(statsLabel);
-    
+    statsLabel.setSize(450,statsLabel.getHeight());
+    scStatusLabel.setForeground(Color.RED);
+    pa3.add(scStatusLabel);
+    pa3.add(new JLabel("-"));
+    caseStatusLabel.setForeground(Color.RED);
+    pa3.add(caseStatusLabel);
+    pabottom.add(pa2,BorderLayout.WEST);
+    pabottom.add(pa3,BorderLayout.EAST);
+
     getContentPane().add(pa, BorderLayout.NORTH);
     getContentPane().add(scrollPane, BorderLayout.CENTER);
-    getContentPane().add(pa2, BorderLayout.SOUTH);
+    getContentPane().add(pabottom, BorderLayout.SOUTH);
 
-    addFocusListener(this);
+    addWindowFocusListener(this);
+    //maxListField.addFocusListener(this);
+    //skipFirstField.addFocusListener(this);
     //textArea.setFont(new Font("Courier", Font.PLAIN, parent.getFontSize()));
     saveButton.setEnabled(false);
     pack();
@@ -202,12 +253,22 @@ public class FqListBrowser extends JFrame
     checkSubCorpusSelectionStatus();
   }
 
+  public void windowGainedFocus(WindowEvent e){
+    checkSubCorpusSelectionStatus();
+  }
+  public void windowLostFocus(WindowEvent e){
+    checkSubCorpusSelectionStatus();
+  }
+
   private void checkSubCorpusSelectionStatus (){
-    System.err.println("----------------");
-    if (parent.isSubCorpusSelectionON())
-      scorpusLabel.setText(" subcorpus ");
-    else
-      scorpusLabel.setText(" full corpus ");
+    if (parent.isSubCorpusSelectionON()){
+      scorpusLabel.setText("<html><u>subcorpus</u></html>");
+      scorpusLabel.setToolTipText(parent.getXQueryWhere());
+    }
+    else{
+      scorpusLabel.setText("<html><u>full corpus</u></html>");
+      scorpusLabel.setToolTipText(FULLCORPUSTIP);
+    }
   }
 
   public void run() {
@@ -221,12 +282,28 @@ public class FqListBrowser extends JFrame
       if (parent.isStandAlone()) {
         (new FqlPrinter()).start();
       }
+      if (parent.isCaseInsensitive()){
+        caseStatusLabel.setText(CASEOFF);
+        caseStatusLabel.setToolTipText(CASEOFFTIP);
+      }
+      else{
+        caseStatusLabel.setText(CASEON);
+        caseStatusLabel.setToolTipText(CASEONTIP);
+      }
+      if (parent.isSubCorpusSelectionON()){
+        scStatusLabel.setText(SCON);
+        scStatusLabel.setToolTipText(SCONTIP+": "+parent.getXQueryWhere());
+      }
+      else{
+        scStatusLabel.setText(SCOFF);
+        scStatusLabel.setToolTipText(SCOFFTIP);
+      }
       NumberFormat nf =  NumberFormat.getInstance(); 
       //new java.text.DecimalFormat("###,###,###,###.#####");
       //NumberFormat pf =  NumberFormat.getIntegerInstance(); 
       // new java.text.DecimalFormat("###.###");
 
-      while ((maxListSize == 0 || dldCount < maxListSize) && (textLine = input.readLine()) != null) {
+      while ((maxListSize == 0 || dldCount <= maxListSize) && (textLine = input.readLine()) != null) {
         if ( i < MAXCHUNKSIZE ) {
           StringTokenizer st = new StringTokenizer(textLine, "\t");
           Object [] row = {new Integer(st.nextToken()), st.nextToken(), st.nextToken(), null};
@@ -326,13 +403,14 @@ public class FqListBrowser extends JFrame
             this.colIndex = colIndex;
             this.ascending = ascending;
         }
+
         public int compare(Object a, Object b) {
             Vector v1 = (Vector)a;
             Vector v2 = (Vector)b;
             Object o1 = v1.get(colIndex);
             Object o2 = v2.get(colIndex);
     
-            // Treat empty strains like nulls
+            // Treat empty strings like nulls
             if (o1 instanceof String && ((String)o1).length() == 0) {
                 o1 = null;
             }
@@ -415,13 +493,16 @@ public class FqListBrowser extends JFrame
       stop();
       Integer i;
       dld_timer.start();
-      progressBar.setString("Building index (be patient)");
+      progressBar.setString("Please be patient");
       progressBar.setMaximum(5);
       progressBar.setValue(0);
-      //statsLabel.setText("Retrieving frequency list...");
+      statsLabel.setText("Retrieving frequency list...");
       try {
+        checkSubCorpusSelectionStatus();
         i = new Integer(maxListField.getText());
         maxListSize = i.intValue();
+        i = new Integer(skipFirstField.getText());
+        skipFirst = i.intValue();
       }
       catch (NumberFormatException ex){
         maxListField.setText(""+maxListSize);
@@ -450,6 +531,7 @@ public class FqListBrowser extends JFrame
                            +((Vector)va[i]).get(1)+"\t"
                            +((Vector)va[i]).get(2));
               }
+              dlf.println("\nTOTAL:\t"+va.length+"\t"+notokens);
               dlf.close();
             }
         }
@@ -469,11 +551,12 @@ public class FqListBrowser extends JFrame
         Dictionary d = parent.getDictionary();
         if (parent.subCorpusSelected()){
           HeaderDBManager hdbm = parent.getHeaderDBManager();
-          d.printSortedFreqList(fqlout, maxListSize,
-                                hdbm.getSubcorpusConstraints(parent.getXQueryWhere())); 
+          d.printSortedFreqList(fqlout, skipFirst, maxListSize,
+                                hdbm.getSubcorpusConstraints(parent.getXQueryWhere()),
+                                parent.isCaseInsensitive()); 
         }
         else
-          d.printSortedFreqList(fqlout, maxListSize);
+          d.printSortedFreqList(fqlout,  skipFirst, maxListSize,parent.isCaseInsensitive());
       } catch (Exception e) {
         System.err.println("FqListBrowser opening header DB: " + e);
         e.printStackTrace();

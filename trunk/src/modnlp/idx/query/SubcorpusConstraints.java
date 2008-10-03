@@ -18,9 +18,14 @@
 package modnlp.idx.query;
 
 import modnlp.idx.database.SubcorpusTable;
+import modnlp.dstruct.SubcorpusDelimPair;
+import modnlp.dstruct.IntegerSet;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+
 
 /**
  *  Store constraints for subcorpus selection in the form
@@ -66,11 +71,12 @@ public class SubcorpusConstraints extends HashMap {
 
   public boolean accept(String fid, int pos, SubcorpusTable sbct){
     //System.err.println("FID="+fid);
-    if (sbct == null) // no sections identified
+    if (sbct == null) // no section check involved
       if (negativeConstraint) 
         return containsKey(fid) ? false : true;
       else
         return containsKey(fid) ? true : false;
+    // section check
     return accept(fid, sbct.getSectionID(pos));
   }
 
@@ -84,6 +90,46 @@ public class SubcorpusConstraints extends HashMap {
       return hs!=null && hs.contains(sid);
   }
 
+  public boolean acceptFile(String fid){
+    return negativeConstraint? !containsKey(fid) : containsKey(fid);
+  }
+
+  // get number of tokens in fid that match this constraint. I.e. the number 
+  // of tokens the occur within sections allowed by the constraint 
+  public int getTokenCount(String fid, IntegerSet pos, SubcorpusTable sbct){
+    HashSet hs = (HashSet)get(fid); // sections matching this constraint in fid
+    if (hs==null){
+      if (negativeConstraint)
+        return pos.size();
+      else
+        return 0;
+    }
+    
+    int inCount = 0; // count tokens WITHIN the named sections
+    SubcorpusDelimPair[] dps = sbct.getSubcorpusDelimPairs(hs);
+    Arrays.sort(dps);
+    int j = 0; // in
+    int bs = dps[j].getBegin();
+    int es = dps[j++].getEnd();
+    for (Iterator p = pos.iterator(); p.hasNext() ; ) {
+      int bp = ((Integer)p.next()).intValue();
+      if (bp >= bs && bp <= es) {
+        inCount++;
+      }
+      else {
+        if (j == dps.length && bp > es) // there is no further section to which the following bps could belong
+          break;
+        while ( j < dps.length && bp > es ) { // move on to the next section
+          bs = dps[j].getBegin();
+          es = dps[j++].getEnd();
+          if (bp >= bs && bp <= es) {
+            inCount++;
+          }
+        }
+      }
+    }
+    return inCount;
+}
 
   public static void main (String[] argv){
     try {

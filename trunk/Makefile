@@ -16,8 +16,9 @@ BINDISTFILES=$(LIBS) lib/teccli.jar lib/tecser.jar lib/idx.jar lib/tc.jar tecser
 	src/teclipluginlist.txt
 #JAVA=jamvm
 #JAVAC=jikes-classpath
+JAVAC=jikes-jsdk -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5
 JAVA=java
-JAVAC=javac
+#JAVAC=javac
 JAR=jar
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 JAVACFLAGS=-encoding ISO-8859-1 -classpath $(SOURCEDIR):$(LIBSPATH)

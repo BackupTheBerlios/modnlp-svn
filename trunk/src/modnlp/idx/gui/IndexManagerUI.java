@@ -119,6 +119,7 @@ public class IndexManagerUI extends JFrame
     corpusList.setModel(corpusListModel);
   }
 
+
   public void addIndexedFile(String fn){
     corpusListModel.addElement(fn);
   }
@@ -201,10 +202,12 @@ public class IndexManagerUI extends JFrame
   }
 
   public void print (String s){
-    textArea.append(s);
-    this.scrollBar.setValue(this.scrollBar.getMaximum());
-    if (debug)
-      System.err.println(s);    
+    if (isVisible()){
+      textArea.append(s);
+      this.scrollBar.setValue(this.scrollBar.getMaximum());
+    }
+    if (!isVisible() || debug)
+      System.err.print(s);    
   }
 
 }

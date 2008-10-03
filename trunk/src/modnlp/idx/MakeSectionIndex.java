@@ -36,7 +36,8 @@ import java.util.Enumeration;
  *
  * @author  S Luz &#60;luzs@cs.tcd.ie&#62;
  * @version <font size=-1>$Id: MakeSectionIndex.java,v 1.2 2006/05/22 17:26:02 amaral Exp $</font>
- * @see  
+ * @see IndexManager for a program the does the full job of indexing
+ * words, sections and (header) metadata 
 */
 public class MakeSectionIndex {
   private static boolean verbose = true;

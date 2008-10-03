@@ -25,7 +25,7 @@ package modnlp.dstruct;
  * @see  
 */
 
-public class SubcorpusDelimPair {
+public class SubcorpusDelimPair implements Comparable {
   int begin;
   int end;
 
@@ -44,6 +44,20 @@ public class SubcorpusDelimPair {
 
   public final String toString (){
     return begin+", "+end;
+  }
+
+  public final int compareTo (Object scdp)
+  {
+    return compareTo((SubcorpusDelimPair) scdp);
+  }
+
+  public final int compareTo (SubcorpusDelimPair scdp)
+  {
+    if ( begin == scdp.getBegin() )
+      return 0;
+    if ( begin > scdp.getBegin() )
+      return 1;
+    return -1;
   }
 
 }

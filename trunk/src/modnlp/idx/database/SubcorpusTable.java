@@ -35,6 +35,13 @@ import com.sleepycat.je.LockMode;
 import com.sleepycat.je.SecondaryDatabase;
 import com.sleepycat.je.SecondaryConfig;
 import com.sleepycat.je.SecondaryCursor;
+import com.sleepycat.je.EnvironmentConfig;
+
+import java.io.File;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -54,10 +61,22 @@ public class SubcorpusTable extends Table {
   SubcorpusDelimPairBinding scdpBinding = new SubcorpusDelimPairBinding();
   TupleBinding stringBinding = new StringBinding();  
 
+  public SubcorpusTable (Environment env, String fn, boolean write, boolean opensecond) 
+    throws DatabaseNotFoundException
+  {
+    super(env,makeDBName(fn),write);
+    setupSCT(env,fn,write,opensecond);
+  }
+
   public SubcorpusTable (Environment env, String fn, boolean write) 
     throws DatabaseNotFoundException
   {
     super(env,makeDBName(fn),write);
+    setupSCT(env,fn,write,true);
+  }
+
+
+  private final void setupSCT (Environment env, String fn, boolean write, boolean opensecond) {
     try {     
       // use a secondary db to keep records sorted by frequency
       SubcorpusKeyCreator skc = new SubcorpusKeyCreator(new SubcorpusDelimPairBinding());
@@ -67,10 +86,11 @@ public class SubcorpusTable extends Table {
       sc.setAllowCreate(write);
       sc.setSortedDuplicates(true);
       String scname = "sec"+makeDBName(fn);
-      posKeyDatabase = env.openSecondaryDatabase(null, 
-                                                 scname, 
-                                                 database,
-                                                 sc);
+      if (write || opensecond)
+        posKeyDatabase = env.openSecondaryDatabase(null, 
+                                                   scname, 
+                                                   database,
+                                                   sc);
     }
     catch (DatabaseException e) {
       logf.logMsg("Error opening secondary FreqTable", e);
@@ -166,6 +186,16 @@ public class SubcorpusTable extends Table {
     return dlm;
   }
 
+  public final SubcorpusDelimPair[] getSubcorpusDelimPairs(Set ids){
+    SubcorpusDelimPair[] scdps = new SubcorpusDelimPair[ids.size()];
+    int i = 0;
+    for (Iterator p = ids.iterator(); p.hasNext(); ) {
+      scdps[i++] = fetch((String)p.next());
+    }
+    return scdps;
+  }
+
+
   public void dump () {
     try {
       Cursor c = database.openCursor(null, null);
@@ -245,6 +275,10 @@ public class SubcorpusTable extends Table {
       logf.logMsg("Error accessing secondary cursor for SubcorpusTable" , e);
       return null;
     }
+  }
+
+  public SecondaryCursor getSecondaryCursor() throws DatabaseException{
+    return posKeyDatabase.openSecondaryCursor(null, null);
   }
 
   public static final String makeDBName(String fn){

@@ -18,9 +18,9 @@
 package modnlp.idx.database;
 
 import modnlp.idx.query.SubcorpusConstraints;
+import modnlp.dstruct.FrequencyHash;
 
 import java.io.PrintWriter;
-
 import com.sleepycat.je.Environment;
 import com.sleepycat.bind.tuple.StringBinding;
 import com.sleepycat.bind.tuple.IntegerBinding;
@@ -37,6 +37,7 @@ import com.sleepycat.je.SecondaryDatabase;
 import com.sleepycat.je.SecondaryConfig;
 import com.sleepycat.je.SecondaryCursor;
 import com.sleepycat.je.StatsConfig;
+import java.util.Iterator;
 
 
 /**
@@ -242,19 +243,42 @@ public class FreqTable extends Table {
   }
 
   public void printSortedFreqList (PrintWriter os, int max) {
+    printSortedFreqList(os, 0, max ,true);
+  }
+
+
+  public void printSortedFreqList (PrintWriter os, int from, int max, boolean nocase) {
     try {
       SecondaryCursor c = freqKeyDatabase.openSecondaryCursor(null, null);
       DatabaseEntry key = new DatabaseEntry();
       DatabaseEntry skey = new DatabaseEntry();
       DatabaseEntry data = new DatabaseEntry();
-      int i = 1;
-      while (c.getNext(skey, key, data, LockMode.DEFAULT) == 
-             OperationStatus.SUCCESS && (max == 0  || i <= max) ) {
+      int i = 0;
+      boolean totheend = (max == 0);
+      FrequencyHash ft = new FrequencyHash();
+      max += from; // 1 2 3 4 5 6 7
+      while (c.getNext(skey, key, data, LockMode.READ_UNCOMMITTED) == 
+             OperationStatus.SUCCESS && (totheend  || i <= max) ) {
         String sik = StringBinding.entryToString(key);
         int freq  = IntegerBinding.entryToInt(data);
-        if (sik.length() > 0)
-          os.println(i+++"\t"+sik+"\t"+freq);
-        //System.out.println(i+";"+sik+";"+freq);
+        if (i++ < from)
+          continue;
+        if (sik.length() > 0 && freq > 0)
+          if (nocase)
+            ft.add(sik,freq,nocase);
+          else {
+            os.println(i+"\t"+sik+"\t"+freq);
+            //System.out.println(i+";"+sik+";"+freq);
+          }
+      }
+      if (nocase){
+        Dictionary.printSubCorpusStats(os,ft.size(),ft.getTokenCount()); // send corpus stats
+        i = 1;
+        for (Iterator p = (ft.getKeysSortedByValue(false)).iterator(); p.hasNext(); ) {
+          String w = (String)p.next();
+          Integer f = (Integer)ft.get(w);
+          os.println(i+++"\t"+w+"\t"+f);
+        }
       }
       c.close();
       os.flush();

@@ -13,6 +13,7 @@ SOURCES=$(SOURCEDIR)modnlp/Constants.java \
 	$(SOURCEDIR)modnlp/util/XMLSplitter.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusList.java \
 	$(SOURCEDIR)modnlp/dstruct/CorpusFile.java \
+	$(SOURCEDIR)modnlp/dstruct/FrequencyHash.java \
 	$(SOURCEDIR)modnlp/dstruct/IntegerSet.java \
 	$(SOURCEDIR)modnlp/dstruct/IntOffsetArray.java \
 	$(SOURCEDIR)modnlp/dstruct/PositionSet.java \
@@ -73,6 +74,7 @@ TARGETS=$(subst .java,.class,$(SOURCES))
 MAINJARS=$(subst $(SOURCEDIR),,$(TARGETS)) # doesn't work by itself: need to jar inner classess as well
 JARREDS=$(MAINJARS) \
 	eXistConf.xml \
+	'modnlp/dstruct/FrequencyHash$$ValueSorter.class' \
 	'modnlp/idx/ConsumerQuery$$ConcordanceProducer.class' \
 	'modnlp/idx/IndexManager$$DeindexingThread.class' \
 	'modnlp/idx/IndexManager$$IndexingThread.class'
@@ -83,7 +85,7 @@ DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt 
 	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SOURCEDIR)modnlp/idx/prj.el $(SOURCEDIR)idx-manifest.txt
 #JAVA=jamvm
 #JAVAC=javac
-JAVAC=jikes -bootclasspath /usr/lib/jvm/java-6-sun/jre/lib/rt.jar
+JAVAC=jikes -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5
 JAVA=java
 #JAVAC=javac
 JAR=jar
@@ -111,16 +113,22 @@ jar: $(TARGETS)
 
 test: $(TARGETS)
 	@echo "Testing Indexer..."
-	-mkdir /tmp/datamodnlptest
-	-cp -a data/* /tmp/datamodnlptest/
-	-rm -rf /tmp/tec/index ; mkdir -p /tmp/tec/index 
-	cp src/dictionary.properties.ISO8859_1 /tmp/tec/index/dictionary.properties
-	@echo "** Indexing datamodnlptest/short.lst"
-	$(JAVA) $(JAVAFLAGS) modnlp.idx.MakeTECIndex /tmp/tec/index $(TOPDIR)data/short.lst 
+	-rm -rf /tmp/idxtest/
+	-mkdir /tmp/idxtest/
+	-cp -a data/* /tmp/idxtest/
+	mkdir -p /tmp/idxtest/index/
+	mkdir -p /tmp/idxtest/data/ep/
+	mkdir -p /tmp/idxtest/data/eph/
+	cp src/dictionary.properties.ts /tmp/idxtest/index/dictionary.properties
+	cp $(TOPDIR)data/idxtest.lst /tmp/idxtest/data/
+	cp $(TOPDIR)data/ep/* /tmp/idxtest/data/ep/
+	cp $(TOPDIR)data/eph/* /tmp/idxtest/data/eph/
+	@echo "** Indexing /tmp/idxtest/data/idxtest.lst"
+	$(JAVA) $(JAVAFLAGS) modnlp.idx.IndexManager /tmp/idxtest/index /tmp/idxtest/data/idxtest.lst -v
 	@echo "** Dumping index..."
-	$(JAVA) $(JAVAFLAGS) modnlp.idx.Dump /tmp/tec/index
+	$(JAVA) $(JAVAFLAGS) modnlp.idx.Dump /tmp/idxtest/index
 	@echo "** Querying concordance for word 'that'..."
-	$(JAVA) $(JAVAFLAGS) modnlp.idx.Query /tmp/tec/index -l that
+	$(JAVA) $(JAVAFLAGS) modnlp.idx.Query /tmp/idxtest/index -l that
 	@echo "** Testing completed"
 
 docs: $(TARGETS)
@@ -136,9 +144,13 @@ dist: clean
 	rm -rf $(DISTDIR)
 
 bindist: jar
-	mkdir $(BINDISTDIR)
+	mkdir -p $(BINDISTDIR)/data/ep/
+	mkdir -p $(BINDISTDIR)/data/eph/
+	cp  $(TOPDIR)data/idxtest.lst $(BINDISTDIR)/data
+	cp  $(TOPDIR)data/ep/* $(BINDISTDIR)/data/ep
+	cp  $(TOPDIR)data/eph/* $(BINDISTDIR)/data/eph
 	cp README.bin $(BINDISTDIR)/README
-	cp $(TOPDIR)src/idxmgr.properties $(BINDISTDIR)/idxmgr.properties
+	cp $(TOPDIR)src/idxmgr.properties.ecpc-ep $(BINDISTDIR)/idxmgr.properties.PLEASEEDIT
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)
