@@ -15,7 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-package modnlp.tec.client;
+package modnlp.tec.client.gui;
+
+import  modnlp.tec.client.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
@@ -37,13 +39,16 @@ import java.awt.FontMetrics;
 public class ListDisplayRenderer extends JLabel 
   implements ListCellRenderer {//, ListSelectionListener  {
 
-	private ConcordanceObject cobjct;
+  private ConcordanceObject cobjct;
   private static final int MAXFNSIZE = 12;
+  private static final Color FILENAME_COLOR = Color.red.darker();
+  private static final Color KWORD_COLOR = Color.green.darker();
+  private static final Color SORT_COLOR = Color.blue.darker();
 
   public ListDisplayRenderer() {
-		super();
-		setOpaque(true);
-		setHorizontalAlignment(LEFT);
+    super();
+    setOpaque(true);
+    setHorizontalAlignment(LEFT);
   }
 
   public Component getListCellRendererComponent(JList list,
@@ -51,54 +56,53 @@ public class ListDisplayRenderer extends JLabel
                                                 int index,
                                                 boolean isSelected,
                                                 boolean cellHasFocus) {
-
-
+    
+    
     if (isSelected) {
       setBackground(list.getSelectionBackground());
       setForeground(list.getSelectionForeground());
     } else {
       setBackground(list.getBackground());
       setForeground(list.getForeground());
-     }
+    }
     cobjct = (ConcordanceObject)value;
-		int linesize;
-		if (cobjct == null){
-			setText(" ");
-		}
-		else {
-			setText(cobjct.textConcLine(MAXFNSIZE));
-		}
-		return this;
+    int linesize;
+    if (cobjct == null){
+      setText(" ");
+    }
+    else {
+      setText(cobjct.textConcLine(MAXFNSIZE));
+    }
+    return this;
   }
   
-	public void paintComponent(Graphics g){
-		if (cobjct == null){
-			return;
-		}
-		String concordance = cobjct.concordance;
-		String filename = cobjct.sfilename;
-		super.paintComponent(g);
-		FontMetrics fm = getFontMetrics(getFont());
-		// highlight filename
-		g.setColor(Color.red.darker());
-		g.drawString(filename, 0, fm.getAscent());
-		//System.out.println("horizon->"+cobjct.sortContextHorizon+"<-");
-		// highlight keyword
-		g.setColor(Color.green.darker());
-		HighlightString hls = cobjct.indexOfKeyword();
-		g.drawString(hls.string, 
-                             fm.stringWidth(filename+concordance.substring(0, hls.position)),
-                             fm.getAscent());
-		// highlight sort keyword (if needed)
-		if ( cobjct.sortContextHorizon != 0) {
-                  g.setColor(Color.blue.darker());
-                  hls = cobjct.indexOfSortContext();
-                  g.drawString(hls.string, 
-                               fm.stringWidth(filename+concordance.substring(0, hls.position)),
-                               fm.getAscent());
-		}
-	}
-  
+  public void paintComponent(Graphics g){
+    if (cobjct == null){
+      return;
+    }
+    String concordance = cobjct.concordance;
+    String filename = cobjct.sfilename;
+    super.paintComponent(g);
+    FontMetrics fm = getFontMetrics(getFont());
+    // highlight filename
+    g.setColor(FILENAME_COLOR);
+    g.drawString(filename, 0, fm.getAscent());
+    //System.out.println("horizon->"+cobjct.sortContextHorizon+"<-");
+    // highlight keyword
+    g.setColor(KWORD_COLOR);
+    HighlightString hls = cobjct.indexOfKeyword();
+    g.drawString(hls.string, 
+                 fm.stringWidth(filename+concordance.substring(0, hls.position)),
+                 fm.getAscent());
+    // highlight sort keyword (if needed)
+    if ( cobjct.getSortContextHorizon() != 0) {
+      g.setColor(SORT_COLOR);
+      hls = cobjct.indexOfSortContext();
+      g.drawString(hls.string, 
+                   fm.stringWidth(filename+concordance.substring(0, hls.position)),
+                   fm.getAscent());
+    }
+  } 
 }
 
 
