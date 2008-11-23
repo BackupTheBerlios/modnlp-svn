@@ -21,7 +21,13 @@ import java.util.EventObject;
 
 public class ConcordanceDisplayEvent extends EventObject{
   
-  private int firstIndex;
+  protected int firstIndex;
+  protected String message;
+  protected int eventType = CHANGE_EVT;
+  public static final int CHANGE_EVT = 0;
+  public static final int FIRSTDISPLAY_EVT = 1;
+  public static final int DOWNLOADCOMPLETE_EVT = 2;
+  public static final int DOWNLOADSTATUS_EVT = 3;
 
   /**
    *  Events raised on ConcordanceDisplayListener's to notify them of 
@@ -37,6 +43,23 @@ public class ConcordanceDisplayEvent extends EventObject{
     this.firstIndex = firstIndex;
   }
 
+  public ConcordanceDisplayEvent(Object source, int firstIndex, int evt, String msg) 
+    throws IndexOutOfBoundsException {
+    super(source);
+    if (!isValidEventType(evt))
+      throw new IndexOutOfBoundsException("Invalid ConcordanceDisplayEvent type specified");
+    this.firstIndex = firstIndex;
+    this.eventType = evt;
+    this.message = msg;
+  }
+
+  private boolean isValidEventType (int evt){
+    if (evt < 0 || evt > 3)
+      return false;
+    else
+      return true;
+  }
+
   /**
    *  Return the index of the first object (of a concordance array)
    *  to be displayed by a ConcordanceDisplayListener.
@@ -45,6 +68,11 @@ public class ConcordanceDisplayEvent extends EventObject{
    *         be displayed.
    */
   public int getFirstIndex() { return firstIndex; }
+
+  public int getEventType() { return eventType; }
+
+  public String getMessage() { return message; }
+
 
   /**
    * Returns a string that displays and identifies this

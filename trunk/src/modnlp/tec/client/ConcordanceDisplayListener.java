@@ -17,8 +17,9 @@
 */
 package modnlp.tec.client;
 import java.lang.*;
+
 /**
- *  Listen to list display events (e.g. changes on range of elements of 
+ *  Listen for list display events (e.g. changes on range of elements of 
  * the concordance array to be displayed) 
  * 
  * @author  Saturnino Luz &#60;luzs@acm.org&#62;
