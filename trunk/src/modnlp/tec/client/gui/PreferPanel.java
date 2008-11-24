@@ -17,11 +17,6 @@
 */
 package modnlp.tec.client.gui;
 
-import modnlp.tec.client.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.LayoutManager;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
@@ -30,6 +25,26 @@ import java.awt.Font;
 import java.lang.reflect.Array;
 import java.util.Vector;
 import java.util.Enumeration;
+import javax.swing.JFrame;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
+import javax.swing.JPanel;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
+import modnlp.tec.client.ConcordanceBrowser;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import java.awt.Dimension;
+import javax.swing.border.EmptyBorder;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import modnlp.tec.client.gui.event.DefaultChangeEvent;
+import modnlp.tec.client.gui.event.DefaultChangeListener;
+import modnlp.tec.client.gui.event.FontSizeChangeEvent;
+import modnlp.tec.client.gui.event.SortHorizonChangeEvent;
+import modnlp.tec.client.gui.event.TecDefaultChangeListener;
+import modnlp.tec.client.gui.event.DefaultManager;
 
 //import java.awt.*;
 /**
@@ -46,7 +61,7 @@ public class PreferPanel extends JFrame
 
   private static final String COTXBT = "Concordance context ";
   private static final String EXTXBT = "File extract context ";
-  private static String [] fseltab = {"10", "12","14","16","18"};
+  private static String [] fseltab = {"6","8","10", "12","14","16","18"};
   private static  int FSELMAX = Array.getLength(fseltab);
   public int maxContext = 130;
   public int maxExtrCtx = 600;
@@ -69,7 +84,7 @@ public class PreferPanel extends JFrame
   public int sortContextHorizon = 1;
   public JCheckBox ckbSGML = new JCheckBox(HIDESGML);
   public String stSGML = "no";
-  public Browser targFrame;
+  public ConcordanceBrowser targFrame;
 	JButton applyButton = new JButton("Apply");
 	JButton cancelButton = new JButton("Cancel");
 	JButton doneButton = new JButton("Done");
@@ -81,7 +96,7 @@ public class PreferPanel extends JFrame
   /** Set up layout and display
    * @param mother The frame to be repainted when preferences change
    */
-  public PreferPanel (Browser mother){
+  public PreferPanel (ConcordanceBrowser mother){
     super();
 
     targFrame = mother;

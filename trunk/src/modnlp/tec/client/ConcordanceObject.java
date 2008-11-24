@@ -17,6 +17,8 @@
  */
 package modnlp.tec.client;
 
+
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.StringTokenizer;
@@ -30,54 +32,26 @@ import javax.swing.JLabel;
  * @version <font size=-1>$Id: ConcordanceObject.java,v 1.1.1.1 2000/07/07 16:54:36 luz Exp $</font>
  * @see  ContextClient
  */
-public class ConcordanceObject 
-  implements Comparable{
+public class ConcordanceObject {
 
-  public static char[] SEPTKARR = {' ',
-                                   '|',
-                                   '\'',
-                                   '`',
-                                   '"',
-                                   '-',
-                                   '_',
-                                   (new String(",")).charAt(0),
-                                   (new String(".")).charAt(0),
-                                   '?',
-                                   '!',
-                                   (new String(";")).charAt(0),
-                                   ':',
-                                   '<',
-                                   '>',
-                                   '{',
-                                   '}',
-                                   '[',
-                                   ']',
-                                   '=',
-                                   '+',
-                                   '/',
-                                   '\\',
-                                   '%',
-                                   '$',
-                                   '*',
-                                   '&',
-                                   '(',
-                                   ')' };
-  public static String SEPTOKEN = new String(SEPTKARR);
+  public static char[] SEPTKARR =  modnlp.util.Tokeniser.SEPTKARR;
+
+  public static final String SEPTOKEN = new String(SEPTKARR);
+  public static final ConcordanceObject RENDERER_PROTOTYPE = getRendererPrototype();
+
+  /* store a pointer to the ConcordanceVector so that we can access
+   * properties of shared by all ConcordanceObject's, such as
+   * longestFileName, sortContextHorizon etc */
+  private ConcordanceVector coVector;
+  
   public String concordance;
   public String filename;
   public String sfilename;
   public int filepos;
   public int index;
   public long bytepos;
-
-  // Sort variables
-  public static int LEFT = -1;
-  public static int RIGHT = 1;
-  public int sortDirection = LEFT;
-  public int sortContextHorizon = 1;
-  public int halfConcordance = 65;
-
-  public ConcordanceObject(String concLine){
+  
+  public ConcordanceObject(String concLine, ConcordanceVector cv){
 
     if (concLine == null) 
       throw new NullPointerException();
@@ -85,14 +59,14 @@ public class ConcordanceObject
     int start = 0;
     // index will be mapped by ConArray
     //int index = -1;
-		
+    
     if(concLine.equals("null"))
       {
         concordance = null;
         filename = null;
         filepos = 0;
       }
-		
+    
     for(int i = start ; i < data.length ; i++)
       {
         if(data[i] == '|')
@@ -104,7 +78,7 @@ public class ConcordanceObject
             break;
           }
       }
-		
+    
     for(int i = start; i < data.length ; i++)
       {
         if(data[i] == '|')
@@ -115,14 +89,26 @@ public class ConcordanceObject
             break;
           }
       }
-		
+    
+    coVector = cv;
     concordance = new String(data, start, (data.length - start));
     bytepos = filepos;
+  }
+
+  public static ConcordanceObject getRendererPrototype(){
+    ConcordanceObject c = new ConcordanceObject("/tmp/idxtest/data/ep/EN20050127.xml|15914|ed responsibility is blurred again by the wording that has now been proposed. I do not wish to drag outxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                                            null);
+    c.setIndex(9999998);
+    return c;
   }
 
   public JLabel labelConcLine (int lfn_size){
     String offset = adjustOffSet(lfn_size,filename.length());
     return new JLabel(filename+offset+concordance);
+  }
+
+  public void setIndex(int i){
+    index = i;
   }
 
   public String textConcLine (int lfn_size){
@@ -133,7 +119,11 @@ public class ConcordanceObject
     return sfilename+""+concordance+" ["+(index+1)+"]";
   }
 
-  public String textFilename (int lfn_size){
+  public int getFilenameLength() {
+    return filename.length(); 
+  }
+
+  public String textFilename (int lfn_size) {
     String fn = sfilename.length() > lfn_size? 
       sfilename.substring(0,lfn_size-1) : sfilename;
     String offset = adjustOffSet(lfn_size,fn.length());
@@ -146,7 +136,7 @@ public class ConcordanceObject
   }
 
   public String getLeftContext(){
-    return concordance.substring(0,halfConcordance);
+    return concordance.substring(0,coVector.getHalfConcordance());
   }
 
   public StringTokenizer getLeftContextTokens(){
@@ -163,91 +153,20 @@ public class ConcordanceObject
     return s;
   }
 
-  public String getKeywordAndRightContext(){
-    return concordance.substring(halfConcordance);
+  public final String getKeywordAndRightContext(){
+    return concordance.substring(coVector.getHalfConcordance());
   }
 
-  public int compareTo(Object o) {
-    ConcordanceObject b = (ConcordanceObject)o;
-		
-    if ( this == null ) {
-      return -1;
-    }
-    if ( o == null ) {
-      return 1;
-    }
-    return (sortDirection == LEFT)? 
-      compareLeft(concordance, b.concordance):
-      compareRight(concordance, b.concordance);
+  public final int getSortContextHorizon(){
+    return coVector.getSortContextHorizon();
   }
 
-  public int compareLeft (String a, String b){
-		
-    StringBuffer ab = new StringBuffer(a.substring(0,halfConcordance));
-    StringBuffer bb = new StringBuffer(b.substring(0,halfConcordance));
-    StringTokenizer at = new StringTokenizer(ab.reverse().toString(),
-                                             SEPTOKEN,
-                                             false);
-    StringTokenizer bt = new StringTokenizer(bb.reverse().toString(),
-                                             SEPTOKEN,
-                                             false);
-    StringBuffer ac = new StringBuffer("");
-    StringBuffer bc = new StringBuffer("");
-    // Read up to horizon
-    for (int i = 1; i < sortContextHorizon; i++) {
-      StringBuffer t = new StringBuffer(at.nextToken());
-      ac.append(t.reverse().toString()+" ");
-      t = new StringBuffer(bt.nextToken());
-      bc.append(t.reverse().toString()+" ");
-    }
-    // Insert horizon word
-    StringBuffer t = new StringBuffer(at.nextToken());
-    ac.insert(0, t.reverse().toString()+" ");
-    t = new StringBuffer(bt.nextToken());
-    bc.insert(0, t.reverse().toString()+" ");
-
-    return ac.toString().toLowerCase().compareTo(bc.toString().toLowerCase());
-  }
-	
-  public int compareRight (String a, String b){
-
-    String as = a.substring(halfConcordance);
-    String bs = b.substring(halfConcordance);
-    StringTokenizer at = new StringTokenizer(as,
-                                             SEPTOKEN,
-                                             false);
-    StringTokenizer bt = new StringTokenizer(bs,
-                                             SEPTOKEN,
-                                             false);
-    // Discard half-keywords
-    at.nextToken();            
-    bt.nextToken();
-    StringBuffer ac = new StringBuffer("");
-    StringBuffer bc = new StringBuffer("");
-    // Read up to horizon
-    for (int i = 1; i < sortContextHorizon ; i++) {
-      if ( at.hasMoreTokens() ) {
-        ac.append(at.nextToken()+" ");
-      }
-      if ( bt.hasMoreTokens() ) {
-        bc.append(bt.nextToken()+" ");
-      }
-    }
-    // Insert horizon word if any
-    if ( at.hasMoreTokens() ) 
-      ac.insert(0, at.nextToken()+" ");
-    if ( bt.hasMoreTokens() )  
-      bc.insert(0, bt.nextToken()+" ");
-		
-    return ac.toString().toLowerCase().compareTo(bc.toString().toLowerCase());
-  }
-
-
-  public HighlightString indexOfSortContext(){
-    if (sortContextHorizon < 0)
-      return indexOfSortContextLeft(0-sortContextHorizon);
-    if (sortContextHorizon > 0)
-      return indexOfSortContextRight(sortContextHorizon);
+  public final HighlightString indexOfSortContext(){
+    int sch = coVector.getSortContextHorizon(); 
+    if (sch < 0)
+      return indexOfSortContextLeft(0-sch);
+    if (sch > 0)
+      return indexOfSortContextRight(sch);
     return new HighlightString(0,"");
   }
 
@@ -255,27 +174,28 @@ public class ConcordanceObject
    *	to the left of the keyword on the concordance line.  
    **/
   public HighlightString indexOfSortContextLeft(int srtctx){
-    StringBuffer a = new StringBuffer(concordance.substring(0,halfConcordance));
-    TecTokenizer at = new TecTokenizer(a.reverse().toString(),
-                                       SEPTOKEN,
+    int hc = coVector.getHalfConcordance();
+    StringBuffer a = new StringBuffer(concordance.substring(0,hc));
+    TecTokenizer at = new TecTokenizer(a.reverse().toString(), 
+                                      SEPTOKEN,
                                        true);
     try {
       int ind = 0;
       for (int i = 1; i < srtctx; i++) {
         String w = at.safeNextToken();
-        ind = ind + w.length(); 
+        ind = ind + w.length();
         if (isSeparatorChar(w.charAt(0))){// ignore separator
           --i;
         }
-      }	
+      }
       StringBuffer wb;
       do {
         wb = new StringBuffer(at.safeNextToken());
         ind = ind + wb.length(); 
       } while (isSeparatorChar(wb.charAt(0)));
-			
+      
       String word = wb.reverse().toString();
-      return new HighlightString(halfConcordance - ind, 
+      return new HighlightString(hc - ind, 
                                  word);
     }
     catch (StringIndexOutOfBoundsException e){
@@ -288,7 +208,8 @@ public class ConcordanceObject
    *	to the right of the keyword on the concordance line.  
    **/
   public HighlightString indexOfSortContextRight(int srtctx){
-    StringBuffer a = new StringBuffer(concordance.substring(halfConcordance));
+    int hc = coVector.getHalfConcordance();
+    StringBuffer a = new StringBuffer(concordance.substring(hc));
     TecTokenizer at = new TecTokenizer(a.toString(),
                                        SEPTOKEN,
                                        true);
@@ -309,7 +230,7 @@ public class ConcordanceObject
         ind = ind + word.length(); 
       } while (isSeparatorChar(word.charAt(0)));
       ind = ind - word.length(); // move backwards
-      return new HighlightString(halfConcordance + ind, 
+      return new HighlightString(hc + ind, 
                                  word);
     }
     catch (StringIndexOutOfBoundsException e){
@@ -318,15 +239,20 @@ public class ConcordanceObject
 
   }
 
-
+  // used by ListDisplayRenderer
   public HighlightString indexOfKeyword(){
-
-    StringBuffer a = new StringBuffer(concordance.substring(halfConcordance));
-    StringTokenizer at = new StringTokenizer(a.toString(),
-                                             SEPTOKEN,
-                                             false);
-    return  new HighlightString(halfConcordance , at.nextToken());            
-
+    int hc = coVector.getHalfConcordance();
+    StringBuffer sb = new StringBuffer();
+    String s = concordance.substring(hc);
+    int l = s.length();
+    for (int i = 0; i < l; i++) {
+      char c = s.charAt(i);
+      if (Character.isLetterOrDigit(c))
+        sb.append(c);
+      else 
+        break;
+    }
+    return new HighlightString(hc , sb.toString());
   }
 
 
@@ -336,17 +262,6 @@ public class ConcordanceObject
   }
 
 
-  public static int getLengthLongestFname(ConcordanceObject[] c)
-  {
-    int lfn = 0;
-
-    for(int count = 0; count < c.length && c[count] != null; count++)
-      {
-        if ( c[count].filename.length() > lfn )
-          lfn = c[count].filename.length();
-      }
-    return lfn;
-  }
 
   public static String adjustOffSet(int maxs, int size){
 		

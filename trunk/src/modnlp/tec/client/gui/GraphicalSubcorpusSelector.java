@@ -20,7 +20,7 @@ package modnlp.tec.client.gui;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.DictProperties;
 import modnlp.idx.headers.HeaderDBManager;
-import modnlp.tec.client.Browser;
+import modnlp.tec.client.ConcordanceBrowser;
 import modnlp.tec.client.RemoteSubcorpusOptionRequest;
 
 import java.awt.event.ActionListener;
@@ -34,7 +34,6 @@ import javax.swing.JLabel;
 import javax.swing.JCheckBox;
 import javax.swing.ProgressMonitor;
 import javax.swing.Timer;
-
 
 /**
  *  Handle sub-corpus selection
@@ -52,7 +51,7 @@ public class GraphicalSubcorpusSelector extends JFrame {
   boolean guiLayoutDone = false;
   String[] attChsrSpecs;
   JCheckBox activeChecked = new JCheckBox("Sub-corpus selection is on");
-  Browser parent = null;
+  ConcordanceBrowser parent = null;
   private JFrame thisFrame = null;
   int progress = 0;
   Thread thread;
@@ -64,10 +63,10 @@ public class GraphicalSubcorpusSelector extends JFrame {
   final JButton clearButton = new JButton("Clear");
 
 
-  public GraphicalSubcorpusSelector(Object p){
+  public GraphicalSubcorpusSelector(ConcordanceBrowser p){
     super("Sub-corpus selector");
     thisFrame = this;
-    parent = (Browser)p;
+    parent = p;
     if (parent.isStandAlone() ){
       attChsrSpecs = parent.getDictionary().getDictProps().getAttributeChooserSpecs();
       hdbm = parent.getHeaderDBManager();
@@ -86,16 +85,18 @@ public class GraphicalSubcorpusSelector extends JFrame {
   
   public void dispose(){
     interrupted = true;
-      while (!loadingDone) {
+    while (!loadingDone) {
       try {
         Thread.sleep(500);
       } catch (InterruptedException e) {
       }
     }
+    /* handled by parent only
     if (hdbm != null){
       hdbm.finalize();
       hdbm = null;
     }
+    */
     if (thread != null)
       thread = null;
     super.dispose();
@@ -113,7 +114,7 @@ public class GraphicalSubcorpusSelector extends JFrame {
     if (!loadingDone) {
       //task = new LongTask();
       ProgressMonitor pm = 
-        new ProgressMonitor(parent,
+        new ProgressMonitor((java.awt.Component)parent,
                             "Loading subcorpus selector", 
                             "", 0, attChsrSpecs.length);      
       timer = new Timer(1000, new TimerListener(pm));
@@ -164,12 +165,12 @@ public class GraphicalSubcorpusSelector extends JFrame {
       
       if (remoteServer) {
         RemoteSubcorpusOptionRequest ror = 
-          new RemoteSubcorpusOptionRequest(parent.SERVER, parent.PORTNUM);
+          new RemoteSubcorpusOptionRequest(parent.getRemoteServer(), parent.getRemotePort());
         try{
           attChsrSpecs = ror.getAttributeChooserSpecs();
         }
         catch(Exception e){
-          thisFrame.add(new JLabel("Sub-corpus selection not supported by "+parent.SERVER));
+          thisFrame.add(new JLabel("Sub-corpus selection not supported by "+parent.getRemoteServer()));
           e.printStackTrace(System.err);
           final JButton doneButton = new JButton("OK");
           doneButton.addActionListener(new ActionListener(){
@@ -187,7 +188,7 @@ public class GraphicalSubcorpusSelector extends JFrame {
         String[] o = {""};
         if (remoteServer) {
           RemoteSubcorpusOptionRequest ror = 
-            new RemoteSubcorpusOptionRequest(parent.SERVER, parent.PORTNUM);
+            new RemoteSubcorpusOptionRequest(parent.getRemoteServer(), parent.getRemotePort());
           try {
             System.err.println("Getting "+attChsrSpecs[i+1]);
             o = ror.getOptionSet(attChsrSpecs[i+1]);

@@ -30,45 +30,45 @@ import java.util.StringTokenizer;
 public class LeftComparer 
   implements Comparator{
 
-	public int sortContextHorizon = 1;
-	public int halfConcordance = 65;
+  public int sortContextHorizon = 1;
+  public int halfConcordance = 65;
 
   public LeftComparer(int ctx, int half){
-		sortContextHorizon = ctx;
-		halfConcordance = half;
-	}
+    sortContextHorizon = ctx;
+    halfConcordance = half;
+  }
 
   public int compare(Object o1, Object o2) {
-
+    
     ConcordanceObject coa = (ConcordanceObject) o1;
     ConcordanceObject cob = (ConcordanceObject) o2;
     StringBuffer ab = 
-			new StringBuffer(coa.concordance.substring(0,halfConcordance));
-		StringBuffer bb = 
-			new StringBuffer(cob.concordance.substring(0,halfConcordance));
-		TecTokenizer at = new TecTokenizer(ab.reverse().toString(),
-																						 ConcordanceObject.SEPTOKEN,
-																						 false);
-		TecTokenizer bt = new TecTokenizer(bb.reverse().toString(),
-																						 ConcordanceObject.SEPTOKEN,
-																						 false);
-		StringBuffer ac = new StringBuffer("");
-		StringBuffer bc = new StringBuffer("");
-		// Read up to horizon
-		for (int i = 1; i < sortContextHorizon; i++) {
-			StringBuffer t = new StringBuffer(at.safeNextToken());
-			ac.append(t.reverse().toString()+" ");
-			t = new StringBuffer(bt.safeNextToken());
-			bc.append(t.reverse().toString()+" ");
-		}
-		// Insert horizon word
-		StringBuffer t = new StringBuffer(at.safeNextToken());
-		ac.insert(0, t.reverse().toString()+" ");
-		t = new StringBuffer(bt.safeNextToken());
-		bc.insert(0, t.reverse().toString()+" ");
-
-		return ac.toString().toLowerCase().compareTo(bc.toString().toLowerCase());
-
+      new StringBuffer(coa.concordance.substring(0,halfConcordance));
+    StringBuffer bb = 
+      new StringBuffer(cob.concordance.substring(0,halfConcordance));
+    TecTokenizer at = new TecTokenizer(ab.reverse().toString(),
+                                       ConcordanceObject.SEPTOKEN,
+                                       false);
+    TecTokenizer bt = new TecTokenizer(bb.reverse().toString(),
+                                       ConcordanceObject.SEPTOKEN,
+                                       false);
+    StringBuffer ac = new StringBuffer("");
+    StringBuffer bc = new StringBuffer("");
+    // Read up to horizon
+    for (int i = 1; i < sortContextHorizon; i++) {
+      StringBuffer t = new StringBuffer(at.safeNextToken());
+      ac.append(t.reverse().toString()+" ");
+      t = new StringBuffer(bt.safeNextToken());
+      bc.append(t.reverse().toString()+" ");
+    }
+    // Insert horizon word
+    StringBuffer t = new StringBuffer(at.safeNextToken());
+    ac.insert(0, t.reverse().toString()+" ");
+    t = new StringBuffer(bt.safeNextToken());
+    bc.insert(0, t.reverse().toString()+" ");
+    
+    return ac.toString().toLowerCase().compareTo(bc.toString().toLowerCase());
+    
   }
 
 

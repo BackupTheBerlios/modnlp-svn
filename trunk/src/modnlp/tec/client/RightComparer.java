@@ -30,14 +30,14 @@ import java.util.StringTokenizer;
 public class RightComparer 
   implements Comparator{
 
-	public int sortContextHorizon = 1;
-	public int halfConcordance = 65;
-
+  public int sortContextHorizon = 1;
+  public int halfConcordance = 65;
+  
   public RightComparer(int ctx, int half){
-		sortContextHorizon = ctx;
-		halfConcordance = half;
-	}
-
+    sortContextHorizon = ctx;
+    halfConcordance = half;
+  }
+  
   public int compare(Object o1, Object o2) {
     ConcordanceObject coa = (ConcordanceObject) o1;
     ConcordanceObject cob = (ConcordanceObject) o2;

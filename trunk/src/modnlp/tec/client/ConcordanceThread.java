@@ -17,9 +17,19 @@
 */
 package modnlp.tec.client;
 
-import java.net.*;
-import java.io.*;
+import modnlp.tec.client.gui.ConcordanceListModel;
+import modnlp.tec.client.gui.event.*;
+
 import javax.swing.SwingUtilities;
+import java.net.Socket;
+import java.io.PrintStream;
+import java.io.BufferedReader;
+import java.net.HttpURLConnection;
+import java.net.*;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Vector;
 
 
 /**
@@ -38,27 +48,25 @@ public class ConcordanceThread
 	implements Runnable, ConcordanceMonitor{
 
   private Thread concThread;
-  // SL: all these public vars are a real mess! This class must be
-  // fixed urgently (though we have much more interesting stuff to do
-  // than fixing legacy code)
   /**  This variable sets where we should start showing the list */
-  public int updateThreshold = 40;
-  public Browser parent;
+  int updateThreshold = 40;
   private String commandToServer = null;
   /** default port; normally reset by Browser */
-  public int noFound = 0;
-  public int noActuallyFound = 0;
-  public ConcArray conc = new ConcArray();
-  public int ctRead;
+  int noFound = 0;
+  int ctRead;
+  private ConcordanceVector concVector;
   boolean stop = false;
-  public boolean serverResponded = false;
-  private ConcordanceDisplayListener concList = null;
+  boolean serverResponded = false;
+  private Vector<ConcordanceDisplayListener> concDisplayListeners = 
+    new Vector<ConcordanceDisplayListener>();
+
   private TecClientRequest request = null;
   
   Socket  socket = null;
   PrintStream output;
   BufferedReader input = null;
   String encoding = "UTF-8";  // the name of the charset
+
   //DataInputStream input;
 
 
@@ -70,21 +78,19 @@ public class ConcordanceThread
    * @param upd     The ListDisplay to update
    * @param ch      The request to be passed on to <code> server</code>
    */
-  public ConcordanceThread(Browser pa, TecClientRequest cr)
+  public ConcordanceThread(ConcordanceVector clm, TecClientRequest cr)
   {
     request = cr;
-    parent = pa;
+    concVector = clm;
     serverResponded = false;
-    // initConcordanceThread();
   }
 
-  public ConcordanceThread(Browser pa, BufferedReader in, TecClientRequest cr)
+  public ConcordanceThread(ConcordanceVector clm, BufferedReader in, TecClientRequest cr)
   {
     input = in;
-    parent = pa;
+    concVector = clm;
     request = cr;
     serverResponded = false;
-    // initConcordanceThread();
   }
   
   public void setEncoding (String e){
@@ -124,12 +130,13 @@ public class ConcordanceThread
           String mes = input.readLine();
           System.out.println("________"+mes);
           ctRead = noFound;
-          parent.updateStatusLabel(mes);
+          fireDisplayEvent(0,ConcordanceDisplayEvent.DOWNLOADSTATUS_EVT,mes);
           stop();
         }
     }
     catch (java.io.IOException e){
-      parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
+      fireDisplayEvent(0,ConcordanceDisplayEvent.DOWNLOADSTATUS_EVT,
+                       "  **** TRANSFER INTERRUPTED **** "+e);
       stop();
     }
     catch (Exception e){
@@ -146,60 +153,55 @@ public class ConcordanceThread
     try {
       initConcordanceThread();
       String concordance = null;
-      int ctsz = request.getContextSize();
+      //int ctsz = request.getContextSize();
+      if (noFound == 0)
+        fireDisplayEvent(0,ConcordanceDisplayEvent.DOWNLOADCOMPLETE_EVT,
+                         " No concordances found");
+      concVector.ensureCapacity(noFound);
       //System.out.println("_________context size: "+ctsz);
-      while (!stop && 
-             ctRead < noFound && 
+      while (!stop && ctRead < noFound && 
              (concordance = input.readLine()) != null &&
-             conc.assertElement(concordance, 0,  ctsz ) )
-        {
-          //System.err.println("Found---: "+noFound+" Read---:"+ctRead);
-          //System.err.println("conc="+concordance);
-          ctRead++;
-          if ( conc.index > updateThreshold || ctRead >= noFound)
-            if ( !fshow )
-              {
-                fireDisplayEvent(0);
-                parent.displayConcord();
-                //parent.concList.displayArraySegment(conc, 0);
-                fshow = true;
-              }
-        }
-      noActuallyFound =  (ctRead == ConcArray.arraymax) ? noFound : ctRead;
+             concVector.add(concordance)) {
+        ctRead++;
+        if ( ctRead > updateThreshold || ctRead >= noFound)
+          if ( !fshow && noFound > 0)
+            {
+              if (noFound > ctRead) 
+                fireDisplayEvent(0,ConcordanceDisplayEvent.FIRSTDISPLAY_EVT,
+                                 "  Searching through "+noFound+" concordances ");
+              else
+                fireDisplayEvent(0,ConcordanceDisplayEvent.FIRSTDISPLAY_EVT,null);
+              fshow = true;
+            }
+      } // end while
+      concVector.doneAdding();
+      concVector.trimToSize();
       noFound = ctRead;
-      if ( !fshow )
-        {
-          fireDisplayEvent(0);
-          //parent.concList.displayArraySegment(conc, 0);
-          parent.displayConcord();
-          fshow = true;
-        }
+      if ( !fshow ){
+        fireDisplayEvent(0,ConcordanceDisplayEvent.FIRSTDISPLAY_EVT,null);
+        fshow = true;
+      }
       if (noFound > 0) {
-        parent.updateStatusLabel(" Returned "+
-                                 noActuallyFound+
-                                 " lines matching your query");
+        fireDisplayEvent(0,ConcordanceDisplayEvent.DOWNLOADCOMPLETE_EVT,
+                         " Returned "+ctRead+" lines matching your query");
         fireListSizeEvent(noFound);
       }
+      
       stop();
     }
     catch (java.io.IOException e){
       //parent.updateStatusLabel("  **** TRANSFER INTERRUPTED **** "+e);
       if (noFound > 0) {
-        noActuallyFound =  (ctRead == ConcArray.arraymax) ? noFound : ctRead;
         noFound = ctRead;
-        parent.updateStatusLabel(" Returned "+
-                                 noActuallyFound+
-                                 " lines matching your query");
         fireListSizeEvent(noFound);
-        fireDisplayEvent(0);
-        parent.displayConcord();
+        fireDisplayEvent(0,ConcordanceDisplayEvent.DOWNLOADCOMPLETE_EVT,
+                         " Returned "+ctRead+" lines matching your query");
       }
       stop();
     }
     catch (NullPointerException e){
-      parent.updateStatusLabel("  ConcordanceThread error: "+e);
-      fireDisplayEvent(0);
-      parent.displayConcord();
+      fireDisplayEvent(0,ConcordanceDisplayEvent.CHANGE_EVT,
+                       "  ConcordanceThread error: "+e);
       stop();
     }
   }
@@ -212,9 +214,9 @@ public class ConcordanceThread
   }
 
   public void stop() {
-		if (concThread == null)
-			return;
-		concThread = null;
+    if (concThread == null)
+      return;
+    concThread = null;
     try{
       if (output != null){
         output.flush();
@@ -224,48 +226,62 @@ public class ConcordanceThread
       //  input.close();
       if (socket != null) 
         socket.close();
-			input = null;
-			output = null;
-			socket = null;
+      input = null;
+      output = null;
+      socket = null;
     }
     catch (java.lang.Exception e){
       System.err.println("Error Stopping thread "+e);
     }
   }
 
-	public boolean atWork() {
+  public final boolean atWork() {
     if ( concThread != null )
-			return true;
-		else
-			return false;
-	}
-
-	public ConcArray getConcArray () {
-		return conc;
-	}
-	public int getNoFound () {
-		return noFound;
-	}
-
-	public void fireDisplayEvent (int from) {
-		if (concList != null)
-			concList.concordanceChanged(new ConcordanceDisplayEvent(this, from));
-	}
-	public void fireListSizeEvent (int size)
-  {
-		if (concList != null)
-			concList.concordanceChanged(new ConcordanceListSizeEvent(this, size));
-	}
-
-	/* Implement ConcordanceMonitor */
-
-	public void addConcordanceDisplayListener(ConcordanceDisplayListener conc)
-  {
-		concList = conc;
+      return true;
+    else
+      return false;
+  }
+  
+  public final int getNoFound () {
+    return noFound;
   }
 
-  public void removeConcordanceDisplayListener(ConcordanceDisplayListener conc)
+  public final int getNoRead () {
+    return ctRead;
+  }
+
+  public final boolean getServerResponded () {
+    return serverResponded;
+  }
+  
+  private final void fireDisplayEvent (int from, int evt, String msg) {
+    for (Iterator<ConcordanceDisplayListener> p = concDisplayListeners.iterator(); p.hasNext(); )
+      {
+        ConcordanceDisplayListener cdl = p.next();
+        if (cdl != null)
+          cdl.concordanceChanged(new ConcordanceDisplayEvent(this, from, evt, msg));
+      }
+  }
+
+  private void fireListSizeEvent (int size)
   {
-		concList = null;
+    for (Iterator<ConcordanceDisplayListener> p = concDisplayListeners.iterator(); p.hasNext(); )
+      {
+        ConcordanceDisplayListener cdl = p.next();
+        if (cdl != null)
+          cdl.concordanceChanged(new ConcordanceListSizeEvent(this, size));
+      }
+  }
+  
+  /* Implement ConcordanceMonitor */
+  
+  public void addConcordanceDisplayListener(ConcordanceDisplayListener cdl)
+  {
+    concDisplayListeners.add(cdl);
+  }
+  
+  public void removeConcordanceDisplayListener(ConcordanceDisplayListener cdl)
+  {
+    concDisplayListeners.remove(cdl);
   }
 }

@@ -17,7 +17,13 @@
 */
 package modnlp.tec.client;
 
-import java.io.*;
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.File;
+import java.util.Iterator;
+
 /**
  *  Download concordance list
  *
@@ -38,21 +44,23 @@ public class Download extends PrintWriter {
     super(new BufferedWriter(new FileWriter(file))); 
   }
 
-  public void dumpConcordance(ConcArray conc) throws java.io.IOException
+
+  public void dumpConcordance(ConcordanceVector conc) throws java.io.IOException
   {
     int lfn = conc.getLengthLongestFname();
-    
     if ( conc == null )
       return;
-    for(int count = 0; count < conc.index ; count++)
+    for (Iterator<ConcordanceObject> p = conc.iterator(); p.hasNext(); )
       {
+        ConcordanceObject co = p.next();
         //String fn = conc.concArray[count].filename;
         //String offs = adjustOffSet(lfn,fn.length());
         //this.println(fn+offs+"|"+conc.concArray[count].concordance);
-        this.println(conc.concArray[count].textConcLine(lfn));
+        this.println(co.textConcLine(lfn));
       }
     this.close();
   }
+
 
   public String adjustOffSet(int maxs, int size){
 
