@@ -16,14 +16,13 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.io.*;
-import javax.swing.*;
-//import java.awt.*;
+
+import modnlp.tec.client.gui.event.*;
+
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.FontMetrics;
-import java.awt.event.*;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.StringTokenizer;
@@ -36,21 +35,23 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.event.*;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
-import javax.swing.*;
-import javax.swing.event.*;
-//import javax.swing.filechooser.ExtensionFileFilter;
-import java.io.*;
 import java.util.Arrays;
 import java.util.Date;
-import java.net.*;
 import org.xml.sax.Parser;
 import org.xml.sax.InputSource;
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.helpers.ParserFactory;
+import javax.swing.JFrame;
+import java.awt.event.ActionListener;
+import javax.swing.JEditorPane;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import java.awt.event.ActionEvent;
 
 
 
@@ -238,18 +239,13 @@ public class FullTextWindow extends JFrame
   }
 
 	// The TEC default change interface
-  public void defaultChanged(DefaultChangeEvent e)
-	{
-	}
-  public void defaultChanged(SortHorizonChangeEvent e)
-	{
-	}
+  public void defaultChanged(DefaultChangeEvent e){
+  }
+  public void defaultChanged(SortHorizonChangeEvent e){
+  }
 
-  public void defaultChanged(FontSizeChangeEvent e)
-	{
-		if ( resetFontIfChanged(e.getNewSize()) )
-			validate();
-	}
-	
-	
+  public void defaultChanged(FontSizeChangeEvent e){
+    if ( resetFontIfChanged(e.getNewSize()) )
+      validate();
+  }
 }
