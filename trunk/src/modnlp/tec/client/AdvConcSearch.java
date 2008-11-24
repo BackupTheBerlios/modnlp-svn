@@ -37,6 +37,7 @@ import java.io.*;
  * @see  Browser
  * @see  ContextClient
  * @see  TecServer
+ * @deprecated will be removed soon.
 */
 public class AdvConcSearch extends JFrame
 {

@@ -16,9 +16,16 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.net.*;
-import java.io.*;
+
 import java.util.TreeSet;
+import java.net.Socket;
+import java.io.PrintStream;
+import java.io.BufferedReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.InputStreamReader;
+import java.io.IOException;
+
 /**
  *  This is a Client to interact with the
  *  <a href="../../Server/index.html">TEC  Server</a>

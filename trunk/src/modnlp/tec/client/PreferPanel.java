@@ -14,19 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
+ */
 package modnlp.tec.client;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.awt.LayoutManager;
-import java.awt.GridLayout;
-import java.awt.FlowLayout;
+
+import modnlp.tec.client.gui.event.*;
+
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.lang.reflect.Array;
-import java.util.Vector;
 import java.util.Enumeration;
+import java.util.Vector;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 //import java.awt.*;
 /**
@@ -38,7 +51,7 @@ import java.util.Enumeration;
  * @see  Browser
  */
 public class PreferPanel extends JFrame 
-	implements  ActionListener, ItemListener, DefaultManager 
+  implements  ActionListener, ItemListener, DefaultManager 
 {
 
   private static final String COTXBT = "Concordance context ";
@@ -48,7 +61,7 @@ public class PreferPanel extends JFrame
   private JPanel set1 = new JPanel();
   private JPanel set2 = new JPanel();
   private JComboBox  fontsel;
-	private Vector defaultListeners = new Vector ();
+  private Vector defaultListeners = new Vector ();
   private String HIDESGML = "Show markup along with text";
   private JTextField context;
   private JTextField extrctx;
@@ -63,18 +76,15 @@ public class PreferPanel extends JFrame
   public String stSGML = "no";
   public int maxContext = 130;
   public int maxExtrCtx = 600;
-  public Browser targFrame;
-	JButton applyButton = new JButton("Apply");
-	JButton cancelButton = new JButton("Cancel");
-	JButton doneButton = new JButton("Done");
+  JButton applyButton = new JButton("Apply");
+  JButton cancelButton = new JButton("Cancel");
+  JButton doneButton = new JButton("Done");
 
   /** Set up layout and display
-   * @param mother The frame to be repainted when preferences change
    */
-  public PreferPanel (Browser mother){
+  public PreferPanel (){
     super();
 
-    targFrame = mother;
     //setLayout(new GridLayout(9,2));
     JPanel prefer = new JPanel();
     JPanel ctrl = new JPanel();
@@ -96,7 +106,7 @@ public class PreferPanel extends JFrame
     for (int i = 0 ; i < FSELMAX ; i++)
       fontsel.addItem(fseltab[i]);
     set4.add(new JLabel("Font size "));    
-		fontsel.setSelectedItem(fontSize+""); 
+    fontsel.setSelectedItem(fontSize+""); 
     set4.add(fontsel);
 
     for (int i = 1 ; i <= SCTXMAX ; i++)
@@ -154,12 +164,12 @@ public class PreferPanel extends JFrame
 
     //ctrl.setFont( new Font("Helvetica", Font.BOLD, 12));
     //prefer.setFont( new Font("Helvetica", Font.PLAIN, 12));
-		this.getContentPane().add("Center",prefer);
+    this.getContentPane().add("Center",prefer);
 
-		ckbSGML.addItemListener(this);
-		applyButton.addActionListener(this);
-		cancelButton.addActionListener(this);
-		doneButton.addActionListener(this);
+    ckbSGML.addItemListener(this);
+    applyButton.addActionListener(this);
+    cancelButton.addActionListener(this);
+    doneButton.addActionListener(this);
   }
 
   /** Reset value of context; used for initialization and for
@@ -185,51 +195,51 @@ public class PreferPanel extends JFrame
   }
 
 
-	/*  public void paint(Graphics g){
-    validate();
-  }
-	*/
+  /*  public void paint(Graphics g){
+      validate();
+      }
+  */
 
   public void actionPerformed(ActionEvent evt)
   {
-		//labelMessage("Building concordance list. Please wait...");
-		String arg = evt.getActionCommand();
-		System.out.println("ARG:"+arg);
-		Object source = evt.getSource();
+    //labelMessage("Building concordance list. Please wait...");
+    String arg = evt.getActionCommand();
+    System.out.println("ARG:"+arg);
+    Object source = evt.getSource();
     if(source == applyButton || source == doneButton )
-			{
-				try {// check if context and extract context are OK
-					if ( (new Integer(context.getText())).intValue() 
-							 > maxContext )
-						resetContext();
-					if ( (new Integer(extrctx.getText())).intValue() 
-							 > maxExtrCtx )
-						resetExtrCtx();
-				}
-				catch (NumberFormatException e){
-					resetExtrCtx();
-					resetContext();
-				}
-				int nfs = (new Integer((String)fontsel.getSelectedItem())).intValue();
-				if ( nfs != fontSize )
-					{
-						fontSize = nfs;
-						raiseDefaultChangeEvent(new FontSizeChangeEvent(this, nfs));
-					}
-				int nsctx = (new Integer((String)sortctx.getSelectedItem())).intValue();
-				if ( nsctx != sortContextHorizon )
-					{
-						sortContextHorizon = nsctx;
-						raiseDefaultChangeEvent(new SortHorizonChangeEvent(this, nsctx));
-					}
+      {
+        try {// check if context and extract context are OK
+          if ( (new Integer(context.getText())).intValue() 
+               > maxContext )
+            resetContext();
+          if ( (new Integer(extrctx.getText())).intValue() 
+               > maxExtrCtx )
+            resetExtrCtx();
+        }
+        catch (NumberFormatException e){
+          resetExtrCtx();
+          resetContext();
+        }
+        int nfs = (new Integer((String)fontsel.getSelectedItem())).intValue();
+        if ( nfs != fontSize )
+          {
+            fontSize = nfs;
+            raiseDefaultChangeEvent(new FontSizeChangeEvent(this, nfs));
+          }
+        int nsctx = (new Integer((String)sortctx.getSelectedItem())).intValue();
+        if ( nsctx != sortContextHorizon )
+          {
+            sortContextHorizon = nsctx;
+            raiseDefaultChangeEvent(new SortHorizonChangeEvent(this, nsctx));
+          }
         if ( updatedHTTPProxySelection() ) {
           System.setProperty("http.proxyHost",getHTTPProxyHost());
           System.setProperty("http.proxyPort",getHTTPProxyPort());
         }
       }
-		if ( source == doneButton  || source == cancelButton ) 
-			dispose();
-	}
+    if ( source == doneButton  || source == cancelButton ) 
+      dispose();
+  }
 
   public String getHTTPProxy () 
   {
@@ -270,91 +280,91 @@ public class PreferPanel extends JFrame
     return true;
   }
 
-	public void itemStateChanged(ItemEvent e) {
-		Object source = e.getItemSelectable();
+  public void itemStateChanged(ItemEvent e) {
+    Object source = e.getItemSelectable();
 
-		if (source == ckbSGML){
-				if ( e.getStateChange() == ItemEvent.DESELECTED )// set sgml flag
-					stSGML = "no";
-				else 
-					stSGML = "yes";
-		}
-	}
+    if (source == ckbSGML){
+      if ( e.getStateChange() == ItemEvent.DESELECTED )// set sgml flag
+        stSGML = "no";
+      else 
+        stSGML = "yes";
+    }
+  }
 
-	public int getContextSize ()
-	{
-		return (new Integer (context.getText())).intValue();
-	}
+  public int getContextSize ()
+  {
+    return (new Integer (context.getText())).intValue();
+  }
 
-	public int getExtractContextSize ()
-	{
-		return (new Integer (extrctx.getText())).intValue();
-	}
+  public int getExtractContextSize ()
+  {
+    return (new Integer (extrctx.getText())).intValue();
+  }
 
-	public int getSortHorizon ()
-	{
-		return sortContextHorizon;
-	}
+  public int getSortHorizon ()
+  {
+    return sortContextHorizon;
+  }
 
-	public int getFontSize ()
-	{
-		return fontSize;
-	}
+  public int getFontSize ()
+  {
+    return fontSize;
+  }
 
-	public String getSGMLFlag ()
-	{
-		return stSGML;
-	}
+  public String getSGMLFlag ()
+  {
+    return stSGML;
+  }
 
-	public String getHeaderBaseURL ()
-	{
-		return headerBaseField.getText();
-	}
+  public String getHeaderBaseURL ()
+  {
+    return headerBaseField.getText();
+  }
 
-	public void setHeaderBaseURL (String u)
-	{
-		headerBaseField.setText(u);
-	}
+  public void setHeaderBaseURL (String u)
+  {
+    headerBaseField.setText(u);
+  }
 
 
-	// The DefaultManager interface methds
+  // The DefaultManager interface methds
 
   public void addDefaultChangeListener(DefaultChangeListener obj)
-	{
-		defaultListeners.addElement(obj);
-	}
+  {
+    defaultListeners.addElement(obj);
+  }
 
   public void removeDefaultChangeListener(DefaultChangeListener obj)
-	{
-		defaultListeners.removeElement(obj);
-	}
+  {
+    defaultListeners.removeElement(obj);
+  }
 
-	private void raiseDefaultChangeEvent (FontSizeChangeEvent e){
+  private void raiseDefaultChangeEvent (FontSizeChangeEvent e){
 
-		for (Enumeration f = defaultListeners.elements(); 
-				 f.hasMoreElements() ;)
-			{
-				TecDefaultChangeListener li = (TecDefaultChangeListener)f.nextElement();
-				li.defaultChanged(e);
-			}
-	}
-	private void raiseDefaultChangeEvent (SortHorizonChangeEvent e){
+    for (Enumeration f = defaultListeners.elements(); 
+         f.hasMoreElements() ;)
+      {
+        TecDefaultChangeListener li = (TecDefaultChangeListener)f.nextElement();
+        li.defaultChanged(e);
+      }
+  }
+  private void raiseDefaultChangeEvent (SortHorizonChangeEvent e){
 
-		for (Enumeration f = defaultListeners.elements(); 
-				 f.hasMoreElements() ;)
-			{
-				TecDefaultChangeListener li = (TecDefaultChangeListener)f.nextElement();
-				li.defaultChanged(e);
-			}
-	}
-	private void raiseDefaultChangeEvent (DefaultChangeEvent e){
+    for (Enumeration f = defaultListeners.elements(); 
+         f.hasMoreElements() ;)
+      {
+        TecDefaultChangeListener li = (TecDefaultChangeListener)f.nextElement();
+        li.defaultChanged(e);
+      }
+  }
+  private void raiseDefaultChangeEvent (DefaultChangeEvent e){
 
-		for (Enumeration f = defaultListeners.elements(); 
-				 f.hasMoreElements() ;)
-			{
-				DefaultChangeListener li = (DefaultChangeListener)f.nextElement();
-				li.defaultChanged(e);
-			}
+    for (Enumeration f = defaultListeners.elements(); 
+         f.hasMoreElements() ;)
+      {
+        DefaultChangeListener li = (DefaultChangeListener)f.nextElement();
+        li.defaultChanged(e);
+      }
 		
-	}
+  }
 }
