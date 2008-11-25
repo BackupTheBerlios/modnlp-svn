@@ -1,3 +1,8 @@
+2008-11-25  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* teccli: New release of teccli. Browser has been completely revamped. Legacy 
+	code entirely removed
+
 2008-07-18  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* Makefile (TOPDIR): fixed section tokenisation bug in
