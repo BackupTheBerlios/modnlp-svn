@@ -6,9 +6,11 @@ LIBLICENSES=$(TOPDIR)lib/COPYING-libs
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
 MANIFEST=teccli-manifest.txt
-SOURCES:= $(shell find $(SOURCEDIR)modnlp/tec/client -name *.java)
+SOURCES:= $(shell find $(SOURCEDIR)modnlp/tec/client -name *.java) $(SOURCEDIR)modnlp/gui/WrapLayout.java
 TARGETS=$(subst .java,.class,$(SOURCES))
-JARREDS=modnlp/tec/client/*.class modnlp/tec/client/gui/*.class \
+JARREDS=modnlp/tec/client/*.class \
+	modnlp/tec/client/gui/*.class \
+	modnlp/tec/client/gui/event/*.class \
 	modnlp/tec/client/plugin/*.class \
 	modnlp/gui/*.class \
 	modnlp/tec/client/icons/*.gif \
@@ -18,19 +20,20 @@ JARREDS=modnlp/tec/client/*.class modnlp/tec/client/gui/*.class \
 	modnlp/tec/client/help/*.jpg tecli.properties
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`
 DISTDIR:=modnlp-teccli-`cat VERSION`
-DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
-	$(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)tecli.properties* \
+DISTFILES=AUTHORS COPYING Makefile README README.bin VERSION BUGS INSTALL TODO exclude.txt \
+	$(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)tecli.properties* $(SOURCEDIR)teclipluginlist.txt \
+	$(TOPDIR)lib/COPYING-libs $(SOURCEDIR)modnlp/gui \
 	$(SOURCEDIR)modnlp/tec/client $(SOURCEDIR)$(MANIFEST) $(SOURCEDIR)modnlp/tec/prj.el
 #JAVA=jamvm
 JAVA=java
-#JAVAC=javac
+JAVAC=javac
 #JAVAC=jikes-jsdk
 #JAVAC=jikes-classpath
-JAVAC=jikes -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar
+#JAVAC=jikes -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5
 JAR=jar
 JARFLAGS= cvmf $(MANIFEST)
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
-JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH) -encoding ISO-8859-1
 JARTARGET=$(TOPDIR)lib/teccli.jar
 BINDISTDIR=$(DISTDIR)-bin
 BINDISTXTRAS=$(LIBLICENSES) $(TOPDIR)*COPYING*
@@ -42,7 +45,7 @@ BINDISTXTRAS=$(LIBLICENSES) $(TOPDIR)*COPYING*
 all: build jar test 
 
 %.class: %.java
-		$(JAVAC) $(JAVAFLAGS) $?
+		$(JAVAC) $(JAVACFLAGS) $?
 
 build: $(TARGETS)
 
