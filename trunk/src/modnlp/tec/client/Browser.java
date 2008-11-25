@@ -64,7 +64,7 @@ public class Browser
 {
 
   // constants
-  public static final String RELEASE = "????";
+  public static final String RELEASE = "0.6.0";
   public static final String REVISION = "$Revision: 1.9 $";
   String BRANDNAME = "MODNLP/TEC";
   private static final String PLGLIST = "teclipluginlist.txt";
@@ -244,6 +244,7 @@ public class Browser
     }
     concVector.clear();
     concVector.setHalfConcordance(request.getContextSize());
+      concVector.setSortContextHorizon(0);
     //concList.removeAll();
     //concList.reset();
     if (standAlone) {
@@ -285,13 +286,20 @@ public class Browser
     if (sortThread != null)
       sortThread.stop();
     int sortContextHorizon = browserFrame.getSortLeftCtxHorizon();
-    if (sortleft)
+    if (sortleft) 
       concVector.setSortContextHorizon(0-sortContextHorizon);
-    else
+    else {
+      sortContextHorizon = browserFrame.getSortRightCtxHorizon();
       concVector.setSortContextHorizon(sortContextHorizon);
+    }
+
     Comparator cprer = sortleft ?
-      new LeftComparer(sortContextHorizon, preferenceFrame.maxContext/2) :
-      new RightComparer(sortContextHorizon, preferenceFrame.maxContext/2);
+      new LeftComparer(sortContextHorizon, 
+                       preferenceFrame.maxContext/2, 
+                       browserFrame.getPunctuation()) :
+      new RightComparer(sortContextHorizon, 
+                        preferenceFrame.maxContext/2, 
+                        browserFrame.getPunctuation());
     sortThread = new SortThread(concVector, cprer);
     
     sortThread.addConcordanceDisplayListener(browserFrame);
@@ -727,23 +735,6 @@ public class Browser
     return browserFrame;
   }
 
-   /**
-    * Implement ConcordanceDisplayListener.
-    */
-//    public void concordanceChanged(ConcordanceDisplayEvent e)
-//    {
-//      //System.out.println("Displaying "+e.getFirstIndex() );		
-//      displayArraySegment(e.getFirstIndex());
-//    }
-
-//    public void concordanceChanged(ConcordanceListSizeEvent e)
-//    {
-//      //setNumberOfFoundDisplay();
-//      //parent.updateStatusLabelScroll("  (displaying "+
-//      //                                    concArrayOffset+"/"+
-//      //                                    e.getNoFound()+")");
-//    }
-
 
   public static void main(String[] args) {
     try {
@@ -761,3 +752,4 @@ public class Browser
   }
 
 }
+

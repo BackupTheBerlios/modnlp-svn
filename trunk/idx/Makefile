@@ -49,6 +49,7 @@ SOURCES=$(SOURCEDIR)modnlp/Constants.java \
 	$(SOURCEDIR)modnlp/idx/database/SubcorpusTable.java \
 	$(SOURCEDIR)modnlp/idx/headers/HeaderDBManager.java \
 	$(SOURCEDIR)modnlp/idx/headers/ConstraintCache.java \
+	$(SOURCEDIR)modnlp/idx/inverted/StringSplitter.java \
 	$(SOURCEDIR)modnlp/idx/inverted/SubcorpusIndexer.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserGNU.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserRegex.java \

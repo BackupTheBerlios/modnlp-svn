@@ -15,42 +15,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-package modnlp.tec.client;
-import java.lang.*;
-import java.util.StringTokenizer;
+package modnlp.tec.client.gui;
+
 /**
- *  A string tokenizer with a safe nextToken method 
+ *  Position at which string will be drawn and string
  *
  * 
  * @author  Saturnino Luz &#60;luzs@acm.org&#62;
- * @version <font size=-1>$Id: TecTokenizer.java,v 1.1.1.1 2000/07/07 16:54:36 luz Exp $</font>
+ * @version <font size=-1>$Id: HighlightString.java,v 1.1.1.1 2000/07/07 16:54:36 luz Exp $</font>
  * @see  
 */
-public class TecTokenizer 
-  extends StringTokenizer
-{
+public class HighlightString {
 
-  public TecTokenizer(String str) {
-    super(str);
-  }
-  
-  public TecTokenizer(String str, String delim){
-    super(str, delim);
-  } 
-  public TecTokenizer(String str, String delim, boolean returnTokens)
-  {
-    super(str, delim, returnTokens);
-  }
+  public int position;
+  public String string;
 
-
-  /** Return next token, if present. Empty string, otherwise.
-   *
-   */ 
-  public String safeNextToken (){
-    if ( this.hasMoreTokens() )
-      return this.nextToken();
-    else 
-      return "";
+  public HighlightString(int p, String s){
+    position = p;
+    string = s;
   }
 
 }

@@ -17,10 +17,13 @@
  */
 package modnlp.tec.client;
 
-
-
+import modnlp.tec.client.gui.HighlightString;
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.regex.*;
 import java.util.StringTokenizer;
 import javax.swing.JLabel;
 /**
@@ -35,15 +38,24 @@ import javax.swing.JLabel;
 public class ConcordanceObject {
 
   public static char[] SEPTKARR =  modnlp.util.Tokeniser.SEPTKARR;
-
   public static final String SEPTOKEN = new String(SEPTKARR);
+  public static final Pattern WORD_PATTERN = Pattern.compile("[\\p{L}\\p{N}]+");
+  public static final Pattern WORDPUNCT_PATTERN = Pattern.compile("[\\p{L}\\{N}]+|[.,;?]+");
   public static final ConcordanceObject RENDERER_PROTOTYPE = getRendererPrototype();
+
 
   /* store a pointer to the ConcordanceVector so that we can access
    * properties of shared by all ConcordanceObject's, such as
    * longestFileName, sortContextHorizon etc */
   private ConcordanceVector coVector;
-  
+
+  private int indexOfSort = 0; 
+  private int sortCtxHorizon = 0;
+  private boolean punctuationOn = false;
+  private SortContext leftSortContext;
+  private SortContext rightSortContext;
+
+
   public String concordance;
   public String filename;
   public String sfilename;
@@ -174,69 +186,19 @@ public class ConcordanceObject {
    *	to the left of the keyword on the concordance line.  
    **/
   public HighlightString indexOfSortContextLeft(int srtctx){
-    int hc = coVector.getHalfConcordance();
-    StringBuffer a = new StringBuffer(concordance.substring(0,hc));
-    TecTokenizer at = new TecTokenizer(a.reverse().toString(), 
-                                      SEPTOKEN,
-                                       true);
-    try {
-      int ind = 0;
-      for (int i = 1; i < srtctx; i++) {
-        String w = at.safeNextToken();
-        ind = ind + w.length();
-        if (isSeparatorChar(w.charAt(0))){// ignore separator
-          --i;
-        }
-      }
-      StringBuffer wb;
-      do {
-        wb = new StringBuffer(at.safeNextToken());
-        ind = ind + wb.length(); 
-      } while (isSeparatorChar(wb.charAt(0)));
-      
-      String word = wb.reverse().toString();
-      return new HighlightString(hc - ind, 
-                                 word);
-    }
-    catch (StringIndexOutOfBoundsException e){
-      return new HighlightString(0,"");
-    }
-  }
+    //int i = srtctx-1;  // srtctx is always 0 since leftSortContext always starts with sort keyword
+    return new HighlightString(leftSortContext.getOffset(0),
+                               leftSortContext.getWord(0));
 
+  }
 
   /** Return the index of context horizon ctx
    *	to the right of the keyword on the concordance line.  
    **/
   public HighlightString indexOfSortContextRight(int srtctx){
     int hc = coVector.getHalfConcordance();
-    StringBuffer a = new StringBuffer(concordance.substring(hc));
-    TecTokenizer at = new TecTokenizer(a.toString(),
-                                       SEPTOKEN,
-                                       true);
-    try {
-      int ind = 0;
-      // discard keyword
-      ind = ind + at.safeNextToken().length();            
-      for (int i = 1; i < srtctx; i++) {
-        String w = at.safeNextToken();
-        ind = ind + w.length(); 
-        if (isSeparatorChar(w.charAt(0))){// ignore separator
-          --i;
-        }
-      }	
-      String word;
-      do {
-        word = at.safeNextToken();
-        ind = ind + word.length(); 
-      } while (isSeparatorChar(word.charAt(0)));
-      ind = ind - word.length(); // move backwards
-      return new HighlightString(hc + ind, 
-                                 word);
-    }
-    catch (StringIndexOutOfBoundsException e){
-      return new HighlightString(0,"");
-    }
-
+    return new HighlightString(hc+rightSortContext.getOffset(0),
+                               rightSortContext.getWord(0));
   }
 
   // used by ListDisplayRenderer
@@ -255,6 +217,122 @@ public class ConcordanceObject {
     return new HighlightString(hc , sb.toString());
   }
 
+  
+  public String[] getLeftSortArray (boolean punctuation){
+    int sch = coVector.getSortContextHorizon(); 
+
+    if ( sch == 0) // no sort requested
+      return new String[0];
+    
+    if (sortCtxHorizon == sch && punctuation == punctuationOn) // don't search if we have done it before
+      return leftSortContext.getWordArray();    // and user-requested sort context and punctuation haven't
+                               // changed since
+    sortCtxHorizon = sch;
+    punctuationOn = punctuation;
+
+    String s =  getLeftContext(); //concordance.substring(0,getIndexOfSort(punctuation));
+    Pattern p = punctuation? WORDPUNCT_PATTERN : WORD_PATTERN;
+    
+    leftSortContext = getLeftSortContext(s,p,sch);    
+
+    //System.err.println("--->"+s);
+    //System.err.println("===>"+leftSortContext.getWordList());
+
+    return leftSortContext.getWordArray();
+  }
+
+  public String[] getRightSortArray (boolean punctuation){
+    int sch = coVector.getSortContextHorizon(); 
+
+    if ( sch == 0) // no sort requested
+      return new String[0];
+    
+    if (sortCtxHorizon == sch && punctuation == punctuationOn) // don't search if we have done it before
+      return rightSortContext.getWordArray();    // and user-requested sort context and punctuation haven't
+                               // changed since
+    sortCtxHorizon = sch;
+    punctuationOn = punctuation;
+
+    String s =  getKeywordAndRightContext();
+    Pattern p = punctuation? WORDPUNCT_PATTERN : WORD_PATTERN;
+    
+    rightSortContext = getRightSortContext(s,p,sch);
+    
+    //System.err.println("--->"+s);
+    //System.err.println("===>"+rightSortContext.getWordList());
+
+    return rightSortContext.getWordArray();
+  }
+
+  private static SortContext getLeftSortContext(String s, Pattern p, int from){
+    SortContext sc = getSortContext(s,p, 0);
+    sc.reverse();
+    from = (from*-1) - 1;
+    for (int i = 0; i < from; i++) {
+      sc.remove(0); // pop first element off the lists 
+    }
+    return sc;
+  }
+
+  private static SortContext getRightSortContext(String s, Pattern p, int from){
+    SortContext sc = getSortContext(s,p, from);
+    return sc;
+  }
+
+  private static SortContext getSortContext(String s, Pattern p, int from){
+    Matcher wre = p.matcher(s);
+    SortContext sc = new SortContext();
+    int i = 0;
+    while (wre.find()) {
+      if (from < 0 || from > i++) // if right side, discard first token (keyword)
+        continue;
+      String m = wre.group();
+      if (m != null && m.length() > 0)
+        sc.add(wre.group(), wre.start());
+    }
+    return sc;
+  }
+
+  // not used at the moment
+  private int getIndexOfSort (boolean punctuation){
+    int sch = coVector.getSortContextHorizon(); 
+
+    int auxch = 0;
+
+    if (sch < 0) { // sort on the left hand side 
+      sch = sch * -1;
+      String s = getLeftContext();
+      int i = s.length();
+      while (i-- > 0) {
+        char c = s.charAt(i);
+        int t = Character.getType(c);
+        if (!Character.isLetterOrDigit(c))
+          auxch++;
+        else if (punctuation && 
+                 (t == Character.CONNECTOR_PUNCTUATION ||
+                  t == Character.DASH_PUNCTUATION ||
+                  t == Character.CURRENCY_SYMBOL ||
+                  t == Character.END_PUNCTUATION ||
+                  t == Character.START_PUNCTUATION ||
+                  t == Character.FINAL_QUOTE_PUNCTUATION ||
+                  t == Character.INITIAL_QUOTE_PUNCTUATION ||
+                  t == Character.OTHER_PUNCTUATION))
+          auxch++;
+        if (auxch == sch)
+          if (!punctuation)
+            while (i-- > 0) {
+              c = s.charAt(i);
+              if (Character.isLetterOrDigit(c))
+                return indexOfSort = i+1;
+            } // end while (i-- >= 0)
+          else
+            return indexOfSort = i+1;
+      } // end while (i-- >= 0)
+      return indexOfSort;
+    } // end if if (sch < 0)
+    else // sort on the right hand side
+      return indexOfSort;
+  }
 
   public boolean isSeparatorChar(char c){
     // why doesn't binarySearch work for '.' and ','?????
@@ -271,6 +349,5 @@ public class ConcordanceObject {
     
     return new String(auxA);
   }
-
 
 }

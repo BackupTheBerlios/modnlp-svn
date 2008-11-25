@@ -114,7 +114,7 @@ public class GraphicalSubcorpusSelector extends JFrame {
     if (!loadingDone) {
       //task = new LongTask();
       ProgressMonitor pm = 
-        new ProgressMonitor((java.awt.Component)parent,
+        new ProgressMonitor(this,
                             "Loading subcorpus selector", 
                             "", 0, attChsrSpecs.length);      
       timer = new Timer(1000, new TimerListener(pm));

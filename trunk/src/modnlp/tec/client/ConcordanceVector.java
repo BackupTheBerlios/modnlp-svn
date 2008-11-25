@@ -155,6 +155,12 @@ public class ConcordanceVector extends Vector<ConcordanceObject> implements List
       }    
   }
 
+  // notifyContentChange: to be invoked when an external program (such
+  // as sort) changes all contents of this listmodel
+  public void notifyContentChange(){
+    fireContentsChanged(0, size()-1);
+  }
+
   // ListModel interface (now implemented in gui.ConcordanceListModel)
   public void addListDataListener(ListDataListener l) {
     listenerList.add(ListDataListener.class, l);
@@ -178,7 +184,6 @@ public class ConcordanceVector extends Vector<ConcordanceObject> implements List
       }
     }
   }
-
 
   protected void fireIntervalAdded(int index0, int index1)
   {

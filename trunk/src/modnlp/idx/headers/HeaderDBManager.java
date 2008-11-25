@@ -231,6 +231,9 @@ public class HeaderDBManager {
     return sb.toString();
   }
 
+  public void close() {
+    finalize();
+  }
 
   public void finalize() {
     try {

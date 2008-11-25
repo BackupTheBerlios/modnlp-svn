@@ -19,7 +19,8 @@ package modnlp.tec.client.plugin;
 
 import modnlp.idx.headers.HeaderDBManager;
 import modnlp.tec.client.Plugin;
-import modnlp.tec.client.Browser;
+import modnlp.tec.client.gui.*;
+import modnlp.tec.client.ConcordanceBrowser;
 import modnlp.tec.client.TecClientRequest;
 import modnlp.idx.database.Dictionary;
 
@@ -127,7 +128,7 @@ public class FqListBrowser extends JFrame
   private JProgressBar progressBar;
 
   private static String title = new String("MODNLP Plugin: FqListBrowser 0.1"); 
-  private Browser parent = null;
+  private ConcordanceBrowser parent = null;
   private boolean guiLayoutDone = false;
 
   public FqListBrowser() {
@@ -135,7 +136,7 @@ public class FqListBrowser extends JFrame
   }
 
   public void setParent(Object p){
-    parent = (Browser)p;
+    parent = (ConcordanceBrowser)p;
   }
 
   public void activate() {
@@ -282,13 +283,13 @@ public class FqListBrowser extends JFrame
       if (parent.isStandAlone()) {
         (new FqlPrinter()).start();
       }
-      if (parent.isCaseInsensitive()){
-        caseStatusLabel.setText(CASEOFF);
-        caseStatusLabel.setToolTipText(CASEOFFTIP);
-      }
-      else{
+      if (parent.isCaseSensitive()){
         caseStatusLabel.setText(CASEON);
         caseStatusLabel.setToolTipText(CASEONTIP);
+      }
+      else{
+        caseStatusLabel.setText(CASEOFF);
+        caseStatusLabel.setToolTipText(CASEOFFTIP);
       }
       if (parent.isSubCorpusSelectionON()){
         scStatusLabel.setText(SCON);
@@ -353,8 +354,8 @@ public class FqListBrowser extends JFrame
       }
       else {
         TecClientRequest rq = new TecClientRequest();
-        rq.setServerURL("http://"+parent.SERVER);
-        rq.setServerPORT(parent.PORTNUM);
+        rq.setServerURL("http://"+parent.getRemoteServer());
+        rq.setServerPORT(parent.getRemotePort());
         rq.put("request","freqlist");
         rq.setServerProgramPath("/freqlist");
         URL exturl = new URL(rq.toString());
@@ -536,7 +537,7 @@ public class FqListBrowser extends JFrame
             }
         }
       catch (Exception ex) {
-        JOptionPane.showMessageDialog(parent, "Error writing freqency list" + ex,
+        JOptionPane.showMessageDialog((JFrame)parent.getBrowserGUI(), "Error writing freqency list" + ex,
                                       "Error!", JOptionPane.ERROR_MESSAGE);
       }
     }
@@ -553,10 +554,10 @@ public class FqListBrowser extends JFrame
           HeaderDBManager hdbm = parent.getHeaderDBManager();
           d.printSortedFreqList(fqlout, skipFirst, maxListSize,
                                 hdbm.getSubcorpusConstraints(parent.getXQueryWhere()),
-                                parent.isCaseInsensitive()); 
+                                !parent.isCaseSensitive()); 
         }
         else
-          d.printSortedFreqList(fqlout,  skipFirst, maxListSize,parent.isCaseInsensitive());
+          d.printSortedFreqList(fqlout,  skipFirst, maxListSize,!parent.isCaseSensitive());
       } catch (Exception e) {
         System.err.println("FqListBrowser opening header DB: " + e);
         e.printStackTrace();

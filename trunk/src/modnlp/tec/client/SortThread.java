@@ -21,6 +21,8 @@ import modnlp.tec.client.gui.event.*;
 
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.Vector;
+import java.util.Iterator;
 
 /**
  *  Receive reply from server (list of concondances) 
@@ -41,25 +43,28 @@ public class SortThread
   private Thread thread = null;
   private ConcordanceVector concVector;
   private Comparator comparator;
-  private ConcordanceDisplayListener concList = null; 
+  private Vector<ConcordanceDisplayListener> concDisplayListeners = 
+    new Vector<ConcordanceDisplayListener>();
 		
   public SortThread(ConcordanceVector v, Comparator c) 
   {
     concVector = v;
-    comparator = c;
-				
-  }  
-		
+    comparator = c;			
+  }
+	
   public void run() 
   {
 				
     Collections.sort(concVector, comparator);		
     //long e = (new Date()).getTime();
     //System.out.println("End Time---->:"+e);
-    fireDisplayEvent(0);
+    //fireDisplayEvent(0);
+    concVector.notifyContentChange();
+    fireDisplayEvent(0,ConcordanceDisplayEvent.FIRSTDISPLAY_EVT,
+                     "Sort completed.");
     stop();
   }
-		
+	
   public void start(){
     if ( thread == null ){
       thread = new Thread(this);
@@ -76,20 +81,26 @@ public class SortThread
     return ( thread != null );
   }
 
+  private final void fireDisplayEvent (int from, int evt, String msg) {
+    for (Iterator<ConcordanceDisplayListener> p = concDisplayListeners.iterator(); p.hasNext(); )
+      {
+        ConcordanceDisplayListener cdl = p.next();
+        if (cdl != null)
+          cdl.concordanceChanged(new ConcordanceDisplayEvent(this, from, evt, msg));
+      }
+  }
 
-  public void fireDisplayEvent (int from) {
-    if (concList != null)
-      concList.concordanceChanged(new ConcordanceDisplayEvent(this, from));
-  }
-		
   /* Implement ConcordanceMonitor */
-		
-  public void addConcordanceDisplayListener(ConcordanceDisplayListener conc){
-    concList = conc;
+  
+  public void addConcordanceDisplayListener(ConcordanceDisplayListener cdl)
+  {
+    concDisplayListeners.add(cdl);
   }
-		
-  public void removeConcordanceDisplayListener(ConcordanceDisplayListener conc){
-    concList = null;
+  
+  public void removeConcordanceDisplayListener(ConcordanceDisplayListener cdl)
+  {
+    concDisplayListeners.remove(cdl);
   }	
+
 
 }

@@ -16,9 +16,7 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.lang.*;
-import java.util.Comparator;
-import java.util.StringTokenizer;
+
 /**
  *  Compare right hand side of concordance strings (for sorting) 
  *
@@ -28,49 +26,40 @@ import java.util.StringTokenizer;
  * @see  
 */
 public class RightComparer 
-  implements Comparator{
+  extends Comparator{
 
-  public int sortContextHorizon = 1;
-  public int halfConcordance = 65;
-  
-  public RightComparer(int ctx, int half){
-    sortContextHorizon = ctx;
-    halfConcordance = half;
+  public RightComparer (){
+    super();
   }
-  
+  public RightComparer (int ctx, int half){
+    super(ctx,half);
+  }
+
+  public RightComparer (int ctx, int half, boolean pton){
+    super(ctx,half,pton);
+  }
+
   public int compare(Object o1, Object o2) {
     ConcordanceObject coa = (ConcordanceObject) o1;
     ConcordanceObject cob = (ConcordanceObject) o2;
-    
-    String as = coa.concordance.substring(halfConcordance);
-    String bs = cob.concordance.substring(halfConcordance);
-    StringTokenizer at = new StringTokenizer(as,
-                                             ConcordanceObject.SEPTOKEN,
-                                             false);
-    StringTokenizer bt = new StringTokenizer(bs,
-                                             ConcordanceObject.SEPTOKEN,
-                                             false);
-    // Discard half-keywords
-    at.nextToken();            
-    bt.nextToken();
-    StringBuffer ac = new StringBuffer("");
-    StringBuffer bc = new StringBuffer("");
-    // Read up to horizon
-    for (int i = 1; i < sortContextHorizon ; i++) {
-      if ( at.hasMoreTokens() ) {
-        ac.append(at.nextToken()+" ");
-      }
-      if ( bt.hasMoreTokens() ) {
-        bc.append(bt.nextToken()+" ");
+
+    String[] saa = coa.getRightSortArray(punctuation);
+    String[] sab = cob.getRightSortArray(punctuation);
+
+    int res;
+    for (int i = 0; i < saa.length; i++) {
+      if (i >= sab.length)
+        return 1;
+      if ((res = saa[i].compareToIgnoreCase(sab[i])) != 0) {
+        return res;
       }
     }
-    // Insert horizon word if any
-    if ( at.hasMoreTokens() ) 
-      ac.insert(0, at.nextToken()+" ");
-    if ( bt.hasMoreTokens() )  
-      bc.insert(0, bt.nextToken()+" ");
-    
-    return ac.toString().toLowerCase().compareTo(bc.toString().toLowerCase());
+    if (saa.length < sab.length)
+      return -1;
+    if (sab.length < saa.length)
+      return 1;
+    return 0;
+ 
   }
   
 }

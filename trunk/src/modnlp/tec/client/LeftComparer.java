@@ -16,8 +16,7 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.lang.*;
-import java.util.Comparator;
+
 import java.util.StringTokenizer;
 /**
  *  Compare left hand side of concordance strings (for sorting) 
@@ -28,47 +27,41 @@ import java.util.StringTokenizer;
  * @see  
 */
 public class LeftComparer 
-  implements Comparator{
+  extends Comparator{
 
-  public int sortContextHorizon = 1;
-  public int halfConcordance = 65;
+  public LeftComparer (){
+    super();
+  }
+  public LeftComparer (int ctx, int half){
+    super(ctx,half);
+  }
 
-  public LeftComparer(int ctx, int half){
-    sortContextHorizon = ctx;
-    halfConcordance = half;
+  public LeftComparer (int ctx, int half, boolean pton){
+    super(ctx,half,pton);
   }
 
   public int compare(Object o1, Object o2) {
     
     ConcordanceObject coa = (ConcordanceObject) o1;
     ConcordanceObject cob = (ConcordanceObject) o2;
-    StringBuffer ab = 
-      new StringBuffer(coa.concordance.substring(0,halfConcordance));
-    StringBuffer bb = 
-      new StringBuffer(cob.concordance.substring(0,halfConcordance));
-    TecTokenizer at = new TecTokenizer(ab.reverse().toString(),
-                                       ConcordanceObject.SEPTOKEN,
-                                       false);
-    TecTokenizer bt = new TecTokenizer(bb.reverse().toString(),
-                                       ConcordanceObject.SEPTOKEN,
-                                       false);
-    StringBuffer ac = new StringBuffer("");
-    StringBuffer bc = new StringBuffer("");
-    // Read up to horizon
-    for (int i = 1; i < sortContextHorizon; i++) {
-      StringBuffer t = new StringBuffer(at.safeNextToken());
-      ac.append(t.reverse().toString()+" ");
-      t = new StringBuffer(bt.safeNextToken());
-      bc.append(t.reverse().toString()+" ");
+
+    String[] saa = coa.getLeftSortArray(punctuation);
+    String[] sab = cob.getLeftSortArray(punctuation);
+
+    int res;
+    for (int i = 0; i < saa.length; i++) {
+      if (i >= sab.length)
+        return 1;
+      if ((res = saa[i].compareToIgnoreCase(sab[i])) != 0) {
+        return res;
+      }
     }
-    // Insert horizon word
-    StringBuffer t = new StringBuffer(at.safeNextToken());
-    ac.insert(0, t.reverse().toString()+" ");
-    t = new StringBuffer(bt.safeNextToken());
-    bc.insert(0, t.reverse().toString()+" ");
-    
-    return ac.toString().toLowerCase().compareTo(bc.toString().toLowerCase());
-    
+    if (saa.length < sab.length)
+      return -1;
+    if (sab.length < saa.length)
+      return 1;
+    return 0;
+
   }
 
 

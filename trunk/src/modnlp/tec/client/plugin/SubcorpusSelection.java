@@ -21,7 +21,7 @@ import javax.swing.JFrame;
 import modnlp.tec.client.Plugin;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
-import modnlp.tec.client.Browser;
+import modnlp.tec.client.ConcordanceBrowser;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JCheckBox;
@@ -46,7 +46,7 @@ public class SubcorpusSelection extends JFrame
   JCheckBox activeChecked = new JCheckBox("Enable sub-corpus constraint");
   private JFrame thisFrame = null;
   private static String title = new String("Plugin: SubcorpusSelection 0.1"); 
-  private Browser parent = null;
+  private ConcordanceBrowser parent = null;
   private boolean guiLayoutDone = false;
 
   public SubcorpusSelection() {
@@ -54,7 +54,7 @@ public class SubcorpusSelection extends JFrame
   }
 
   public void setParent(Object p){
-    parent = (Browser)p;
+    parent = (ConcordanceBrowser)p;
   }
 
   public void activate() {

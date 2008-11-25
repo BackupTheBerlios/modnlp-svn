@@ -129,6 +129,8 @@ public class BrowserFrame extends BrowserGUI
   private JMenu  prefMenu = new JMenu("Options");
   private JCheckBoxMenuItem caseCheckBox = 
     new JCheckBoxMenuItem("Case sensitive");
+  private JCheckBoxMenuItem punctuationCheckBox = 
+    new JCheckBoxMenuItem("Punctuation as tokens");
   private JMenuItem advConcButton = 
     new JMenuItem("Select Sub-corpus...");
 
@@ -195,6 +197,7 @@ public class BrowserFrame extends BrowserGUI
     fileMenu.add(quitButton);
     
     prefMenu.add(caseCheckBox);
+    prefMenu.add(punctuationCheckBox);
     prefMenu.add(advConcButton);
     prefMenu.add(advConcFlagItem);
     prefMenu.addSeparator();
@@ -338,6 +341,7 @@ public class BrowserFrame extends BrowserGUI
     
     //caseCheckBox.addActionListener();
     caseCheckBox.setState(false);
+    punctuationCheckBox.setState(false);
     advConcFlagItem.setState(false);
 
     advConcFlagItem.addChangeListener(new ChangeListener(){
@@ -527,6 +531,7 @@ public class BrowserFrame extends BrowserGUI
   public void concordanceChanged(ConcordanceDisplayEvent e)
   {
     if (e.getEventType() == ConcordanceDisplayEvent.FIRSTDISPLAY_EVT){
+      concListDisplay.revalidate();
       //concListDisplay.setCellPrototype(parent.getConcordanceVector().get(0));
     }
     if (e.getEventType() == ConcordanceDisplayEvent.DOWNLOADSTATUS_EVT){
@@ -654,6 +659,10 @@ public class BrowserFrame extends BrowserGUI
 
   public boolean getCase(){
     return caseCheckBox.getState();
+  }
+
+  public boolean getPunctuation(){
+    return punctuationCheckBox.getState();
   }
 
   public ConcordanceListModel getListModel(){

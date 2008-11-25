@@ -17,16 +17,14 @@
 */
 package modnlp.tec.client.gui;
 
-import  modnlp.tec.client.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
-
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.FontMetrics;
-
+import javax.swing.JLabel;
+import javax.swing.ListCellRenderer;
+import modnlp.tec.client.ConcordanceObject;
+import javax.swing.JList;
 
 /**
  *  Cell renderer for TEC concordance list

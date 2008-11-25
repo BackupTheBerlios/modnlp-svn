@@ -1,7 +1,16 @@
 package modnlp.gui;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.FlowLayout;
+import java.awt.Dimension;
+import java.awt.Container;
+import java.awt.Insets;
+import java.awt.Component;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import java.awt.Color;
+import javax.swing.JFrame;
+import java.awt.BorderLayout;
+
 
 
 /**
