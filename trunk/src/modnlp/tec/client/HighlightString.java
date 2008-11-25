@@ -16,7 +16,7 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.lang.*;
+
 /**
  *  Position at which string will be drawn and string
  *
