@@ -1,7 +1,21 @@
+2009-04-30  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* idx, teccli, tecser: New release coincinding with the first
+	release of the TEC Corpus (v2). A Corpus description plugin
+	(CorpusDescriptionBrowser.java) has been added, many bugs have
+	been fixed, the client has been made compatible with JNLP,
+	resource files have been created in modnlp/teccli/jnlp.
+
 2008-11-25  Saturnino Luz  <luzs@cs.tcd.ie>
 
-	* New release of teccli. Browser has been completely revamped. 
-	  Legacy code entirely removed
+	* New release of teccli. Browser has been completely revamped.
+	  Legacy code entirely removed; Re-activated plugins; implemented
+	  JE-based subcorpus selection to replace SQL server on
+	  tec-server; separated GUI from Browser (moved GUI into gui/
+	  package); re-implemented ConcArray based on a
+	  ('growable') collection class rather than array; fixed
+	  scrollbars in ListDisplay (draw list renderers on a
+	  ScrollablePane)
 
 2008-10-03  Saturnino Luz  <luzs@cs.tcd.ie>
 

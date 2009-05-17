@@ -64,7 +64,7 @@ public class Browser
 {
 
   // constants
-  public static final String RELEASE = "0.6.0";
+  public static final String RELEASE = "0.6.1";
   public static final String REVISION = "$Revision: 1.9 $";
   String BRANDNAME = "MODNLP/TEC";
   private static final String PLGLIST = "teclipluginlist.txt";
@@ -72,6 +72,7 @@ public class Browser
 
   // properties, state
   private boolean standAlone = true;
+  private boolean commandLineServer  = false;
   private boolean advConcFlag = false;
   private boolean firstRemoteFlag = true;
   /** Deafult location of TecServer  */
@@ -103,8 +104,22 @@ public class Browser
   // text data 
   private ConcordanceVector concVector = new ConcordanceVector();
 
+  public Browser (String sp) {
+    standAlone = false;
+    commandLineServer = true;
+    clProperties = new ClientProperties();
+    preferenceFrame = new PreferPanel(this);
+    browserFrame = new BrowserFrame(0, 0, this);
+    preferenceFrame.addDefaultChangeListener(browserFrame);
+    String serv = sp.substring(0,sp.indexOf(':'));
+    int port = (new Integer(sp.substring(sp.indexOf(':')+1))).intValue();
+    setRemoteCorpus(serv,port);
+    init();
+  }
+
   public Browser (boolean sa) {
     standAlone = sa;
+    commandLineServer = false;
     clProperties = new ClientProperties();
     preferenceFrame = new PreferPanel(this);
     browserFrame = new BrowserFrame(0, 0, this);
@@ -122,12 +137,12 @@ public class Browser
           quit();
         }
       });
-      
-    if (isStandAlone() )
-      chooseNewLocalCorpus();
-    else
-      initialCorpusSelection();
-
+    if ( !commandLineServer )
+      if ( isStandAlone() )
+        chooseNewLocalCorpus();
+      else
+        initialCorpusSelection();
+    
     splashScreen = new SplashScreen("Initialising. Please wait...", 20,
                                     "modnlp/tec/client/icons/modnlp-small.jpg");
     incProgress();    
@@ -138,12 +153,11 @@ public class Browser
     loadPlugins();
     incProgress();
       
-    headerBaseURL = "http://"+remoteServer+"/tec/headers";
-    if ( clProperties.getProperty("tec.client.headers") != null )
-      headerBaseURL = clProperties.getProperty("tec.client.headers");
-    //f.show();
-    if ( clProperties.getProperty("tec.client.port") != null )
-      remotePort = new Integer(clProperties.getProperty("tec.client.port")).intValue();
+    //headerBaseURL = "http://"+remoteServer+"/tec/headers";
+    //if ( clProperties.getProperty("tec.client.headers") != null )
+    //  headerBaseURL = clProperties.getProperty("tec.client.headers");
+    //if ( clProperties.getProperty("tec.client.port") != null )
+    //  remotePort = new Integer(clProperties.getProperty("tec.client.port")).intValue();
     //f.setAdvSearchOptions();
     browserFrame.pack();
     incProgress();
@@ -207,15 +221,17 @@ public class Browser
     try {
       while ( (plg = in.readLine() ) != null ){
         try {
+          System.err.println("Loading: "+plg);
           StringTokenizer st = new StringTokenizer(plg, ":");
           // first token: class name (ignore for now)
-          final Plugin tp = (Plugin)IOUtil.loadPlugin(st.nextToken());
+          final Plugin tp = (Plugin)IOUtil.loadPlugin(st.nextToken(),cl);
           tp.setParent(this);
           browserFrame.addPluginMenuItem(tp, st.nextToken());
           splashScreen.incProgress();
         }
         catch (ClassNotFoundException e) {
           System.err.println("Warning (Browser): error loading plugin: "+e);
+          e.printStackTrace(System.err);
         }
       }
     }
@@ -328,6 +344,10 @@ public class Browser
     hb.show();
   }
 
+  public void showErrorMessage(String e){
+    JOptionPane.showMessageDialog(null, e, "ERROR", JOptionPane.ERROR_MESSAGE);
+  }
+
   /** Show extract of text identified by position <code>sel</code>
    * in the current <code>ConcordanceVector</code>
    *  @see ConcordanceVector
@@ -358,6 +378,11 @@ public class Browser
         tecClient = new ContextClient(request, dictionary);
       else
         tecClient = new ContextClient(request);
+      tecClient.setVisible(true); // a bug in jdk 1.5 won't let it
+                                  // show the frame unless it is
+                                  // resized *after* it is made
+                                  // visible, hence the call to start() below.
+      tecClient.start();
       preferenceFrame.addDefaultChangeListener(tecClient);
     }
   }
@@ -378,8 +403,8 @@ public class Browser
 
  public void showHeader(String headerName)
   {
-    int windowHeight = 400;
-    int windowWidth = 350;
+    int windowHeight = 600;
+    int windowWidth = 500;
     String tmp;
     StringBuffer content = new StringBuffer();
     //System.out.println("URL--:"+headerBaseURL+headerName);
@@ -407,14 +432,17 @@ public class Browser
     }
     catch (Exception e) {
       System.err.println("Error retrieving metadata: "+e);
+      content.append("\nError retrieving metadata: "+e);
     }
     // HeaderClass header = new HeaderClass(filename);
     FullTextWindow window =  new FullTextWindow(headerName,
                                                 content);
     preferenceFrame.addDefaultChangeListener(window);
-    window.setSize(windowWidth, windowHeight);
     //System.err.println(content);
-    window.show();
+    window.setVisible(true); // a bug in jdk 1.5 won't let it show the
+                             // frame unless it is resized *after* it
+                             // is made visible
+    window.setSize(windowWidth, windowHeight);
   }
   
   public void downloadConcordance(Download dlf) throws java.io.IOException {
@@ -464,10 +492,9 @@ public class Browser
     clProperties.setProperty("last.index.dir", cdir);
     standAlone = true;
     clProperties.setProperty("stand.alone","yes");
-
     browserFrame.setTitle(getBrowserName()+": index at "+cdir);
     dictionary.setVerbose(debug);
-    setHeadersURL(dictProps);
+    setLocalHeadersDirectory(dictProps);
     encoding = dictProps.getProperty("file.encoding");
     if (guiSubcorpusSelector != null)
       stopSubCorpusSelectorGUI();
@@ -486,7 +513,7 @@ public class Browser
     concordanceProducer = new ConcordanceProducer(dictionary);
   }
 
-  private void setHeadersURL(DictProperties dictProps){
+  private void setLocalHeadersDirectory(DictProperties dictProps){
     int r;
     String hh = null;
     if ((hh = dictProps.getProperty("headers.home")) == null)  // an unsafe default
@@ -526,13 +553,11 @@ public class Browser
     String s = rcc.getServer();
     int p =  rcc.getPort();
     setRemoteCorpus(s,p);
-    clProperties.setProperty("stand.alone","no");
   }
 
   public void setRemoteCorpus(String s, int p){
     remoteServer = s;
     remotePort = p;
-    browserFrame.setTitle(getBrowserName()+": index at "+remoteServer+":"+remotePort);
     standAlone = false;
     TecClientRequest request = new TecClientRequest();
     request.setServerURL("http://"+remoteServer);
@@ -570,11 +595,17 @@ public class Browser
       {
         if (guiSubcorpusSelector != null)
           stopSubCorpusSelectorGUI();
+        showErrorMessage("Error: couldn't create URL input stream: "+e);
         System.err.println("Exception: couldn't create URL input stream: "+e);
         headerBaseURL = "http://"+remoteServer+"/tec/headers";
         System.err.println("Setting URL to "+headerBaseURL);
         preferenceFrame.setHeaderBaseURL(headerBaseURL);
       }
+    if (guiSubcorpusSelector.hasNetworkError())
+      showErrorMessage("Error: couldn't select new Internet corpus.");
+    else
+      browserFrame.setTitle(getBrowserName()+": index at "+remoteServer+":"+remotePort);
+
   }
   
   public boolean workOffline() {
@@ -738,14 +769,18 @@ public class Browser
 
   public static void main(String[] args) {
     try {
-      boolean sa = false;   
-      if (args.length > 0 && args[0].equals("-standalone") )
-          sa = true;
-      final Browser b = new Browser(sa);
+      final Browser b;
+      if (args.length > 0)
+        if ( args[0].equals("-standalone") )
+          b = new Browser(true);
+        else
+          b = new Browser(args[0]);
+      else
+        b = new Browser(false);
       b.browserFrame.setVisible(true);
     }
     catch (Exception e){
-      System.err.println(e+" Usage: Browser HOSTNAME\n See also client.properties");
+      System.err.println(e+" Usage: Browser HOSTNAME:PORTNUM\n See also client.properties");
       e.printStackTrace();
       System.exit(1);
     }

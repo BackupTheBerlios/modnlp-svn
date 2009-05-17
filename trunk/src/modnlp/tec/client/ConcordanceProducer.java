@@ -49,6 +49,7 @@ public class ConcordanceProducer implements Runnable {
     //this.request = r;
     try {
       hdbm = new HeaderDBManager(d.getDictProps());
+      System.err.println("ConcordanceProducer opening header DB... ");
     } catch (Exception e) {
       System.err.println("Concordancer opening header DB: " + e);
     }

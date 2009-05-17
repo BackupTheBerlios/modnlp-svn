@@ -135,10 +135,10 @@ public class CorpusFile {
         return -1;
       if (fileArray[i] != '>')
         return i;
-
     }
     return i;
   }
+
 
   public String getWordInContextWithTags(Integer pos, String wrd, int ctx)
     throws IOException{ 
@@ -185,8 +185,9 @@ public class CorpusFile {
     int j = (int)offset-1;
     for (int i = 1; i <= ctx; i++) {
       j = findNextLeftIndex(j); // find next allowed index (possibly ignoring tags
-      ca[ctx-i] = j < 0 || Character.isISOControl(fileArray[j])? 
-        ' ' : fileArray[j--];
+      ca[ctx-i] = (j < 0 || Character.isISOControl(fileArray[j])? 
+                   ' ' : fileArray[j]);
+      j--;
     }
     return new String(ca);
   }
@@ -202,8 +203,9 @@ public class CorpusFile {
     int j = (int)offset;
     for (int i = 0; i < ctx; i++) {
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags
-      ca[i] = j < 0 || Character.isISOControl(fileArray[j])? 
-        ' ' : fileArray[j++];
+      ca[i] = (j < 0 || Character.isISOControl(fileArray[j])? 
+               ' ' : fileArray[j]);
+      j++;
     }
     return new String(ca);
   }

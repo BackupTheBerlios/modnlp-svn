@@ -47,7 +47,7 @@ import java.io.File;
 */
 
 public class IndexManagerUI extends JFrame 
-  implements ActionListener 
+  implements ActionListener, IndexingReporter 
 {
   IndexManager parent;
 

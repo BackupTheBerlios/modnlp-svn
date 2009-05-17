@@ -16,9 +16,9 @@ BINDISTFILES=$(LIBS) lib/teccli.jar lib/tecser.jar lib/idx.jar lib/tc.jar tecser
 	src/teclipluginlist.txt
 #JAVA=jamvm
 #JAVAC=jikes-classpath
-JAVAC=jikes-jsdk -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5
+#JAVAC=jikes-jsdk -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5
 JAVA=java
-#JAVAC=javac
+JAVAC=/usr/lib/jvm/java-1.5.0-sun/bin/javac
 JAR=jar
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 JAVACFLAGS=-encoding ISO-8859-1 -classpath $(SOURCEDIR):$(LIBSPATH)
@@ -33,6 +33,9 @@ all: build jar test dist
 		$(JAVAC) $(JAVACFLAGS) $?
 
 build: $(TARGETS)
+
+buildall:
+	$(JAVAC) $(JAVAFLAGS) $(SOURCES)
 
 clean:
 	find . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f

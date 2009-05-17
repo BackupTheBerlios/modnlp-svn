@@ -160,6 +160,8 @@ public class BrowserFrame extends BrowserGUI
   private int srt_i = 0;
   private String encoding = null;
   private BrowserFrame myself; 
+  private SubcorpusCaseStatusPanel sccsPanel;
+
   ConcordanceBrowser parent = null;
 
   /** Create a TEC Window Object
@@ -302,11 +304,19 @@ public class BrowserFrame extends BrowserGUI
     
     // create status line (bottom of the screen)
     statusArea.setLayout( new FlowLayout(FlowLayout.LEFT));
-    statusArea.add(progressBar);
+    statusArea.setLayout(new BorderLayout());
+    JPanel statusLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel statusRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     
-    statusArea.add(statusLabel);
-    statusArea.add(statusLabelScroll);
+    statusLeft.add(progressBar);    
+    statusLeft.add(statusLabel);
+    statusLeft.add(statusLabelScroll);
+    sccsPanel = new SubcorpusCaseStatusPanel(parent);
+    statusRight.add(sccsPanel);
 
+    statusArea.add(statusLeft,BorderLayout.WEST);
+    statusArea.add(statusRight,BorderLayout.EAST);
+    
     // -------- plugins partly disabled for the time being
     pluginMenu.setEnabled(true);
     
@@ -316,6 +326,7 @@ public class BrowserFrame extends BrowserGUI
             alertWindow("Invalid query syntax");
             return;
           }
+          sccsPanel.updateStatus();
           parent.requestConcordance(keyword.getText());
         }};
     
@@ -530,8 +541,9 @@ public class BrowserFrame extends BrowserGUI
    */
   public void concordanceChanged(ConcordanceDisplayEvent e)
   {
+    //concListDisplay.revalidate();
     if (e.getEventType() == ConcordanceDisplayEvent.FIRSTDISPLAY_EVT){
-      concListDisplay.revalidate();
+      concListDisplay.redisplayConc();
       //concListDisplay.setCellPrototype(parent.getConcordanceVector().get(0));
     }
     if (e.getEventType() == ConcordanceDisplayEvent.DOWNLOADSTATUS_EVT){

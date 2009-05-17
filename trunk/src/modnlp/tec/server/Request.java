@@ -47,6 +47,7 @@ public class Request extends Hashtable {
   public static final int HEADERBASEURL = 6;
   public static final int ATTCHOPTSPECS = 7;
   public static final int ATTCHOSPTIONS = 8;
+  public static final int CDESCRIPTION = 9;
   //public static final int SERVERINFO = 7;
   public static final int NOTREQ = 999;
   public String reqString = null;
@@ -98,6 +99,8 @@ public class Request extends Hashtable {
       return SQLMETAQ;
     if (rq.equalsIgnoreCase("freqlist"))
       return FREQLIST;
+    if (rq.equalsIgnoreCase("corpusdesc"))
+      return CDESCRIPTION;
     if (rq.equalsIgnoreCase("headerbaseurl"))
       return HEADERBASEURL;
     if (rq.equalsIgnoreCase("attchooserspecs"))

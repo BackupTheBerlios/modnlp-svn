@@ -132,7 +132,7 @@ public class MakeCoOccur {
         System.err.print("\nInvalid representation scheme: "+docRepresentation);
     }
     catch (Exception e){
-      System.err.println("\nUsage: MakeARFF CORPUS_LIST STOPWDLIST AGGRESSIVENESS TF_METHOD CATEG REPR");
+      System.err.println("\nUsage: MakeCoOccur CORPUS_LIST STOPWDLIST AGGRESSIVENESS TF_METHOD CATEG REPR");
       System.err.println("       tokenise each file in CORPUS_LIST, remove words in STOPWDLIST");
       System.err.println("       and reduce the term set by a factor of AGGRESSIVENESS.\n");
       System.err.println(" TF_METHOD: term filtering method. One of: 'df' (document frequency, local),");

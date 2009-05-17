@@ -1,5 +1,5 @@
 /**
- *  © 2007 S Luz <luzs@cs.tcd.ie>
+ *  © 2007-2009 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,6 +17,7 @@
 */
 package modnlp.tec.client.plugin;
 
+import modnlp.Constants;
 import modnlp.idx.headers.HeaderDBManager;
 import modnlp.tec.client.Plugin;
 import modnlp.tec.client.gui.*;
@@ -55,6 +56,7 @@ import java.io.PipedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import javax.swing.JOptionPane;
+import java.util.List;
 import java.util.Vector;
 import java.util.Collections;
 import java.awt.event.MouseAdapter;
@@ -85,17 +87,9 @@ public class FqListBrowser extends JFrame
 {
   
   public static final String FULLCORPUSTIP = "to select subcorpus, use Preferences -> Select subcorpus on main window.";
-  public static final String SCOFFTIP = "frequency table for full corpus";
-  public static final String SCONTIP = "frequency table for subcorpus";
-  public static final String CASEOFFTIP = "case insensitive table";
-  public static final String CASEONTIP = "case sensitive table";
-  public static final String SCOFF = "fc";
-  public static final String SCON = "sc";
-  public static final String CASEOFF = "ci";
-  public static final String CASEON = "cs";
+  public static final String SCOFFTIP = "Full corpus search (subcorpus selection ON)";
 
   private Thread ftwThread;
-
   
   private BufferedReader input;
   private JFrame thisFrame = null;
@@ -121,10 +115,11 @@ public class FqListBrowser extends JFrame
   DefaultTableModel model = new DefaultTableModel();
   DefaultTableModel noCaseModel = null; 
   JTable table = new JTable(model);
+
   JLabel statsLabel = new JLabel("                            ");
-  JLabel scStatusLabel = new JLabel(SCOFF);
-  JLabel caseStatusLabel = new JLabel(CASEOFF);
   JLabel scorpusLabel = new JLabel("<html><u>full corpus</u></html>");
+  SubcorpusCaseStatusPanel sccsPanel;
+
   private JProgressBar progressBar;
 
   private static String title = new String("MODNLP Plugin: FqListBrowser 0.1"); 
@@ -137,6 +132,7 @@ public class FqListBrowser extends JFrame
 
   public void setParent(Object p){
     parent = (ConcordanceBrowser)p;
+    sccsPanel = new SubcorpusCaseStatusPanel(p);
   }
 
   public void activate() {
@@ -188,11 +184,11 @@ public class FqListBrowser extends JFrame
     pa.add(new JLabel(" and print "));
     pa.add(maxListField);
     pa.add(new JLabel("commonest words in"));
-    scorpusLabel.setForeground(Color.RED);
 
+    scorpusLabel.setForeground(Color.RED);
     scorpusLabel.setToolTipText(FULLCORPUSTIP);
     scorpusLabel.setForeground(Color.BLUE);
-    Map map = scorpusLabel.getFont().getAttributes();
+    Map  map = scorpusLabel.getFont().getAttributes();
     map.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
     scorpusLabel.setFont(new Font(map));
 
@@ -212,8 +208,7 @@ public class FqListBrowser extends JFrame
             {
               dld_timer.stop();
               progressBar.setString("Done");
-              progressBar.setValue(progressBar.getMaximum());
-             
+              progressBar.setValue(progressBar.getMaximum());         
             }
         }
       });
@@ -225,11 +220,9 @@ public class FqListBrowser extends JFrame
     pa2.add(progressBar);
     pa2.add(statsLabel);
     statsLabel.setSize(450,statsLabel.getHeight());
-    scStatusLabel.setForeground(Color.RED);
-    pa3.add(scStatusLabel);
-    pa3.add(new JLabel("-"));
-    caseStatusLabel.setForeground(Color.RED);
-    pa3.add(caseStatusLabel);
+
+    pa3.add(sccsPanel);
+
     pabottom.add(pa2,BorderLayout.WEST);
     pabottom.add(pa3,BorderLayout.EAST);
 
@@ -280,72 +273,71 @@ public class FqListBrowser extends JFrame
       dldCount = 0;
       int rank = 1;
       int ttok = 0;
-      if (parent.isStandAlone()) {
+      //if (parent.isStandAlone()) {
         (new FqlPrinter()).start();
-      }
-      if (parent.isCaseSensitive()){
-        caseStatusLabel.setText(CASEON);
-        caseStatusLabel.setToolTipText(CASEONTIP);
-      }
-      else{
-        caseStatusLabel.setText(CASEOFF);
-        caseStatusLabel.setToolTipText(CASEOFFTIP);
-      }
-      if (parent.isSubCorpusSelectionON()){
-        scStatusLabel.setText(SCON);
-        scStatusLabel.setToolTipText(SCONTIP+": "+parent.getXQueryWhere());
-      }
-      else{
-        scStatusLabel.setText(SCOFF);
-        scStatusLabel.setToolTipText(SCOFFTIP);
-      }
+        //}
+      sccsPanel.updateStatus();
+      
       NumberFormat nf =  NumberFormat.getInstance(); 
       //new java.text.DecimalFormat("###,###,###,###.#####");
       //NumberFormat pf =  NumberFormat.getIntegerInstance(); 
       // new java.text.DecimalFormat("###.###");
+      //System.err.println("-----starting");
 
-      while ((maxListSize == 0 || dldCount <= maxListSize) && (textLine = input.readLine()) != null) {
-        if ( i < MAXCHUNKSIZE ) {
-          StringTokenizer st = new StringTokenizer(textLine, "\t");
-          Object [] row = {new Integer(st.nextToken()), st.nextToken(), st.nextToken(), null};
-          if (row[0].toString().equals("0")) {
-            ttratio = (new Double(row[2].toString())).doubleValue();
-            cstats.append(row[1]+": "+nf.format(ttratio)+";  ");
-            if (row[1].equals(modnlp.idx.database.Dictionary.TTOKENS_LABEL)){
-              notokens = (new Integer(row[2].toString())).intValue();
-              progressBar.setString("Displaying list...");
-              progressBar.setMaximum((int)(notokens*ttratio));
+      while (input==null){
+        ftwThread.sleep(100);
+      }
+      while ((maxListSize == 0 || dldCount <= maxListSize) && 
+             (textLine = input.readLine()) != null 
+             ) 
+        {
+          if (textLine.equals(""))
+            continue;
+          //if ( i < MAXCHUNKSIZE ) {
+            //StringTokenizer st = new StringTokenizer(textLine, Constants.LINE_ITEM_SEP);
+            //Object [] row = {new Integer(st.nextToken()), st.nextToken(), st.nextToken(), null};
+            String [] row = textLine.split(Constants.LINE_ITEM_SEP);
+            if (row[0].equals("0")) {
+              ttratio = (new Double(row[2].toString())).doubleValue();
+              cstats.append(row[1]+": "+nf.format(ttratio)+";  ");
+              if (row[1].equals(modnlp.idx.database.Dictionary.TTOKENS_LABEL)){
+                notokens = (new Integer(row[2])).intValue();
+                progressBar.setString("Displaying list...");
+                progressBar.setMaximum((int)(notokens*ttratio));
+                progressBar.setValue(dldCount++);
+              }
+            }
+            else {
+              Object [] orow = new Object[4]; 
+              for (int j = 0; j < row.length; j++)
+                orow[j] = row[j];
+              orow[3] = new Float((float)(new Integer(row[2])).intValue()/notokens);
+              model.addRow(orow);
               progressBar.setValue(dldCount++);
             }
-          }
-          else {
-            row[2] = new Integer(row[2].toString());
-            row[3] = new Float((float)((Integer)row[2]).intValue()/notokens);
-            model.addRow(row);
-            progressBar.setValue(dldCount++);
-          }
-        }
-        else{
-          model.fireTableStructureChanged();
-          i = 0;
-        }
-      }
+            //  }
+      //else{
+      //      model.fireTableStructureChanged();
+      //      i = 0;
+      //    }
+    }
       statsLabel.setText(cstats.toString());
       saveButton.setEnabled(true);
+      System.err.println("read thread finished");
     }
     catch (Exception e)
       {
         statsLabel.setText(cstats.toString());
         saveButton.setEnabled(true);
         System.err.println("Exception: " + e);
-        System.err.println("Line: " + textLine);
+        System.err.println("Line: |" + textLine+"|");
         e.printStackTrace();
       }
   }
 
   public void start() {
     model.setRowCount(0);
-
+    input = null;
     try {
       if (parent.isStandAlone()) {
         PipedWriter pipeOut = new PipedWriter();
@@ -357,14 +349,19 @@ public class FqListBrowser extends JFrame
         rq.setServerURL("http://"+parent.getRemoteServer());
         rq.setServerPORT(parent.getRemotePort());
         rq.put("request","freqlist");
+        //if (parent.isSubCorpusSelectionON()){
+        rq.put("skipfirst",""+skipFirst);
+        rq.put("maxlistsize",""+maxListSize);
+        if (parent.isSubCorpusSelectionON())
+          rq.put("xquerywhere",parent.getXQueryWhere());
+        rq.put("casesensitive",parent.isCaseSensitive()?"TRUE":"FALSE");
+        //}
         rq.setServerProgramPath("/freqlist");
         URL exturl = new URL(rq.toString());
         exturlConnection = (HttpURLConnection) exturl.openConnection();
         //exturlConnection.setUseCaches(false);
         exturlConnection.setRequestMethod("GET");
-        input = new
-          BufferedReader(new
-                         InputStreamReader(exturlConnection.getInputStream() ));
+        //System.err.println("--input set---");
       }
     }
     catch(IOException e)
@@ -549,17 +546,24 @@ public class FqListBrowser extends JFrame
     }
     public void run (){
       try {
-        Dictionary d = parent.getDictionary();
-        if (parent.subCorpusSelected()){
-          HeaderDBManager hdbm = parent.getHeaderDBManager();
-          d.printSortedFreqList(fqlout, skipFirst, maxListSize,
-                                hdbm.getSubcorpusConstraints(parent.getXQueryWhere()),
-                                !parent.isCaseSensitive()); 
+        if (parent.isStandAlone()){
+          Dictionary d = parent.getDictionary();
+          if (parent.subCorpusSelected()){
+            HeaderDBManager hdbm = parent.getHeaderDBManager();
+            d.printSortedFreqList(fqlout, skipFirst, maxListSize,
+                                  hdbm.getSubcorpusConstraints(parent.getXQueryWhere()),
+                                  !parent.isCaseSensitive());
+          }
+          else
+            d.printSortedFreqList(fqlout,  skipFirst, maxListSize,!parent.isCaseSensitive());
+        } 
+        else{
+          input = new
+            BufferedReader(new
+                           InputStreamReader(exturlConnection.getInputStream() ));
         }
-        else
-          d.printSortedFreqList(fqlout,  skipFirst, maxListSize,!parent.isCaseSensitive());
       } catch (Exception e) {
-        System.err.println("FqListBrowser opening header DB: " + e);
+        System.err.println("FqlPrinter: " + e);
         e.printStackTrace();
       }
     }

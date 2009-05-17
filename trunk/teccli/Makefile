@@ -49,6 +49,9 @@ all: build jar test
 
 build: $(TARGETS)
 
+buildall:
+	$(JAVAC) $(JAVAFLAGS) $(SOURCES)
+
 clean:
 	find -L . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f
 

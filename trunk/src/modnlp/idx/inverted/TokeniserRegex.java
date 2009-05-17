@@ -80,7 +80,9 @@ public class TokeniserRegex extends Tokeniser {
   public void tokenise ()  {
     String ignregexp = "--+|\\.\\.+|\\.+\\p{Space}";  // delete full stops and dashes (typically not used).
     if (ignoredElements != null && ignoredElements.length() > 0)
-      ignregexp = ignregexp+"|< *"+ignoredElements+".*?>.*?</"+ignoredElements+" *>";
+      ignregexp = ignregexp+
+        "|< *"+ignoredElements+"[^>]*?/>"+
+        "|< *"+ignoredElements+".*?>.*?</"+ignoredElements+" *>";
     if (!tagIndexing)
       ignregexp = ignregexp+"|<.*?>";
     //ignregexp = ignregexp+"|\\W\\W+";
@@ -95,7 +97,7 @@ public class TokeniserRegex extends Tokeniser {
       int e = igns.end();
       if (verbose)
         PrintUtil.printNoMove("Processing exclusions ...",ct++);
-      //System.err.println("replacing"+originalText.substring(s,e));
+      //System.err.println("replacing\n-----------"+originalText.substring(s,e)+"\n--------------");
       char sp[] = new char[e-s];
       for (int j = 0;  j < sp.length; j++) {
         sp[j] = ' ';

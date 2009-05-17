@@ -17,6 +17,7 @@
 */
 package modnlp.idx.database;
 
+import modnlp.dstruct.FrequencyHash;
 import modnlp.dstruct.IntegerSet;
 import modnlp.dstruct.TokenMap;
 
@@ -128,6 +129,29 @@ public class WordPositionTable extends Table {
       logf.logMsg("Error reading from DB "+dbname+": "+e);
     }
     return set;
+  }
+
+  public FrequencyHash getFrequencyTable(boolean nocase){
+    FrequencyHash fh = new FrequencyHash();
+    try {
+      Cursor c = database.openCursor(null, null);
+      TupleBinding kb = new StringBinding();
+      TupleBinding isb = new IntegerSetBinding();
+      DatabaseEntry key = new DatabaseEntry();
+      DatabaseEntry data = new DatabaseEntry();
+      //System.out.println("Word positions for fileno "+database.getDatabaseName()+":");
+      while (c.getNext(key, data, LockMode.DEFAULT) == 
+             OperationStatus.SUCCESS) {
+        String sik = (String) kb.entryToObject(key);
+        IntegerSet set  = (IntegerSet) isb.entryToObject(data);
+        fh.add(sik,set.size(),nocase);
+      }
+      c.close();
+    }
+    catch (DatabaseException e) {
+      logf.logMsg("Error accessing wordPositionTable" + e);
+    }
+    return fh;
   }
 
   public void dump () {

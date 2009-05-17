@@ -153,10 +153,10 @@ public class FullTextWindow extends JFrame
     ctrl.add( new JLabel(""));
     ctrl.add(dismissButton);
     ctrl.add( new JLabel(""));
-		JScrollPane areaScrollPane = new JScrollPane(outPane);
+    JScrollPane areaScrollPane = new JScrollPane(outPane);
     getContentPane().add("North",ctrl);
     getContentPane().add("Center",areaScrollPane);
-		dismissButton.addActionListener(this);
+    dismissButton.addActionListener(this);
   } 
 
 	/*
@@ -203,6 +203,10 @@ public class FullTextWindow extends JFrame
     return out;
   }
 	
+  public void setContentType(String t){
+    outPane.setContentType(t);
+  }
+
   /** Display text stored in the local array of <code>String</code>s
    *  <code>text</code>. Normally used to display header files 
    *  @see #text
@@ -221,6 +225,11 @@ public class FullTextWindow extends JFrame
 				sb.append(text[count]);
       }
     outPane.setText(sb.toString());
+    validate();
+  }
+
+  public void displayText(String t)  {
+    outPane.setText(t);
     validate();
   }
 	

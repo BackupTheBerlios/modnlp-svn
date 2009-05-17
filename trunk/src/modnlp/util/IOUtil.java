@@ -32,4 +32,8 @@ public class IOUtil  {
     return (Object)cl.loadClass(plugin).newInstance();
   }
 
+  public static Object loadPlugin(String plugin, ClassLoader cl) throws Exception {
+    return (Object)cl.loadClass(plugin).newInstance();
+  }
+
 }

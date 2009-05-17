@@ -29,7 +29,9 @@ import modnlp.idx.headers.HeaderDBManager;
 import modnlp.dstruct.CorpusList;
 import modnlp.dstruct.SubcorpusMap;
 import modnlp.dstruct.TokenMap;
+import modnlp.idx.gui.IndexingReporter;
 import modnlp.idx.gui.IndexManagerUI;
+import modnlp.idx.gui.IndexManagerCL;
 import modnlp.idx.gui.CorpusChooser;
 import modnlp.idx.gui.HeaderURLChooser;
 
@@ -60,7 +62,7 @@ public class IndexManager {
   HeaderDBManager hdbm = null;
   DictProperties dictProps;
   CorpusList clist;
-  IndexManagerUI imui;
+  IndexingReporter imui;
   IndexingThread indexingThread;
   DeindexingThread deindexingThread;
   boolean guiEnabled = true;
@@ -85,10 +87,23 @@ public class IndexManager {
   }
 
   // command line version
-  public IndexManager (String cdir) {
+  public IndexManager (String cdir, String hdir, String hurl) {
     dictProps =  new DictProperties(cdir);
     dict = new Dictionary(true,dictProps);
     sbcd = new SubcorpusDirectory(dict);
+    String hh = null;
+    String hu = null;
+    if ((hh =  dictProps.getProperty("headers.home")) != null)
+      dictProps.setProperty("headers.home", hh);
+    else
+      dictProps.setProperty("headers.home", hdir);
+
+    if ((hu =  dictProps.getProperty("headers.url")) != null)
+      dictProps.setProperty("headers.url", hu);
+    else
+      dictProps.setProperty("headers.url", hurl);
+    dictProps.save();
+
     indexHeaders =  dictProps.getProperty("index.headers").equalsIgnoreCase("true");
     if (indexHeaders){
       System.err.println("\n----- Opening Headers DB:  ------\n");
@@ -101,7 +116,7 @@ public class IndexManager {
     subcAttribute = dictProps.getProperty("subcorpusindexer.attribute");
     // we can use imui to print our progress messages
     // but never actually make it visible
-    imui = new IndexManagerUI(this);
+    imui = new IndexManagerCL(this);
     guiEnabled = false;
   }
 
@@ -145,10 +160,10 @@ public class IndexManager {
       catch(Exception e) 
         {imui.print("\n----- Error opening Headers DB: "+e+" ------\n");}
     }
-    imui.setCurrentDir(dictProps.getProperty("last.datafile.dir"));
-    imui.setTitle("IndexManager: operating on index at "+cdir);
+    ((IndexManagerUI)imui).setCurrentDir(dictProps.getProperty("last.datafile.dir"));
+    ((IndexManagerUI)imui).setTitle("IndexManager: operating on index at "+cdir);
     imui.print("\n----- Selected corpus: "+cdir+" ------\n");
-    imui.setCorpusListData(dict.getIndexedFileNames());
+    ((IndexManagerUI)imui).setCorpusListData(dict.getIndexedFileNames());
     // choose headers directory
     String hh = null;
     if ((hh = dictProps.getProperty("headers.home")) == null)  // see if dictProps already exists
@@ -164,7 +179,7 @@ public class IndexManager {
       }
     if ((hh = dictProps.getProperty("headers.url")) == null)  // see if dictProps already exists
       {
-        HeaderURLChooser huc = new HeaderURLChooser(imui, null);
+        HeaderURLChooser huc = new HeaderURLChooser((IndexManagerUI)imui, null);
         while ( (r = huc.showChooseURL()) == HeaderURLChooser.CANCEL_OPTION ) 
           JOptionPane.showMessageDialog(null, "Please choose a headers URL");
         dictProps.setProperty("headers.url", huc.getURL());
@@ -230,10 +245,12 @@ public class IndexManager {
         // assuming command-line execution: args[0] is directory index 
         // args[1] is corpuslist
         {
-          im = new IndexManager(args[0]);
-          if (args.length > 2 && args[2].equals("-v") ) 
+          im = new IndexManager(args[0], args[2], args[3]);
+
+
+          if (args.length > 4 && args[4].equals("-v") ) 
             im.setDebug(true);
-          if (args.length > 3 && args[3].equals("-d") ) 
+          if (args.length > 5 && args[5].equals("-d") ) 
             im.deindexSelectedFiles(args[1]);
           else
             im.indexSelectedFiles(args[1]);
@@ -244,8 +261,8 @@ public class IndexManager {
         im.chooseNewCorpus();
         if (im.dict == null)
           System.exit(0);
-        im.imui.pack();
-        im.imui.setVisible(true);
+        ((IndexManagerUI)im.imui).pack();
+        ((IndexManagerUI)im.imui).setVisible(true);
       }
     } // end try
     catch (Exception ex){
@@ -259,12 +276,14 @@ public class IndexManager {
   }
 
   public static void usage() {
-    System.err.println("\nUSAGE:\n   modnlp.idx.IndexManager [indexdir filelist] [-v] [-d]\n");
+    System.err.println("\nUSAGE:\n   modnlp.idx.IndexManager [indexdir  filelist hdir hurl] [-v] [-d]\n");
     System.err.println("   With no parameters, starts GUI for index maintainance,");
     System.err.println("   otherwise run (de)indexer from the command line.\n");
     System.err.println("OPTIONS: ");
     System.err.println("\t indexdir: the directory where dictionary.properties lives");
     System.err.println("\t\t and the indices will be stored.");
+    System.err.println("\t hdir: the directory where header files live");
+    System.err.println("\t hurl: public URL for access to headers");
     System.err.println("\t filelist: list of files to be indexed/deindexed.");
     System.err.println("\t -v: verbose output.");
     System.err.println("\t -d: deindex files in filelist.");

@@ -64,35 +64,37 @@ public class ContextClient extends FullTextWindow
   PrintStream output;
   BufferedReader input;
   Dictionary dictionary = null;
-   //DataInputStream input;
+  //DataInputStream input;
 
 
-   /** Create an "extract thread" with its own socket
-    *  through which <code>request</code> will be sent to <code>TecServer</code>
-    */
+  /** Create an "extract thread" with its own socket
+   *  through which <code>request</code> will be sent to <code>TecServer</code>
+   */
   public ContextClient(String server, String request){
     super("TecWindow");
+    setContentType("text/html");
     SERVER = server;
     try {
       // Send a choices to the server
       socket = new Socket(InetAddress.getByName(SERVER), PORTNUM);
       input = new
-				BufferedReader(new
-					InputStreamReader(socket.getInputStream()));
+        BufferedReader(new
+                       InputStreamReader(socket.getInputStream()));
       //input = new DataInputStream(socket.getInputStream());
       output = new PrintStream(socket.getOutputStream());
       output.println(request);
-      start();
+      //start();
     }
     catch(IOException e)
       {
-				System.err.println("Exception: couldn't create stream socket"+e);
-				System.exit(1);
+        System.err.println("Exception: couldn't create stream socket"+e);
+        System.exit(1);
       }
   }
-
+  
   public ContextClient(TecClientRequest rq){
     super(rq.get("filename").toString());
+    setContentType("text/html");
     SERVER = rq.getServerURL();
     keywordString = rq.get("keyword").toString();
     try {
@@ -100,25 +102,26 @@ public class ContextClient extends FullTextWindow
       HttpURLConnection exturlConnection = (HttpURLConnection) exturl.openConnection();
       //exturlConnection.setUseCaches(false);
       exturlConnection.setRequestMethod("GET");
-			input = new
-				BufferedReader(new
-					InputStreamReader(exturlConnection.getInputStream() ));
-      start();
+      input = new
+        BufferedReader(new
+                       InputStreamReader(exturlConnection.getInputStream() ));
+      //start();
     }
     catch(IOException e)
       {
-				System.err.println("Exception: couldn't create URL input stream"+e);
-				System.exit(1);
+        System.err.println("Exception: couldn't create URL input stream"+e);
+        System.exit(1);
       }
   }
-
+  
   // no connection mode: retrieve line directly from dictionary
   public ContextClient(TecClientRequest rq, Dictionary dc){
     super(rq.get("filename").toString());
+    setContentType("text/html");
     request = rq;
     keywordString = rq.get("keyword").toString();
     dictionary = dc;
-    start();
+    //start();
   }
 
   /** Create an "extract thread" with its own built-in output window
@@ -130,6 +133,7 @@ public class ContextClient extends FullTextWindow
    */
   public ContextClient(String srv, String rq, String fn, String key){
     super(fn);
+    setContentType("text/html");
     SERVER = srv;
     keywordString = key;
     //window =  new FullTextWindow(fn);
@@ -146,8 +150,8 @@ public class ContextClient extends FullTextWindow
     }
     catch(IOException e)
       {
-				System.err.println("Exception: couldn't create stream socket"+e);
-				System.exit(1);
+        System.err.println("Exception: couldn't create stream socket"+e);
+        System.exit(1);
       }
   }
 
@@ -157,6 +161,8 @@ public class ContextClient extends FullTextWindow
    *  on this thread's <code>window</code>
    */
   public void run() {
+    setSize(windowWidth, windowHeight);
+    setVisible(true);
     try {
       String textLine;
       if (dictionary == null)
@@ -167,22 +173,21 @@ public class ContextClient extends FullTextWindow
                                          (new Integer((String)request.get("position"))).longValue(),
                                          ((String)request.get("sgml")).equalsIgnoreCase("no")? true : false);
       allLines[0] = textLine;
-
+      
       text = allLines;
-      setSize(windowWidth, windowHeight);
-      show();
       displayConcExtract(keywordString);
 
       if ( output != null ) output.close();
-       if ( input != null ) input.close();
+      if ( input != null ) input.close();
     }
     catch (Exception e)
       {
-				System.err.println("Exception: " + e);
-				e.printStackTrace();
+        System.err.println("Exception: " + e);
+        e.printStackTrace();
+        displayText("Error: "+e);
       }
-	}
-
+  }
+  
   public void start() {
     if ( ftwThread == null ){
       ftwThread = new Thread(this);

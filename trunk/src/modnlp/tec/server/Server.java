@@ -42,7 +42,7 @@ import java.util.Enumeration;
  * and await client connections. Then deal with requests through
  * the methods described below. 
  * 
- * @author Nino Luz &#60;luzs@acm.org&#62;
+ * @author S Luz &#60;luzs@acm.org&#62;
  * @version $Id: TecServer.java,v 1.3 2003/06/22 17:55:15 luzs Exp $
  * @see TecCorpusFile 
  * @see TecLogFile

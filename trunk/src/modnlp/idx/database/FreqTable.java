@@ -17,6 +17,7 @@
 */
 package modnlp.idx.database;
 
+import modnlp.Constants;
 import modnlp.idx.query.SubcorpusConstraints;
 import modnlp.dstruct.FrequencyHash;
 
@@ -267,7 +268,7 @@ public class FreqTable extends Table {
           if (nocase)
             ft.add(sik,freq,nocase);
           else {
-            os.println(i+"\t"+sik+"\t"+freq);
+            os.println(i+Constants.LINE_ITEM_SEP+sik+Constants.LINE_ITEM_SEP+freq);
             //System.out.println(i+";"+sik+";"+freq);
           }
       }
@@ -277,7 +278,7 @@ public class FreqTable extends Table {
         for (Iterator p = (ft.getKeysSortedByValue(false)).iterator(); p.hasNext(); ) {
           String w = (String)p.next();
           Integer f = (Integer)ft.get(w);
-          os.println(i+++"\t"+w+"\t"+f);
+          os.println(i+++Constants.LINE_ITEM_SEP+w+Constants.LINE_ITEM_SEP+f);
         }
       }
       c.close();

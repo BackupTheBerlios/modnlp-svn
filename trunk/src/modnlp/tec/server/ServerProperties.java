@@ -47,13 +47,13 @@ public class ServerProperties extends Properties{
       this.load(fis);
       WCASE_FNAME = this.getProperty("word.case.db");
       WFREQ_FNAME = this.getProperty("word.frequency.db");
-			WFILE_FNAME = this.getProperty("word.file.db");
-			WPOSI_FNAME = this.getProperty("word.position.db");
+      WFILE_FNAME = this.getProperty("word.file.db");
+      WPOSI_FNAME = this.getProperty("word.position.db");
     }
     catch (Exception e) {
-	    System.err.println("Property ERROR: " + e);
-	    e.printStackTrace(System.out);
-		}
+      System.err.println("Property ERROR: " + e);
+      e.printStackTrace(System.out);
+    }
 	}
-
+  
 }

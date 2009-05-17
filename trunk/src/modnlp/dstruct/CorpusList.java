@@ -32,7 +32,7 @@ import java.util.Vector;
 public class CorpusList extends  Vector
 {
 
-  public CorpusList (String flist) 
+  public CorpusList (String flist)
   {
     super();
     try {

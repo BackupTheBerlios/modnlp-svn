@@ -127,7 +127,7 @@ public class MakeARFF
       wsp = tf.getReducedFreqList(aggressiveness);
     }
     else {
-      System.out.println("Reducing term set by "+method);    
+      System.err.println("Reducing term set by "+method);    
       TermFilter tf = IOUtil.loadTSRPlugin(method);
       tf.initialise(pm);
       computeScores(tf, categ);
@@ -193,7 +193,7 @@ public class MakeARFF
       System.err.println(" PARSER: parser to be used [default: 'NewsParser']");
       System.err.println("  'LingspamEmailParser': Androutsopoulos' lingspam corpus,");
       System.err.println("  'NewsParser':  REUTERS-21578 corpus, XML version.");
-      //e.printStackTrace();
+      e.printStackTrace();
     } 
   }
 }

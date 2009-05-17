@@ -29,7 +29,7 @@ import java.net.URLEncoder;
  * @version <font size=-1>$Id: TecClientRequest.java,v 1.3 2003/06/22 13:48:05 luzs Exp $</font>
  * @see  TecServer
 */
-public class TecClientRequest extends Hashtable {
+public class TecClientRequest extends Hashtable<String,String> {
   public static final int CONCORD = 1;
   public static final int EXTRACT = 2;
   public static final int SQLQUERY = 3;

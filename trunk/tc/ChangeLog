@@ -1,3 +1,8 @@
+2009-05-17  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* modnlp/tc/util/MakeTermByDocMatrix.java: added utility to create
+	term x doc matrices in CSV or ARFF formats
+
 2007-08-17  S. Luz  <luzs@cs.tcd.ie>
 
 	* TCProbabilityModel.java, BVProbabilityModel.java: Fixed bugs,

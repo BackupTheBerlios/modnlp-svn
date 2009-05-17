@@ -33,12 +33,19 @@ import java.util.Map;
  * @see  
 */
 
-public class FrequencyHash extends HashMap {
+public class FrequencyHash extends  HashMap<String, Integer> {
 
   int tokenCount = 0;
 
   public int getTokenCount(){
     return tokenCount;
+  }
+  public int getTypeCount(){
+    return size();
+  }
+
+  public double getTypeTokenRatio(){
+    return (double)size()/tokenCount;
   }
 
   public int add(String word, int count, boolean nocase){

@@ -335,6 +335,31 @@ public class ARFFUtil extends PrintUtil {
     PrintUtil.donePrinting();
   }
 
+  public static void printTermByDocMatrixCSV(TCInvertedIndex ii, WordFrequencyPair[] wfp, 
+                                             PrintStream out ) 
+  {
+    //Set ts = ii.getTermSet();
+    //String[] ta = (String[]) ts.toArray(new String[0]);
+    String[] ta = new String[wfp.length];
+    for (int i = 0; i < wfp.length; i++)
+      ta[i] = wfp[i].getWord();
+    // print header
+    Set ds = ii.getDocSet();
+    Object[] da = ds.toArray();
+    out.println(PrintUtil.toString(ds));
+    // print data
+    for (int i = 0; i < ta.length ; i++){
+      PrintUtil.printNoMove("Printing ...", i);
+      out.print(ta[i]+",");
+      int [] df = new int[da.length];
+      for (int j = 0; j < da.length ; j++){
+        df[j] = ii.getCount((String)da[j],ta[i]);
+      }
+      out.println(PrintUtil.toString(df));
+    }
+    PrintUtil.donePrinting();
+  }
+
 
   /**
    * print debug information and all possible ARFF representation this

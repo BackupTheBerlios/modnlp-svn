@@ -28,5 +28,6 @@ package modnlp;
 public class Constants {
 
   public static final String ATTRIBUTE_OPTION_SEP = "_,_";
+  public static final String LINE_ITEM_SEP = "<sep/>";
 
 }

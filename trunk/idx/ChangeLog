@@ -1,3 +1,12 @@
+2009-04-30  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* HeaderDBManager, Dictionary: Fixed a bug in TokeniserRegex.java
+	which caused all text between empty ignorable tags (e.g. '<omit
+	desc="fig"/>') and the next matching closing tag for the same
+	element (e.g. '</omit>') not to be indexed. Added functionality to
+	Dictionary.java and HeaderDBManager.java which deals with corpus
+	file descriptions.
+
 2008-07-18  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* SubcorpusIndexer: section tokenisation bug in

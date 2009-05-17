@@ -23,4 +23,9 @@ xquery.attribute.chooser.specs=File name;../title/@filename;Subcorpus;../title/@
 header.extension=hed
 ## the maximum number of subcorpus constraint query results to be stored (by HeaderDBManager)
 xquery.max.cache.size=23
+## root of the file description path
+xquery.root.filedescription.path=/techeader
+## xquery expression that returns a (human-readable) file description 
+xquery.file.description.return={data($s/title/@filename)}<sep/>{data($s/title/@subcorpusid)}<sep/>{data($s/title/collection)} {if ($s/title/editor!="") then ", editor: " else ""} { data($s/title/editor)}
 file.encoding=UTF8
+

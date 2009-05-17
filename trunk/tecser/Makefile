@@ -11,7 +11,7 @@ JARREDS=modnlp/tec/server/*.class
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`
 DISTDIR:=modnlp-tecser-`cat VERSION`
 DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
-	$(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)server.properties \
+	 $(LIBS) $(DOCS) $(DATA) $(SOURCEDIR)server.properties \
 	$(SOURCEDIR)modnlp/tec/server $(SOURCEDIR)$(MANIFEST) $(SOURCEDIR)modnlp/tec/prj.el
 #JAVA=jamvm
 #JAVAC=jikes-classpath
@@ -34,6 +34,9 @@ all: build jar test
 
 build: $(TARGETS)
 
+buildall:
+	$(JAVAC) $(JAVAFLAGS) $(SOURCES)
+
 clean:
 	find -L . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)'  -type f  -print0 |xargs -0 -e rm -f
 
@@ -54,7 +57,7 @@ dist: docs
 bindist: jar
 	mkdir $(BINDISTDIR)
 	cp README.bin $(BINDISTDIR)/README
-	cp $(LIBS) $(JARTARGET) $(BINDISTDIR)
+	cp $(LIBS) $(JARTARGET) bin/server.sh $(BINDISTDIR) 
 	cp $(SOURCEDIR)server.properties $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)

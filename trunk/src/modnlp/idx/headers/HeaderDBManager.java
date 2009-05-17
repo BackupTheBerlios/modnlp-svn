@@ -68,6 +68,8 @@ public class HeaderDBManager {
   static final String colName = "xmldb:exist:///db/headers";
   String queryRootElementPath = null;  // e.g. //intervention
   String queryReturnSIDAttPath = null; // e.g. (speech|writing)/@ref
+  String queryRootFileDescPath = null;
+  String queryFileDescReturn = null;
   ConstraintCache cache;
 
   public HeaderDBManager (DictProperties dp)
@@ -91,6 +93,8 @@ public class HeaderDBManager {
     String envHome = dp.getEnvHome();
     queryRootElementPath = dp.getProperty("xquery.root.element.path");
     queryReturnSIDAttPath = dp.getProperty("xquery.return.attribute.path");
+    queryRootFileDescPath = dp.getProperty("xquery.root.filedescription.path");
+    queryFileDescReturn = dp.getProperty("xquery.file.description.return");
 
     String driver = "org.exist.xmldb.DatabaseImpl";
     Class cl = Class.forName(driver);
@@ -191,6 +195,36 @@ public class HeaderDBManager {
       System.err.println("Error (HeaderDBManager.geSubcorpusConstrints): "+ex);
       ex.printStackTrace();
       return new SubcorpusConstraints();
+    }
+  }
+
+  public String getFileDescription(int fno){
+    try {
+      //      String resources[] = collection.listResources();
+      //for (int i = 0; i < resources.length; i++) {
+      XQueryService service =
+        (XQueryService) collection.getService("XQueryService", "1.0");
+      //service.setProperty("indent", "yes");
+      String xq = "let "+XQVAR+" := doc('"+fno+"')"+queryRootFileDescPath+
+        " return <d>"+queryFileDescReturn+"</d>";
+      //System.err.println(xq);
+      CompiledExpression compiled = service.compile(xq);
+      ResourceSet result = service.execute(compiled);
+      ResourceIterator ri = result.getIterator();
+      if (ri.hasMoreResources()) {
+        Resource r = ri.nextResource();
+        String desc = (String)r.getContent();
+        //System.err.println(desc);
+        desc = desc.substring(3,desc.lastIndexOf("</d>"));
+        return desc.replace('\n',' ');
+      }
+      //}
+    return "";
+    }
+    catch (Exception ex){
+      System.err.println("Error (HeaderDBManager.geSubcorpusConstrints): "+ex);
+      ex.printStackTrace();
+      return "";
     }
   }
 

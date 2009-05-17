@@ -85,8 +85,8 @@ public class DictProperties extends java.util.Properties{
         System.err.println("Error reading default property file "+IndexManagerProperties.PROP_FNAME+": "+e);
       }
       save();
-		}
-	}
+    }
+  }
 
   public void save () {
     try {

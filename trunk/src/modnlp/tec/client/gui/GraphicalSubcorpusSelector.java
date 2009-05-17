@@ -49,6 +49,7 @@ public class GraphicalSubcorpusSelector extends JFrame {
   MultipleAttributeSelection mas = new MultipleAttributeSelection("Subcorpus selection:");
   boolean loadingDone = false;
   boolean guiLayoutDone = false;
+  boolean networkError = false;
   String[] attChsrSpecs;
   JCheckBox activeChecked = new JCheckBox("Sub-corpus selection is on");
   ConcordanceBrowser parent = null;
@@ -158,16 +159,30 @@ public class GraphicalSubcorpusSelector extends JFrame {
     }
   }
 
+  public boolean hasNetworkError(){
+    return networkError;
+  }
+
   class LoadOptionsThread extends Thread {
 
     public void run() {
       loadingDone = false;
-      
+      networkError = false;
       if (remoteServer) {
         RemoteSubcorpusOptionRequest ror = 
           new RemoteSubcorpusOptionRequest(parent.getRemoteServer(), parent.getRemotePort());
         try{
           attChsrSpecs = ror.getAttributeChooserSpecs();
+        }
+        catch(java.net.ConnectException e){
+          //JOptionPane.showMessageDialog(null, e, "ERROR", JOptionPane.ERROR_MESSAGE);
+          //          parent.showErrorMessage("Could not connect to remote server "+
+          //                        parent.getRemoteServer()+":"+parent.getRemotePort()+": "+e);
+          e.printStackTrace(System.err);
+          loadingDone = true;
+          guiLayoutDone = true;
+          networkError = true;
+          return;
         }
         catch(Exception e){
           thisFrame.add(new JLabel("Sub-corpus selection not supported by "+parent.getRemoteServer()));

@@ -17,6 +17,7 @@
  */
 package modnlp.idx.database;
 
+import modnlp.Constants;
 import modnlp.idx.query.WordQuery;
 import modnlp.idx.query.Horizon;
 import modnlp.idx.query.PrepContextQuery;
@@ -69,6 +70,7 @@ public class Dictionary {
 
   public static final String TTOKENS_LABEL = "No. of tokens";
   public static final String TTRATIO_LABEL = "Type-token ratio";
+  public static final String NOITEMS_LABEL = "Number of items";
 
   DictProperties dictProps;
   LogStream logf;
@@ -315,6 +317,25 @@ public class Dictionary {
     return fileTable.getFileNames();
   }
 
+  public int [] getIndexedFileKeys () {
+    return fileTable.getKeys();
+  }
+
+  public String getIndexedFileName (int k) {
+    return fileTable.getFileName(k);
+  }
+
+  public FrequencyHash getFileFrequencyTable(int fno, boolean nocase){
+    WordPositionTable wpt = null;
+    try{
+      wpt = new WordPositionTable(environment,""+fno,false);
+    }
+    catch (DatabaseException e) {
+      logf.logMsg("Error accessing WordPositionTable "+fno+" :" , e);
+    }
+    return wpt.getFrequencyTable(nocase);
+  }
+
   public Environment getEnvironment () {
     return environment;
   }
@@ -463,20 +484,24 @@ public class Dictionary {
       filenames.addElement(fileTable.getFileName(fno));
     }
     return filenames;
-  } 
+  }
 
   public void printCorpusStats (PrintWriter os) {
     printCorpusStats(os, true);
   }
 
   public void printCorpusStats (PrintWriter os, boolean nocase) {
-    os.println(0+"\t"+TTOKENS_LABEL+"\t"+freqTable.getTotalNoOfTokens());
-    os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio(nocase));
+    os.println(0+Constants.LINE_ITEM_SEP+TTOKENS_LABEL+Constants.LINE_ITEM_SEP+freqTable.getTotalNoOfTokens());
+    os.println(0+Constants.LINE_ITEM_SEP+TTRATIO_LABEL+Constants.LINE_ITEM_SEP+getTypeTokenRatio(nocase));
   }
 
   public static final void printSubCorpusStats (PrintWriter os, int notypes , int notokens) {
-    os.println(0+"\t"+TTOKENS_LABEL+"\t"+notokens);
-    os.println(0+"\t"+TTRATIO_LABEL+"\t"+getTypeTokenRatio(notypes,notokens));
+    os.println(0+Constants.LINE_ITEM_SEP+TTOKENS_LABEL+Constants.LINE_ITEM_SEP+notokens);
+    os.println(0+Constants.LINE_ITEM_SEP+TTRATIO_LABEL+Constants.LINE_ITEM_SEP+getTypeTokenRatio(notypes,notokens));
+  }
+
+  public void printNoItems (PrintWriter os, int noitems) {
+    os.println(0+Constants.LINE_ITEM_SEP+NOITEMS_LABEL+Constants.LINE_ITEM_SEP+noitems);
   }
 
   public double getTypeTokenRatio(boolean nocase){
@@ -597,26 +622,6 @@ public class Dictionary {
             continue;
           tokencount += nooc;
           ft.add(word,nooc,nocase);
-          /*
-          if (nocase)
-            word = word.toLowerCase();
-          Integer fqi = (Integer)ft.get(word);
-          int fq = (fqi == null)? 0 : fqi.intValue();
-          ft.put(word, new Integer(fq+nooc));
-          */
-
-          // this is very inefficient
-          /*for (Iterator p = pos.iterator(); p.hasNext(); ) {
-            Integer bp = (Integer)p.next();
-            int bpi = bp.intValue();
-            if ( (sbc == null || sbc.accept(fno.toString(),bpi,sbct)) ) {
-              Integer fqi = (Integer)ft.get(word);
-              int fq = (fqi == null)? 0 : fqi.intValue();
-              ft.put(word, new Integer(fq+1));
-              tokencount++;
-            }
-          }
-          */
         }
         //System.err.println("Counting done"); 
       }
@@ -630,16 +635,8 @@ public class Dictionary {
     for (Iterator p = (ft.getKeysSortedByValue(false)).iterator(); p.hasNext(); ) {
       String w = (String)p.next();
       Integer f = (Integer)ft.get(w);
-      os.println(i+++"\t"+w+"\t"+f);
+      os.println(i+++Constants.LINE_ITEM_SEP+w+Constants.LINE_ITEM_SEP+f);
     }
-    /*
-    for (Iterator e = ft.entrySet().iterator(); e.hasNext() ;){ // send frequency table
-      Map.Entry kv = (Map.Entry) e.next();
-      String sik = (String)kv.getKey();
-      Integer freq  = (Integer)kv.getValue();
-      os.println(i+++"\t"+sik+"\t"+freq);
-    }
-    */
     os.flush();
   }
   

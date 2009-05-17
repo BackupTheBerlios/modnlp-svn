@@ -426,6 +426,7 @@ implements TCInvertedIndex
     return cov;
   }
 
+
   private Set getDocSet(String term){
     return ((Map)tTable.get(term)).keySet();
   }
@@ -438,6 +439,8 @@ implements TCInvertedIndex
         return true;
     return false;
   }
+
+
 
   /**
    * Get the value of ignoreCase.

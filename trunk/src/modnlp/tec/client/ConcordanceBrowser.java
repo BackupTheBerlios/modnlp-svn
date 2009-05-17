@@ -50,6 +50,8 @@ public interface ConcordanceBrowser {
 
   public void showAbout();
 
+  public void showErrorMessage(String e);
+
   public void downloadConcordance(Download dld) throws java.io.IOException;
 
   public void chooseNewLocalCorpus();

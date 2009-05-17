@@ -98,6 +98,7 @@ public class ListDisplay extends JPanel
     jscroll.getViewport().setView(list);
     jscroll.setPreferredSize(new Dimension(LWIDTH, LHEIGHT));
     jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+    jscroll.setWheelScrollingEnabled(true);
     add(jscroll);
     listSelectionModel = list.getSelectionModel();
     listSelectionModel.addListSelectionListener(parent);
@@ -184,6 +185,12 @@ public class ListDisplay extends JPanel
     add(jscroll);
     revalidate();
     repaint();
+  }
+
+  public void redisplayConc(){
+    revalidate();
+    repaint();
+    jscroll.revalidate();
   }
 
   public void componentHidden(ComponentEvent e) {

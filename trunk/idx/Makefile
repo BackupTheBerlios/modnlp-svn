@@ -65,7 +65,9 @@ SOURCES=$(SOURCEDIR)modnlp/Constants.java \
 	$(SOURCEDIR)modnlp/idx/gui/CorpusFilesChooser.java \
 	$(SOURCEDIR)modnlp/idx/gui/HeaderURLChooser.java \
 	$(SOURCEDIR)modnlp/idx/gui/IndexConfigChooser.java \
+	$(SOURCEDIR)modnlp/idx/gui/IndexingReporter.java \
 	$(SOURCEDIR)modnlp/idx/gui/IndexManagerUI.java \
+	$(SOURCEDIR)modnlp/idx/gui/IndexManagerCL.java \
 	$(SOURCEDIR)modnlp/idx/query/Horizon.java \
 	$(SOURCEDIR)modnlp/idx/query/PrepContextQuery.java \
 	$(SOURCEDIR)modnlp/idx/query/SubcorpusConstraints.java	\
@@ -82,13 +84,14 @@ JARREDS=$(MAINJARS) \
 DISTDIR:=modnlp-idx-`cat VERSION`
 BINDISTDIR=$(DISTDIR)-bin
 BINDISTXTRAS=$(LIBLICENSES)
-DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt \
+DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt bin/runidx.sh \
 	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SOURCEDIR)modnlp/idx/prj.el $(SOURCEDIR)idx-manifest.txt
 #JAVA=jamvm
-#JAVAC=javac
-JAVAC=jikes -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5
+JAVAC=javac
+#JAVAC=ecj -1.5
+#JAVAC=/usr/lib/jvm/java-1.5.0-sun-1.5.0.16/bin/javac
+#JAVAC=jikes -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5
 JAVA=java
-#JAVAC=javac
 JAR=jar
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
 JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
@@ -105,6 +108,9 @@ all: build jar test
 		$(JAVAC) $(JAVAFLAGS) $?
 
 build: $(TARGETS)
+
+buildall:
+	$(JAVAC) $(JAVAFLAGS) $(SOURCES)
 
 clean:
 	find -L . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)' -type f -print0 |xargs -0 -e rm -f
@@ -125,7 +131,7 @@ test: $(TARGETS)
 	cp $(TOPDIR)data/ep/* /tmp/idxtest/data/ep/
 	cp $(TOPDIR)data/eph/* /tmp/idxtest/data/eph/
 	@echo "** Indexing /tmp/idxtest/data/idxtest.lst"
-	$(JAVA) $(JAVAFLAGS) modnlp.idx.IndexManager /tmp/idxtest/index /tmp/idxtest/data/idxtest.lst -v
+	$(JAVA) $(JAVAFLAGS) modnlp.idx.IndexManager /tmp/idxtest/index /tmp/idxtest/data/idxtest.lst /tmp/idxtest/data/eph http://localhost/ -v
 	@echo "** Dumping index..."
 	$(JAVA) $(JAVAFLAGS) modnlp.idx.Dump /tmp/idxtest/index
 	@echo "** Querying concordance for word 'that'..."
@@ -151,6 +157,7 @@ bindist: jar
 	cp  $(TOPDIR)data/ep/* $(BINDISTDIR)/data/ep
 	cp  $(TOPDIR)data/eph/* $(BINDISTDIR)/data/eph
 	cp README.bin $(BINDISTDIR)/README
+	cp bin/runidx.sh $(BINDISTDIR)
 	cp $(TOPDIR)src/idxmgr.properties.ecpc-ep $(BINDISTDIR)/idxmgr.properties.PLEASEEDIT
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
@@ -159,6 +166,7 @@ bindist: jar
 bindistec: jar
 	mkdir $(BINDISTDIR)-tec
 	cp README.bin $(BINDISTDIR)-tec/README
+	cp bin/runidx.sh $(BINDISTDIR)-tec
 	cp $(TOPDIR)src/idxmgr.properties.tec $(BINDISTDIR)-tec/idxmgr.properties
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)-tec
 	tar cfvz /tmp/$(BINDISTDIR)-tec.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-tec
@@ -167,6 +175,7 @@ bindistec: jar
 bindisthc: jar
 	mkdir $(BINDISTDIR)-hc
 	cp README.bin $(BINDISTDIR)-hc/README
+	cp bin/runidx.sh $(BINDISTDIR)-hc
 	cp $(TOPDIR)src/idxmgr.properties.ecpc-hc $(BINDISTDIR)-hc/idxmgr.properties
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)-hc
 	tar cfvz /tmp/$(BINDISTDIR)-hc.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-hc
@@ -175,6 +184,7 @@ bindisthc: jar
 bindistep: jar
 	mkdir $(BINDISTDIR)-ep
 	cp README.bin $(BINDISTDIR)-ep/README
+	cp bin/runidx.sh $(BINDISTDIR)-ep
 	cp $(TOPDIR)src/idxmgr.properties.ecpc-ep $(BINDISTDIR)-ep/idxmgr.properties
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)-ep
 	tar cfvz /tmp/$(BINDISTDIR)-ep.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-ep

@@ -4,8 +4,9 @@
  * Engineering - UMIST (DLE-UMIST)
  *
 
- * Copyright (c) 2006 S.Luz (TCD)
- *           (with contributions from Noel Skehan)
+ * Copyright (c) 2009 S Luz
+ *           (c) 2006 S.Luz (TCD)
+ *           (with contributions by Noel Skehan)
  *           (c) 1998 S.Luz (DLE-UMIST) 
  *           All Rights Reserved.
  *
@@ -27,6 +28,8 @@
  */
 package modnlp.tec.server;
 
+import modnlp.Constants;
+import modnlp.dstruct.FrequencyHash;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.headers.HeaderDBManager;
 import modnlp.idx.query.WordQuery;
@@ -42,7 +45,7 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 /** Deal with client's requests for concordance and extracts through
- * the methods described below. 
+ * the methods described below.
  * 
  * @author Nino Luz &#60;luzs@acm.org&#62;
  * @version $Id: TecConnection.java,v 1.6 2003/08/08 18:40:02 luzs Exp $
@@ -99,7 +102,7 @@ public class TecConnection extends Thread {
       String inLine, outLine;
       if ((inLine = is.readLine()) != null) 
         {		    
-          logf.logMsg("->"+inLine+"<-");
+          //logf.logMsg("->"+inLine+"<-");
           processInput(inLine, os);	    
           logf.logMsg("["+inaddrr.getHostName()+"] "+inLine);
           os.println("");
@@ -166,6 +169,9 @@ public class TecConnection extends Thread {
         break;
       case Request.FREQLIST:
         getFreqList(req, os);
+        break;
+      case Request.CDESCRIPTION:
+        getCorpusDescription(req, os);
         break;
       case Request.HEADERBASEURL:
         getHeaderBaseURL(os);
@@ -287,9 +293,59 @@ public class TecConnection extends Thread {
    */
   public void  getFreqList(Request req,  PrintWriter os)
   {
-    // we'll use req in the future to get freq by sub-corpora etc
-    dtab.printSortedFreqList(os);
+    int sf, ms;
+    boolean cs;
+    try {
+      sf = (new Integer((String)req.get("skipfirst"))).intValue();
+      ms = (new Integer((String)req.get("maxlistsize"))).intValue();
+      cs = ((String)req.get("casesensitive")).equalsIgnoreCase("TRUE");
+    }
+    catch (Exception e){
+      // error: print entire fqlist
+      System.err.println("Exception caught: Printing whole fqlist: "+req);
+      dtab.printSortedFreqList(os);
+      return;
+    }
+    if (req.get("xquerywhere")==null )
+      dtab.printSortedFreqList(os, sf, ms,!cs);
+    else
+      dtab.printSortedFreqList(os, sf, ms,
+                               hdbm.getSubcorpusConstraints((String)req.get("xquerywhere")),
+                               !cs);
   }
+
+  public void getCorpusDescription(Request req,  PrintWriter os)
+  {
+    boolean cs;
+    try {
+      cs = ((String)req.get("casesensitive")).equalsIgnoreCase("TRUE");
+      int [] fks = dtab.getIndexedFileKeys();
+      //String xquerywhere = 
+      //  (String)request.get("xquerywhere");
+      // TODO: implement information per sub-corpus as well
+      //if (xquerywhere == null)
+      //  dictionary.printConcordances(wquery, ctx, ignx, out);
+      //else
+      //  dictionary.printConcordances(wquery, ctx, ignx, out,
+      //                               hdbm.getSubcorpusConstraints(xquerywhere));
+      dtab.printCorpusStats(os,!cs);
+      dtab.printNoItems(os, fks.length);
+      for (int i = 0; i < fks.length; i++) {
+        FrequencyHash fh = dtab.getFileFrequencyTable(fks[i], !cs);
+        String fdesc = hdbm.getFileDescription(fks[i]);  
+        String line = fks[i]+Constants.LINE_ITEM_SEP+fdesc+Constants.LINE_ITEM_SEP+
+          fh.getTokenCount()+Constants.LINE_ITEM_SEP+
+          fh.getTypeTokenRatio();
+        // System.err.println("--");
+        os.println(line);
+      }
+    }
+    catch (Exception e) {
+      System.err.println("CDescPrinter: " + e);
+      e.printStackTrace();
+    }
+  }
+
 
   // utilities for internal use 
   private Integer getSafeInteger(String inp, int max){
