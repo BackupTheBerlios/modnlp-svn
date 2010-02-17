@@ -88,6 +88,8 @@ public interface ConcordanceBrowser {
 
   public ConcordanceVector getConcordanceVector();
 
+  public String getKeywordString();
+
   public int getExpectedNoOfConcordances();
 
   public int getNoOfConcordancesReadSoFar();

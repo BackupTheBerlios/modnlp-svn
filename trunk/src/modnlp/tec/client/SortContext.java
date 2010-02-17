@@ -49,11 +49,11 @@ public class SortContext {
     }
 
    public int getOffset(int idx){
-     return offsetList.get(idx).intValue();
+     return offsetList.size() > 0? offsetList.get(idx).intValue() : 0;
     }
 
    public String getWord(int idx){
-     return wordList.get(idx);
+     return offsetList.size() > 0? wordList.get(idx): "";
     }
 
 

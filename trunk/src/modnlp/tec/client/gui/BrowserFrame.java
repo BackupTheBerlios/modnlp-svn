@@ -310,7 +310,7 @@ public class BrowserFrame extends BrowserGUI
     
     statusLeft.add(progressBar);    
     statusLeft.add(statusLabel);
-    statusLeft.add(statusLabelScroll);
+    statusRight.add(statusLabelScroll);
     sccsPanel = new SubcorpusCaseStatusPanel(parent);
     statusRight.add(sccsPanel);
 
@@ -552,6 +552,7 @@ public class BrowserFrame extends BrowserGUI
     }
     if (e.getEventType() == ConcordanceDisplayEvent.DOWNLOADCOMPLETE_EVT){
       updateStatusLabel(e.getMessage());
+      updateStatusLabel(e.getMessage());
       return;
     }
 
@@ -588,7 +589,8 @@ public class BrowserFrame extends BrowserGUI
    */
   public void concordanceChanged(ConcordanceListSizeEvent e)
   {
-    // noop
+    concListDisplay.redisplayConc();
+    updateStatusLabelScroll("Showing "+e.getNoFound()+" lines. ");
   }
 
   public void progressBarUnknownStart(String msg){

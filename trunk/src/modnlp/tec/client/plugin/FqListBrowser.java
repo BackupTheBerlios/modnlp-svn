@@ -117,7 +117,7 @@ public class FqListBrowser extends JFrame
   JTable table = new JTable(model);
 
   JLabel statsLabel = new JLabel("                            ");
-  JLabel scorpusLabel = new JLabel("<html><u>full corpus</u></html>");
+  JLabel scorpusLabel = new JLabel("<html><b>full corpus</b></html>");
   SubcorpusCaseStatusPanel sccsPanel;
 
   private JProgressBar progressBar;
@@ -127,7 +127,9 @@ public class FqListBrowser extends JFrame
   private boolean guiLayoutDone = false;
 
   public FqListBrowser() {
+    super(title);
     thisFrame = this;
+
   }
 
   public void setParent(Object p){
@@ -256,11 +258,11 @@ public class FqListBrowser extends JFrame
 
   private void checkSubCorpusSelectionStatus (){
     if (parent.isSubCorpusSelectionON()){
-      scorpusLabel.setText("<html><u>subcorpus</u></html>");
+      scorpusLabel.setText("<html><b>subcorpus</b></html>");
       scorpusLabel.setToolTipText(parent.getXQueryWhere());
     }
     else{
-      scorpusLabel.setText("<html><u>full corpus</u></html>");
+      scorpusLabel.setText("<html><b>full corpus</b></html>");
       scorpusLabel.setToolTipText(FULLCORPUSTIP);
     }
   }

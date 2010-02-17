@@ -34,11 +34,11 @@ import java.util.Comparator;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 import java.io.File;
 import java.io.FileInputStream;
-import org.xml.sax.InputSource;
 import java.io.IOException;
 import javax.swing.JOptionPane;
 import java.net.HttpURLConnection;
@@ -64,7 +64,7 @@ public class Browser
 {
 
   // constants
-  public static final String RELEASE = "0.6.1";
+  public static final String RELEASE = "0.6.1b1";
   public static final String REVISION = "$Revision: 1.9 $";
   String BRANDNAME = "MODNLP/TEC";
   private static final String PLGLIST = "teclipluginlist.txt";
@@ -192,6 +192,10 @@ public class Browser
 
   public ConcordanceVector getConcordanceVector(){
     return concVector;
+  }
+
+  public String getKeywordString(){
+    return keywordString;
   }
 
   public void setStandAlone(boolean b){
@@ -323,7 +327,7 @@ public class Browser
 
     browserFrame.progressBarUnknownStart("Sorting... ");
     browserFrame.labelMessage("Sorting with context horizon "
-                 +sortContextHorizon+(sortleft?" (left)":" (right)")); 
+                              +sortContextHorizon+(sortleft?" (left)":" (right)")); 
   }
 
   public void showPreferencesEditor(){
@@ -393,11 +397,11 @@ public class Browser
    */
   public void showHeader(ConcordanceObject sel)
   {
-    String filename = sel.filename;
+    String filename = sel.sfilename;
     String headerName = 
       filename.substring(0,filename.lastIndexOf('.'))+".hed";
-    int p = headerName.lastIndexOf(java.io.File.separator);
-    headerName = p < 0? headerName : headerName.substring(p);
+    //int p = headerName.lastIndexOf(java.io.File.separator);
+    //headerName = p < 0? headerName : headerName.substring(p);
     showHeader(headerName);
   }
 
@@ -405,34 +409,48 @@ public class Browser
   {
     int windowHeight = 600;
     int windowWidth = 500;
+    String sep = java.io.File.separator;
+    if (headerBaseURL.startsWith("http://") || 
+        headerBaseURL.startsWith("https://") || 
+        headerBaseURL.startsWith("file://"))
+      sep = "/";
     String tmp;
+    
     StringBuffer content = new StringBuffer();
-    //System.out.println("URL--:"+headerBaseURL+headerName);
+    System.err.println("URL--:"+headerBaseURL);
     //HeaderReader header = new HeaderReader(headerBaseURL+headerName);
     //HeaderXMLHandler parser =  new HeaderXMLHandler();
     try {
-      BufferedReader in = null;
+      InputStream is = null;
       URL headerURL = null;
+
       if (standAlone) {
-        in = new BufferedReader(new InputStreamReader(new FileInputStream(headerBaseURL+
-                                                                          java.io.File.separator+
-                                                                          headerName)));
+        is = new FileInputStream(headerBaseURL+
+                                                 sep+
+                                                 headerName);
       }
       else {
-        headerURL = new URL(headerBaseURL+java.io.File.separator+headerName);
-        in = new BufferedReader(new InputStreamReader(headerURL.
-                                                      openConnection().
-                                                      getInputStream(),
-                                                      "UTF-8"));
+        headerURL = new URL(headerBaseURL+sep+headerName);
+        is = headerURL.openConnection().getInputStream();
       }
-      InputSource source = new InputSource(in);
-      source.setEncoding(encoding);
-      while ( (tmp = in.readLine()) != null )
-        content.append(tmp+"\n");
+      //InputSource source = new InputSource(in);
+      //source.setEncoding(encoding);
+      if (preferenceFrame.isShowingSGMLFlag()){
+        BufferedReader in = 
+          new BufferedReader(new InputStreamReader(is,"UTF-8"));
+        while ( (tmp = in.readLine()) != null )
+          content.append(tmp+"\n");
+      }
+      else {
+        HeaderXMLHandler parser =  new HeaderXMLHandler();
+        parser.parse(is);
+        content = parser.getContent();
+      }
     }
     catch (Exception e) {
       System.err.println("Error retrieving metadata: "+e);
       content.append("\nError retrieving metadata: "+e);
+      e.printStackTrace(System.err);
     }
     // HeaderClass header = new HeaderClass(filename);
     FullTextWindow window =  new FullTextWindow(headerName,

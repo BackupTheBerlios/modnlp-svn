@@ -335,6 +335,11 @@ public class PreferPanel extends JFrame
 		return stSGML;
 	}
 
+	public boolean isShowingSGMLFlag ()
+	{
+          return stSGML.equals("yes");
+	}
+
 	public String getHeaderBaseURL ()
 	{
 		return headerBaseField.getText();

@@ -1,5 +1,5 @@
 /**
- *  © 2008 S Luz <luzs@cs.tcd.ie>
+ *  © 2008 S Luz <luzs@acm.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

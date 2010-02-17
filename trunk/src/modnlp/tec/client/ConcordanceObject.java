@@ -131,6 +131,12 @@ public class ConcordanceObject {
     return sfilename+""+concordance+" ["+(index+1)+"]";
   }
 
+  public String csvConcLine (){
+    return sfilename+"|"+coVector.getHalfConcordance()+"|"+concordance;
+  }
+
+
+
   public int getFilenameLength() {
     return filename.length(); 
   }

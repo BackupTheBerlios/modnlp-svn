@@ -2,7 +2,7 @@
 <!-- JNLP File for TEC Browser -->
 <jnlp
   spec="1.0+"
-  codebase="http://ronaldo.cs.tcd.ie/tec2/jnlp/"
+  codebase="http://ronaldo.cs.tcd.ie/tec-beta/jnlp/"
   href="tec.jnlp">
   <information>
     <title>TEC Browser</title>
@@ -22,7 +22,7 @@
     <jar href="teccli.jar" download="eager"/>
     <jar href="idx.jar" download="eager"/>
     <extension name="3rd party libs" href="3rdparty.jnlp"/> 
-  </resources>
+   </resources>
   <application-desc main-class="modnlp.tec.client.Browser">
     <argument>ronaldo.cs.tcd.ie:1240</argument> 
   </application-desc>  

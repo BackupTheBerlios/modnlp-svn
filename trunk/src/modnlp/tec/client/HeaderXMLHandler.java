@@ -16,14 +16,20 @@
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 package modnlp.tec.client;
-import java.lang.*;
-import org.xml.sax.HandlerBase;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
-import org.xml.sax.DocumentHandler;
 import org.xml.sax.ErrorHandler;
+//import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import uk.co.wilson.xml.MinML2;
+
+
 
 /**
  *  
@@ -35,17 +41,32 @@ import uk.co.wilson.xml.MinML2;
 */
 
 
-public class HeaderXMLHandler extends MinML2
+public class HeaderXMLHandler extends DefaultHandler
 {
 
-  public StringBuffer content = new StringBuffer(1000);
-  public int error = 0;
+  StringBuffer content = new StringBuffer(1000);
+  int error = 0;
   private String elementName = "";
   private StringBuffer elementContent = new StringBuffer("");
   private int depthContext = -2;
   private static String[] ignorableArray =  {"","teiHeader"};
+  private SAXParser parser;
 
+  public HeaderXMLHandler() throws ParserConfigurationException,
+                                   SAXException
+  {
+    super();
+    SAXParserFactory spf = SAXParserFactory.newInstance();
+    spf.setValidating(false);
+    spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false); 
+    parser = spf.newSAXParser();
+  }
 
+  public void parse (InputStream is) throws SAXException,
+                  IOException
+  {
+    parser.parse(is, this);
+  }
   public void startElement (final String namespaceURI,
                               final String localName,
                               final String name,
@@ -190,9 +211,8 @@ public class HeaderXMLHandler extends MinML2
     return out.toString();
   }
   
+  public StringBuffer getContent(){
+    return content;
+  }
 }
-
-
-
-
 

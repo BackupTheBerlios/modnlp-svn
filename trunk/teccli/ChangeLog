@@ -1,3 +1,10 @@
+2009-11-09  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* Browser.java, HeaderXMLHandler.java: fixed parsing of XML
+	headers (now displays indented text, without XML tags); fixed
+	retrieval of headers on Windows platforms (usse '/' rather that
+	java.io.File.separator). Version 0.6.1b
+
 2009-04-30  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* idx, teccli, tecser: New release coincinding with the first

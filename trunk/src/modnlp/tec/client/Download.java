@@ -56,7 +56,7 @@ public class Download extends PrintWriter {
         //String fn = conc.concArray[count].filename;
         //String offs = adjustOffSet(lfn,fn.length());
         //this.println(fn+offs+"|"+conc.concArray[count].concordance);
-        this.println(co.textConcLine(lfn));
+        this.println(co.csvConcLine());
       }
     this.close();
   }
