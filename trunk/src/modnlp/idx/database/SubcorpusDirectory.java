@@ -98,6 +98,9 @@ public class SubcorpusDirectory {
   {
     try {
       int founo = dictionary.getFileKey(fou);
+      System.err.println("=====Removing secondary subcorpus DB "+founo);
+      dictionary.getEnvironment().removeDatabase(null,SubcorpusTable.makeSecondaryDBName(founo));
+      System.err.println("=====Removing primary subcorpus DB"+founo);
       dictionary.getEnvironment().removeDatabase(null,SubcorpusTable.makeDBName(founo));
     }
     catch (DatabaseException e)

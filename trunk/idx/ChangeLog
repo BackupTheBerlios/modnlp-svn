@@ -1,3 +1,17 @@
+2010-06-25  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* release 0.1.5: Bug fix release. Fixed bug in
+	SubcorpusDirectory.java. Now secondary key of SubcorpusTable gets
+	removed properly and error when re-indexing a previously
+	de-indexed file disappears.
+
+2010-02-24  Saturnino Luz  <luzs@acm.org>
+	* release 0.1.4b (DictProperties, IndexManager): fixed error in
+	index initialisation through command line mode of
+	IndexManager. DictProperties.getHeaderAbsoluteFilename() trimmed
+	off last character of base dir name when trailing '/' passed as
+	argument.
+
 2009-04-30  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* HeaderDBManager, Dictionary: Fixed a bug in TokeniserRegex.java

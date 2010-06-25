@@ -1,3 +1,12 @@
+2010-06-25  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* idx: release 0.1.5: Bug fix release. Fixed bug in
+	SubcorpusDirectory.java. Now secondary key of SubcorpusTable gets
+	removed properly and error when re-indexing a previously
+	de-indexed file disappears. Also created some scripts
+	bin/indexincoming.pl and deindex.pl to automated command line
+	indexing and deindexing.
+
 2009-04-30  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* idx, teccli, tecser: New releases coincinding with the first

@@ -176,7 +176,7 @@ public class DictProperties extends java.util.Properties{
   public String getHeaderAbsoluteFilename(String fname) {
     String base = getProperty("headers.home");
     if (base.charAt(base.length()-1) == File.separatorChar)
-      base = base.substring(0,base.length()-2);
+      base = base.substring(0,base.length()-1);
     return base+File.separatorChar+getHeaderFilename(fname);
   }
 

@@ -85,7 +85,7 @@ public class SubcorpusTable extends Table {
       sc.setReadOnly(!write);
       sc.setAllowCreate(write);
       sc.setSortedDuplicates(true);
-      String scname = "sec"+makeDBName(fn);
+      String scname = makeSecondaryDBName(fn);
       if (write || opensecond)
         posKeyDatabase = env.openSecondaryDatabase(null, 
                                                    scname, 
@@ -288,6 +288,15 @@ public class SubcorpusTable extends Table {
   public static final String makeDBName(int fn){
     return fn+".sc";
   }
+
+  public static final String makeSecondaryDBName(int fn){
+    return "sec"+makeDBName(fn);
+  }
+
+  public static final String makeSecondaryDBName(String fn){
+    return "sec"+makeDBName(fn);
+  }
+
 
   public void close () {
     // ignore operation status
