@@ -83,8 +83,8 @@ JARREDS=$(MAINJARS) \
 	'modnlp/idx/IndexManager$$IndexingThread.class'
 DISTDIR:=modnlp-idx-`cat VERSION`
 BINDISTDIR=$(DISTDIR)-bin
-BINDISTXTRAS=$(LIBLICENSES)
-DISTFILES=AUTHORS COPYING Makefile README VERSION BUGS INSTALL TODO exclude.txt bin/runidx.sh \
+BINDISTXTRAS=$(LIBLICENSES) TUTORIAL.txt
+DISTFILES=AUTHORS COPYING Makefile README TUTORIAL.txt VERSION BUGS INSTALL TODO exclude.txt bin/runidx.sh \
 	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SOURCEDIR)modnlp/idx/prj.el $(SOURCEDIR)idx-manifest.txt
 #JAVA=jamvm
 JAVAC=javac -target 1.5

@@ -1,7 +1,8 @@
-Oracle: Berkeley DB, Java Edition 3.2.23: April 06, 2007
+Oracle: Berkeley DB, Java Edition 4.0.103: April 28, 2010
 
-This is Berkeley DB, Java Edition, version 3.2.23 from
-Oracle. 
+This is Berkeley DB, Java Edition, version 4.0.103 from
+Oracle.  To view the release and installation documentation, load
+the distribution file docs/index.html into your web browser.
 
 You can obtain the source code for JE by visiting the JE download
 page:

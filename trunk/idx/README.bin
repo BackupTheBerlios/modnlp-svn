@@ -14,6 +14,21 @@ The source code, API documentation is available from
 
   http://modnlp.berlios.de/
 
+Background
+----------
+
+The indexer, the technology employed in indexing, the expected
+XML structure of the files to be indexed (your corpus) and the teccli
+user interface for concordance visualisation, sub-corpus selection etc
+are described in the following paper:
+
+   S. Luz, “Web-based corpus software,” in Corpus-based Translation
+   Studies: Research and Applications (A. Kruger, K. Wallmach, and
+   J. Munday, eds.), Continuum, 2011. in press
+
+For a step-by-step example of how to index and search a corpus, see
+the file TUTORIAL.txt, in this folder. 
+
 Running the Index Manager:
 --------------------------
 

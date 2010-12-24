@@ -28,7 +28,7 @@ import java.util.Comparator;
  * @see  
 */
 
-public class DescIntComparator implements Comparator//<byte[]> 
+public class DescIntComparator implements Comparator, java.io.Serializable//<byte[]> 
 {
 
   /**

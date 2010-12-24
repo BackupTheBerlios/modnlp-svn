@@ -1,4 +1,24 @@
-2010-06-25  Saturnino Luz  <luzs@cs.tcd.ie>
+2010-07-05  Saturnino Luz  <luzs@acm.org>
+
+	* release 0.0.7: Upgraded je.jar to version 4. This change affects
+	the idx, teccli and tecser packages. The new index format yields
+	considerable performance gains and is about 15% more space
+	efficient. The database format changed but the library is backward
+	compatible, so clients and indexer using this version will be able
+	to access databases created with je version 3. The reverse is not
+	true, however. So, dbs created with modnlp-idx >= 0.1.6 will not
+	be accessible from modnlp-idx <= 0.1.5.
+
+	* idx: created a corpora/ directory to store templates for
+	self-contained corpus hierarchies. 'make tecdist', for instance,
+	creates a tec-xxx.tgz which contains a portable hierarchy (within
+	and between Unix and Windows environments). Indexing can be done
+	by puting the text files and headers to be indexed in incoming/
+	and running indexincoming.pl ../bin. The client can be run
+	directly from bin/. As it reads from the relative path ../index,
+	the corpus directory can be placed anywhere.
+
+2010-06-25  Saturnino Luz  <luzs@acm.org>
 
 	* idx: release 0.1.5: Bug fix release. Fixed bug in
 	SubcorpusDirectory.java. Now secondary key of SubcorpusTable gets

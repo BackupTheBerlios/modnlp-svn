@@ -1,3 +1,14 @@
+2010-07-05  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* release 0.6.2: Upgraded je.jar to version 4. The new index
+	format yields considerable performance gains and is about 15% more
+	space efficient. The database format changed but the library is
+	backward compatible, so clients and indexer using this version
+	will be able to access databases created with je version 3. The
+	reverse is not true, however. So, dbs created with modnlp-idx >=
+	0.1.6 will not be accessible from modnlp-idx <= 0.1.5. 
+	Added a brief tutorial.
+
 2009-11-09  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* Browser.java, HeaderXMLHandler.java: fixed parsing of XML

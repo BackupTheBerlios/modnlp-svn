@@ -10,15 +10,17 @@ $dry_run = $ARGV[1];
 die "Usage: indexincoming.pl idx_binary_directory [-dry-run]\n"
     unless $IDX_BIN;
 
+$INCOMING_DIR = cwd();
+
+
 ## set these variables to point to your corpus files
-$INDEX_DIR = '/home/luzs/corpora/indices/tec';
-$TEXT_DIR = '/home/luzs/corpora/tec/text';
-$HEADERS_DIR = '/home/luzs/corpora/tec/headers';
-$HEADERS_URL = 'http://ronaldo.cs.tcd.ie/tec2/headers/';
+$INDEX_DIR = '../index';
+$TEXT_DIR = '../text';
+$HEADERS_DIR = '../headers';
+$HEADERS_URL = "file://$INCOMING_DIR/../headers/";
 $DATE = localtime();
 $DATE =~ tr/ /_/;
 
-$INCOMING_DIR = cwd();
 $TEXT_LIST_FILE = "$INCOMING_DIR/indexed_on_$DATE.lst";
 @TEXT_LIST=sort(<*.xml>);
 @HEADERS_LIST=sort(<*.hed>);
@@ -73,10 +75,8 @@ if (! Run($cmd)){
 }
 
 chdir($INCOMING_DIR);
-unlink @TEXT_LIST
-    unless $dry_run;
-unlink @HEADERS_LIST
-    unless $dry_run;
+unlink @TEXT_LIST;
+unlink @HEADERS_LIST;
 
 print 'Files '.join(', ',@TEXT_LIST)." + headers have been indexed and removed from incoming folder.\n";
 
