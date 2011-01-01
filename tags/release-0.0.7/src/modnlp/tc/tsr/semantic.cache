@@ -1,0 +1,53 @@
+;; Object semantic.cache
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "semantic.cache"
+  :tables (list 
+   (semanticdb-table "prj.el"
+    :major-mode 'emacs-lisp-mode
+    :tags '(("jde-project-file-version" code nil nil [1 33]) ("jde-set-variables" code nil nil [34 225]))
+    :file "prj.el"
+    :pointmax 226
+    :unmatched-syntax 'nil
+    )
+   (semanticdb-table "DocumentFrequency.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.tsr" package nil nil [1 16]) ("tc.parser.*" include nil nil [17 36]) ("tc.dstruct.*" include nil nil [37 57]) ("tc.util.PrintUtil" include nil nil [58 83]) ("java.io.*" include nil nil [84 101]) ("java.util.Arrays" include nil nil [102 126]) ("DocumentFrequency" type (:typemodifiers ("public") :superclasses "TermFilter" :members (("computeLocalTermScore" function (:typemodifiers ("public") :arguments (("term" variable (:type "String") (reparse-symbol formal_parameters) [558 569]) ("cat" variable (:type "String") (reparse-symbol formal_parameters) [571 581])) :type "double") (reparse-symbol class_member_declaration) [522 674]) ("computeGlobalDocFrequency" function (:typemodifiers ("public") :type "void") (reparse-symbol class_member_declaration) [678 758])) :type "class") nil [467 761]))
+    :file "DocumentFrequency.java"
+    :pointmax 762
+    :unmatched-syntax 'nil
+    )
+   (semanticdb-table "TermFilter.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.tsr" package nil nil [1 16]) ("tc.parser.*" include nil (dependency-file none) [17 36]) ("tc.dstruct.*" include nil (dependency-file none) [37 57]) ("tc.util.*" include nil (dependency-file none) [58 75]) ("java.util.Arrays" include nil (dependency-file none) [76 100]) ("java.util.Iterator" include nil (dependency-file none) [101 127]) ("java.util.Set" include nil (dependency-file none) [128 149]) ("TermFilter" type (:typemodifiers ("public" "abstract") :members (("pm" variable (:type "ProbabilityModel") (reparse-symbol class_member_declaration) [385 405]) ("wsp" variable (:type "WordScorePair[]") (reparse-symbol class_member_declaration) [408 435]) ("TermFilter" function (:constructor-flag t :typemodifiers ("public")) (reparse-symbol class_member_declaration) [439 464]) ("initialise" function (:typemodifiers ("public") :arguments (("pm" variable (:type "ProbabilityModel") (reparse-symbol formal_parameters) [492 511])) :type "void") (reparse-symbol class_member_declaration) [468 575]) ("computeLocalTermScore" function (:typemodifiers ("abstract") :arguments (("term" variable (:type "String") (reparse-symbol formal_parameters) [691 702]) ("cat" variable (:type "String") (reparse-symbol formal_parameters) [704 714])) :type "double") (reparse-symbol class_member_declaration) [653 716]) ("getReducedTermSet" function (:typemodifiers ("public") :arguments (("aggr" variable (:type "int") (reparse-symbol formal_parameters) [817 825])) :type "Set") (reparse-symbol class_member_declaration) [787 905]) ("getReducedFreqList" function (:typemodifiers ("public") :arguments (("aggr" variable (:type "int") (reparse-symbol formal_parameters) [1048 1056])) :type "WordFrequencyPair[]") (reparse-symbol class_member_declaration) [1002 1511]) ("getSortedScores" function (:typemodifiers ("public") :type "WordScorePair[]") (reparse-symbol class_member_declaration) [1516 1600]) ("getWsp" function (:typemodifiers ("public") :type "WordScorePair[]") (reparse-symbol class_member_declaration) [1680 1733]) ("setWsp" function (:typemodifiers ("public") :arguments (("v" variable (:type "WordScorePair[]") (reparse-symbol formal_parameters) [1836 1854])) :type "void") (reparse-symbol class_member_declaration) [1817 1879]) ("computeLocalScores" function (:typemodifiers ("public") :arguments (("cat" variable (:type "String") (reparse-symbol formal_parameters) [1918 1928])) :type "void") (reparse-symbol class_member_declaration) [1886 2306]) ("computeGlobalScoresSUM" function (:typemodifiers ("public") :type "void") (reparse-symbol class_member_declaration) [2312 2916]) ("computeGlobalScoresMAX" function (:typemodifiers ("public") :type "void") (reparse-symbol class_member_declaration) [2920 3554]) ("computeGlobalScoresWAVG" function (:typemodifiers ("public") :type "void") (reparse-symbol class_member_declaration) [3558 4191])) :type "class") nil [347 4195]))
+    :file "TermFilter.java"
+    :pointmax 4625
+    )
+   (semanticdb-table "GSScoefficient.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.tsr" package nil nil [1 16]) ("tc.parser.*" include nil nil [17 36]) ("tc.dstruct.*" include nil nil [37 57]) ("tc.util.*" include nil nil [58 75]) ("java.io.*" include nil nil [76 93]) ("java.util.Enumeration" include nil nil [94 123]) ("java.util.Arrays" include nil nil [124 148]) ("GSScoefficient" type (:typemodifiers ("public") :superclasses "TermFilter" :members (("computeLocalTermScore" function (:typemodifiers ("public") :arguments (("term" variable (:type "String") (reparse-symbol formal_parameters) [535 546]) ("cat" variable (:type "String") (reparse-symbol formal_parameters) [548 558])) :type "double") (reparse-symbol class_member_declaration) [499 664])) :type "class") nil [446 667]))
+    :file "GSScoefficient.java"
+    :pointmax 675
+    )
+   (semanticdb-table "InfoGain.java"
+    :major-mode 'jde-mode
+    :tags '(("modnlp.tc.tsr" package nil nil [1 23]) ("modnlp.tc.parser.*" include nil nil [24 50]) ("modnlp.tc.dstruct.*" include nil nil [51 78]) ("modnlp.tc.util.*" include nil nil [79 103]) ("java.io.*" include nil nil [104 121]) ("java.util.Iterator" include nil nil [122 148]) ("java.util.Set" include nil nil [149 170]) ("java.util.Arrays" include nil nil [171 195]) ("InfoGain" type (:typemodifiers ("public") :superclasses "TermFilter" :members (("computeLocalTermScore" function (:typemodifiers ("public") :arguments (("term" variable (:type "String") (reparse-symbol formal_parameters) [580 591]) ("cat" variable (:type "String") (reparse-symbol formal_parameters) [593 603])) :type "double") (reparse-symbol class_member_declaration) [544 900])) :type "class") nil [498 902]))
+    :file "InfoGain.java"
+    :pointmax 911
+    )
+   (semanticdb-table "OddsRatio.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.tsr" package nil nil [1 16]) ("tc.parser.*" include nil (dependency-file none) [17 36]) ("tc.dstruct.*" include nil (dependency-file none) [37 57]) ("tc.util.*" include nil (dependency-file none) [58 75]) ("java.io.*" include nil (dependency-file none) [76 93]) ("java.util.Enumeration" include nil (dependency-file none) [94 123]) ("java.util.Arrays" include nil (dependency-file none) [124 148]) ("OddsRatio" type (:typemodifiers ("public") :superclasses "TermFilter" :members (("computeLocalTermScore" function (:typemodifiers ("public") :arguments (("term" variable (:type "String") (reparse-symbol formal_parameters) [520 531]) ("cat" variable (:type "String") (reparse-symbol formal_parameters) [533 543])) :type "double") (reparse-symbol class_member_declaration) [484 738])) :type "class") nil [436 745]))
+    :file "OddsRatio.java"
+    :pointmax 1163
+    )
+   (semanticdb-table "MakeReducedTermSet.java"
+    :major-mode 'jde-mode
+    :tags '(("modnlp.tc.tsr" package nil nil [153 175]) ("modnlp.tc.dstruct.*" include nil nil [176 203]) ("modnlp.tc.parser.*" include nil nil [204 230]) ("modnlp.tc.util.*" include nil nil [231 255]) ("java.io.*" include nil nil [256 273]) ("java.util.Enumeration" include nil nil [274 303]) ("java.util.Set" include nil nil [304 325]) ("java.util.Arrays" include nil nil [326 350]) ("MakeReducedTermSet" type (:typemodifiers ("public") :members (("clist" variable (:typemodifiers ("private" "static") :type "CorpusList") (reparse-symbol class_member_declaration) [1643 1682]) ("swlist" variable (:typemodifiers ("private" "static") :type "StopWordList") (reparse-symbol class_member_declaration) [1685 1727]) ("aggressiveness" variable (:typemodifiers ("private" "static") :type "int") (reparse-symbol class_member_declaration) [1730 1767]) ("MakeReducedTermSet" function (:constructor-flag t :typemodifiers ("public") :arguments (("clist" variable (:type "String") (reparse-symbol formal_parameters) [1853 1865]) ("swlist" variable (:type "String") (reparse-symbol formal_parameters) [1867 1880]) ("aggr" variable (:type "String") (reparse-symbol formal_parameters) [1882 1893]))) (reparse-symbol class_member_declaration) [1826 2067]) ("parse" function (:throws ("Exception") :typemodifiers ("public") :arguments (("filename" variable (:type "String") (reparse-symbol formal_parameters) [2222 2237]) ("plugin" variable (:type "String") (reparse-symbol formal_parameters) [2239 2252])) :type "ParsedCorpus") (reparse-symbol class_member_declaration) [2195 2396]) ("computeScores" function (:typemodifiers ("private") :arguments (("tf" variable (:type "TermFilter") (reparse-symbol formal_parameters) [2429 2442]) ("methodOrCat" variable (:type "String") (reparse-symbol formal_parameters) [2444 2462])) :type "void") (reparse-symbol class_member_declaration) [2401 2853]) ("rank" function (:throws ("Exception") :typemodifiers ("public") :arguments (("method" variable (:type "String") (reparse-symbol formal_parameters) [2886 2899]) ("pm" variable (:type "BVProbabilityModel") (reparse-symbol formal_parameters) [2901 2922]) ("categ" variable (:type "String") (reparse-symbol formal_parameters) [2924 2936])) :type "WordScorePair[]") (reparse-symbol class_member_declaration) [2858 3548]) ("main" function (:typemodifiers ("public" "static") :arguments (("args" variable (:type "String[]") (reparse-symbol formal_parameters) [3577 3590])) :type "void") (reparse-symbol class_member_declaration) [3553 6349])) :type "class") nil [1607 6351]))
+    :file "MakeReducedTermSet.java"
+    :pointmax 6353
+    )
+   )
+  :file "semantic.cache"
+  :semantic-tag-version "2.0beta1"
+  :semanticdb-version "2.0beta1"
+  )
