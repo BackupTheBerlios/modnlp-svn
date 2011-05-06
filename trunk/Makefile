@@ -22,7 +22,7 @@ JAVA=java
 JAVAC=javac -target 1.5
 JAR=jar
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
-JAVACFLAGS=-encoding ISO-8859-1 -classpath $(SOURCEDIR):$(LIBSPATH)
+JAVACFLAGS=-encoding UTF-8 -classpath $(SOURCEDIR):$(LIBSPATH)
 
 #VPATH=$(SOURCEDIR)
 

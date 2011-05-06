@@ -1,5 +1,5 @@
 /** 
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,6 +39,10 @@ public class RightComparer
     super(ctx,half,pton);
   }
 
+  // NB.: This could be made more effifient (space and timewise) if
+  // instead of using getRightSortArray() we worked directly with
+  // ConcordanceObject's TokenIndex, scanning substrings of
+  // ConcordanceObject.getKeywordAndRightContext() as needed.
   public int compare(Object o1, Object o2) {
     ConcordanceObject coa = (ConcordanceObject) o1;
     ConcordanceObject cob = (ConcordanceObject) o2;

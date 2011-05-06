@@ -1,5 +1,5 @@
 /**
- *  � 2006 S Luz <luzs@cs.tcd.ie>
+ *  © 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,12 +28,43 @@ import java.io.*;
 */
 public class CorpusFile {
 
+  public static final char JPSPACE = '　';
+  public static final char ENSPACE = ' ';
+  public static final byte WHITESPACE = 32; // code for ws char
+
+
   InputStreamReader fileReader;
   //int static final MAX_FILE_SIZE = 10000000;
 
   char [] fileArray;
   int noChars;
   String encoding = "UTF8"; // default
+  int language = LanguageConstants.EN; 
+  char spaceChar = ' ';  // default to Latin script white space.
+
+  public void setLanguage(int la){
+    switch (la) {
+    case modnlp.Constants.LANG_EN:
+      setLangEN();
+      break;
+    case modnlp.Constants.LANG_JP:
+      setLangJP();
+      break;
+    default:
+      setLangEN();
+      break;
+    }
+  }
+
+  public void setLangJP (){
+    spaceChar = JPSPACE;
+    language = modnlp.Constants.LANG_JP; 
+  }
+
+  public void setLangEN (){
+    spaceChar = ENSPACE;
+    language = modnlp.Constants.LANG_EN; 
+  }
 
   /**
    * The <code>ignoreSGML</code> flag controls whether
@@ -46,7 +77,6 @@ public class CorpusFile {
   protected boolean ignoreSGML = true;
 
 
-	public static final byte WHITESPACE = 32; // code for ws char
 
   public CorpusFile(String fname, String e) throws IOException{
     encoding = e;
@@ -88,17 +118,17 @@ public class CorpusFile {
     for (int i = 0; i < ctx; i++) {
       k = findNextLeftIndex(k); // find next allowed index (possibly ignoring tags
       lc[cp-i] = k < 0 || Character.isISOControl(fileArray[k])? 
-        ' ' : fileArray[k];
+        spaceChar : fileArray[k];
       k--;
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
       rc[i] = j < 0 || j >= fileArray.length || Character.isISOControl(fileArray[j])? 
-        ' ' : fileArray[j];
+        spaceChar : fileArray[j];
       j++;
     }
     for (int i = 0; i < wrd.length(); i++ ){
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags)
       rc[ctx+i] = j < 0 || j >= fileArray.length ||  Character.isISOControl(fileArray[j])? 
-        ' ' : fileArray[j];
+        spaceChar : fileArray[j];
       j++;
     }
     return (new String(lc))+(new String(rc));
@@ -150,17 +180,17 @@ public class CorpusFile {
     int cp = ctx-1;
     for (int i = 0; i < ctx; i++) {
       if (k < 0)
-        lc[cp-i] = ' ';
+        lc[cp-i] = spaceChar;
       else
         lc[cp-i] = fileArray[k--];
       if (j == fileArray.length)
-        rc[i] = ' ';
+        rc[i] = spaceChar;
       else
         rc[i] = fileArray[j++];
     }
     for (int i = 0; i < wrd.length(); i++ )
       if (j == fileArray.length)
-        rc[ctx+i] = ' ';
+        rc[ctx+i] = spaceChar;
       else
         rc[ctx+i] = fileArray[j++];
     return (new String(lc))+(new String(rc));
@@ -186,7 +216,7 @@ public class CorpusFile {
     for (int i = 1; i <= ctx; i++) {
       j = findNextLeftIndex(j); // find next allowed index (possibly ignoring tags
       ca[ctx-i] = (j < 0 || Character.isISOControl(fileArray[j])? 
-                   ' ' : fileArray[j]);
+                   spaceChar : fileArray[j]);
       j--;
     }
     return new String(ca);
@@ -204,7 +234,7 @@ public class CorpusFile {
     for (int i = 0; i < ctx; i++) {
       j = findNextRightIndex(j); // find next allowed index (possibly ignoring tags
       ca[i] = (j < 0 || Character.isISOControl(fileArray[j])? 
-               ' ' : fileArray[j]);
+               spaceChar : fileArray[j]);
       j++;
     }
     return new String(ca);

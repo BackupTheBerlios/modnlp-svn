@@ -1,5 +1,5 @@
 /** 
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,6 +19,7 @@ package modnlp.tec.client.gui;
 
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.FontMetrics;
 import javax.swing.JLabel;
@@ -38,10 +39,12 @@ public class ListDisplayRenderer extends JLabel
   implements ListCellRenderer {//, ListSelectionListener  {
 
   private ConcordanceObject cobjct;
-  private static final int MAXFNSIZE = 12;
+  private static final int MAXFNSIZE = 13;
   private static final Color FILENAME_COLOR = Color.red.darker();
   private static final Color KWORD_COLOR = Color.green.darker();
   private static final Color SORT_COLOR = Color.blue.darker();
+
+  private int keyWordPosition = 0;
 
   public ListDisplayRenderer() {
     super();
@@ -65,42 +68,77 @@ public class ListDisplayRenderer extends JLabel
     }
     cobjct = (ConcordanceObject)value;
     int linesize;
+    //FontMetrics fm = getFontMetrics(getFont());
+    //setPreferredSize(new Dimension(1800,(int)(fm.getAscent()*1.1)));
     if (cobjct == null){
-      setText(" ");
+      setText("");
     }
     else {
-      setText(cobjct.textConcLine(MAXFNSIZE));
+      //setText(cobjct.htmlConcLine(MAXFNSIZE));
+      //setText(cobjct.textConcLine(MAXFNSIZE));
+      setText("");
     }
     return this;
   }
+  
   
   public void paintComponent(Graphics g){
     if (cobjct == null){
       return;
     }
+    FontMetrics fm = getFontMetrics(getFont());
+    super.paintComponent(g);
+
+    //g.drawString(cobjct.textConcLine(MAXFNSIZE), 0, fm.getAscent());
     String concordance = cobjct.concordance;
     String filename = cobjct.sfilename;
-    super.paintComponent(g);
-    FontMetrics fm = getFontMetrics(getFont());
+
     // highlight filename
+    //int asc = fm.getAscent();
+    int concoffset = fm.stringWidth(cobjct.sfilename);
+    HighlightString hls = cobjct.indexOfKeyword();
+    int kwoffset = concoffset+fm.stringWidth(concordance.substring(0, hls.position));
+    if (kwoffset>keyWordPosition)
+      keyWordPosition = kwoffset;
+    else if (kwoffset<keyWordPosition){
+      concoffset += keyWordPosition-kwoffset; 
+      kwoffset = keyWordPosition;
+    }
+        
+
+    g.drawString(cobjct.concordance, concoffset, fm.getAscent());
     g.setColor(FILENAME_COLOR);
     g.drawString(filename, 0, fm.getAscent());
     //System.out.println("horizon->"+cobjct.sortContextHorizon+"<-");
     // highlight keyword
     g.setColor(KWORD_COLOR);
-    HighlightString hls = cobjct.indexOfKeyword();
+
+
+      
     g.drawString(hls.string, 
-                 fm.stringWidth(filename+concordance.substring(0, hls.position)),
+                 kwoffset,
+                 //fm.stringWidth(filename+concordance.substring(0, hls.position)),
                  fm.getAscent());
     // highlight sort keyword (if needed)
-    if ( cobjct.getSortContextHorizon() != 0) {
+    if ( cobjct.getSortContextHorizon() != 0 ) {
       g.setColor(SORT_COLOR);
       hls = cobjct.indexOfSortContext();
       g.drawString(hls.string, 
-                   fm.stringWidth(filename+concordance.substring(0, hls.position)),
+                   concoffset+fm.stringWidth(concordance.substring(0, hls.position)),
+                   //fm.stringWidth(filename+concordance.substring(0, hls.position)),
                    fm.getAscent());
     }
-  } 
+  }
+
+  public Dimension getMinimumSize()
+  { FontMetrics fm = getFontMetrics(getFont());
+    return new Dimension(1700,(int)(fm.getAscent()*1.3)); }
+  
+  public Dimension getPreferredSize()
+  { return getMinimumSize(); }
+
+
+
 }
 
 

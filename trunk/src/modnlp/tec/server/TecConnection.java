@@ -1,13 +1,9 @@
 /** 
- * Project: MODNLP/TEC/SERVER, Based on software developed for the
- * Translated English Corpora (TEC) project, from the Dept of Language
- * Engineering - UMIST (DLE-UMIST)
+ * Project: MODNLP/TEC/SERVER.
  *
-
- * Copyright (c) 2009 S Luz
+ * Copyright (c) 2009-2010 S Luz
  *           (c) 2006 S.Luz (TCD)
  *           (with contributions by Noel Skehan)
- *           (c) 1998 S.Luz (DLE-UMIST) 
  *           All Rights Reserved.
  *
  *   This program is free software; you can redistribute it and/or
@@ -35,14 +31,18 @@ import modnlp.idx.headers.HeaderDBManager;
 import modnlp.idx.query.WordQuery;
 import modnlp.idx.query.WordQueryException;
 
-import java.io.*;
-import java.net.*;
-import java.lang.*;
 import java.util.StringTokenizer;
 import java.util.Hashtable; 
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
+import java.net.Socket;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
+import java.io.IOException;
 
 /** Deal with client's requests for concordance and extracts through
  * the methods described below.
@@ -243,7 +243,10 @@ public class TecConnection extends Thread {
   {
     String xqueryattribs = (String)req.get("xqueryattribs");
     String s = hdbm.getOptionSetString(xqueryattribs);
-    if (s.length() < 6) // a little hack to force transmission of very short option lists
+    if (s == null){
+      os.println("_,__,_");
+    }
+    else if (s.length() < 6) // a little hack to force transmission of very short option lists
       os.println(s+"_,__,_");
     else
       os.println(s);
@@ -281,7 +284,9 @@ public class TecConnection extends Thread {
     System.err.println(dtab.getDictProps().getProperty("headers.url"));
     os.println(dtab.getDictProps().getProperty("headers.url"));
     os.println(dtab.getDictProps().getProperty("file.encoding"));
-    os.flush();
+    os.println(dtab.getDictProps().getLanguage());
+    //if (lg != null)
+    //os.flush();
   }
 
   /** Retrieve a (case-insensitive) frequency list

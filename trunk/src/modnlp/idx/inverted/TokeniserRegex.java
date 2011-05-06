@@ -1,5 +1,5 @@
 /**
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,13 +17,19 @@
 */
 package modnlp.idx.inverted;
 
+import modnlp.dstruct.TokenIndex;
 import modnlp.util.Tokeniser;
 import modnlp.util.PrintUtil;
 
-import java.net.URL;
-import java.io.*;
 
-import java.util.regex.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 
 /**
  *  Tokenise a chunk of text and record the position of each token
@@ -34,7 +40,9 @@ import java.util.regex.*;
 */
 public class TokeniserRegex extends Tokeniser {
 
-  private String bigWordRegexp = "\\p{L}[\\p{L}-.]*'?s?"; // include dots for abbrev. (e.g. U.S.A.)
+  public static final String bigWordRegexp = "\\p{L}[\\p{L}-.]*'?s?"; // include dots for abbrev. (e.g. U.S.A.)
+  public static final Pattern bigWordPattern = Pattern.compile(bigWordRegexp);
+
   private String wordRegexp = "[\\p{L}.]+|'s?";
   private String ignoredElements = "(omit|ignore)";
   
@@ -77,7 +85,7 @@ public class TokeniserRegex extends Tokeniser {
     this.ignoredElements = newIgnoredElements;
   }
 
-  public void tokenise ()  {
+  public void tokenise () throws IOException {
     String ignregexp = "--+|\\.\\.+|\\.+\\p{Space}";  // delete full stops and dashes (typically not used).
     if (ignoredElements != null && ignoredElements.length() > 0)
       ignregexp = ignregexp+
@@ -109,7 +117,7 @@ public class TokeniserRegex extends Tokeniser {
     //verbose = false;
     String text = new String(tx);
     //System.out.println("-->"+text+"<--");
-    Matcher bwre = (Pattern.compile(bigWordRegexp)).matcher(text);
+    Matcher bwre = bigWordPattern.matcher(text);
     Pattern wrep = Pattern.compile(wordRegexp);
     while (bwre.find()) {
       int pos = bwre.start();
@@ -155,5 +163,62 @@ public class TokeniserRegex extends Tokeniser {
     if (verbose)
       PrintUtil.donePrinting(); ct = 1;
   }
+
+  public List<String> split (String s){
+    Matcher bwre = bigWordPattern.matcher(s);
+    ArrayList<String> ret = new ArrayList<String>();
+    while (bwre.find()) {
+      int pos = bwre.start();
+      String word = bwre.group();
+      int iofd = word.indexOf('.');  // index of first dot
+      int iolc = word.length()-1;    // index of last char
+      boolean hogc = word.indexOf('-')+word.indexOf('\'') == -2 ? false : true;
+      if ( iofd >= 0) {      // word is an acronym, possibly with a missing dot or ...
+        //System.out.println("-->"+word+"<-- iofd="+iofd+" iolc="+iolc+" hogc="+hogc);
+        if (iofd == iolc)    // ... a normal word with a trailing dot
+          ret.add(word.substring(0,iolc));
+        else if (iofd == 0)    // ... a normal word with a leading dot
+          ret.add(word.substring(1,iolc+1)); 
+        else if (word.charAt(iolc) == '.' || hogc) // right, this is a complete acronym. hyphenated or genitive
+          ret.add(word);      // ... so store as is.
+        else if (!hogc)                     // incomplete acronym...
+          ret.add(word+".");  // ... add missing dot and store acronym
+      }
+      else {
+        ret.add(word);      // word, hyphenated or genitive containing no dots 
+      }
+    }
+    return ret;
+  }
+
+  public TokenIndex getTokenIndex (String str) {
+    Matcher bwre = bigWordPattern.matcher(str);
+    TokenIndex ret = new TokenIndex();
+    while (bwre.find()) {
+      int s = bwre.start();
+      int e = bwre.end();
+      String word = bwre.group();
+      int iofd = word.indexOf('.');  // index of first dot
+      int iolc = word.length()-1;    // index of last char
+      boolean hogc = word.indexOf('-')+word.indexOf('\'') == -2 ? false : true;
+      if ( iofd >= 0) {      // word is an acronym, possibly with a missing dot or ...
+        //System.out.println("-->"+word+"<-- iofd="+iofd+" iolc="+iolc+" hogc="+hogc);
+        if (iofd == iolc)    // ... a normal word with a trailing dot
+          ret.add(s,e-1);
+        else if (iofd == 0)    // ... a normal word with a leading dot
+          ret.add(s+1,e); 
+        else if (word.charAt(iolc) == '.' || hogc) // right, this is a complete acronym. hyphenated or genitive
+          ret.add(s,e);      // ... so store as is.
+        else if (!hogc)                     // incomplete acronym...
+          ret.add(s,e);  // ... acronym with missing dot
+      }
+      else {
+        ret.add(s,e);      // word, hyphenated or genitive containing no dots 
+      }
+    }
+    return ret;
+
+  }
+
 
 }

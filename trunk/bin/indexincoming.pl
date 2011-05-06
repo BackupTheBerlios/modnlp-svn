@@ -5,22 +5,20 @@
 # $Log$
  use Cwd;
 
-$IDX_BIN = $ARGV[0];
-$dry_run = $ARGV[1];
-die "Usage: indexincoming.pl idx_binary_directory [-dry-run]\n"
-    unless $IDX_BIN;
-
-$INCOMING_DIR = cwd();
-
-
 ## set these variables to point to your corpus files
-$INDEX_DIR = '../index';
-$TEXT_DIR = '../text';
-$HEADERS_DIR = '../headers';
-$HEADERS_URL = "file://$INCOMING_DIR/../headers/";
+
+require "config.pl";
+
+$dry_run = $ARGV[0];
+die "Usage: indexincoming.pl  [-dry-run]\n  Error reading config.pl. Please set locations correctly."
+    unless $IDX_BIN || $TEXT_DIR || $HEADERS_DIR || $HEADERS_URL || $INDEX_DIR;
+
+
 $DATE = localtime();
 $DATE =~ tr/ /_/;
 
+
+$INCOMING_DIR = cwd();
 $TEXT_LIST_FILE = "$INCOMING_DIR/indexed_on_$DATE.lst";
 @TEXT_LIST=sort(<*.xml>);
 @HEADERS_LIST=sort(<*.hed>);
@@ -32,6 +30,22 @@ open(FL, ">$TEXT_LIST_FILE")
 foreach (@TEXT_LIST){
     my $h = $_;
     $h =~ s/\.xml$/.hed/;
+    if ($DOS2UNIX){
+        my $cmd = "$DOS2UNIX $_";
+        Run($cmd) or
+            die "Error converting to unix: '$cmd': $!\n"; 
+        my $cmd = "$DOS2UNIX $h";
+        Run($cmd) or
+            die "Error converting to unix: '$cmd': $!\n"; 
+    }
+    if ($XMLLINT){
+        my $cmd = "$XMLLINT $_";
+        Run($cmd) or
+            die "XML parsing error: '$cmd': $!\n"; 
+        my $cmd = "$XMLLINT $h";
+        Run($cmd) or
+            die "XML parsing error: '$cmd': $!\n"; 
+    }
     (unlink($TEXT_LIST_FILE) &&
      die "Incoming headers list doesn't match incoming text file list: $_ != $h.\n")
         unless shift(@haux) eq $h;
@@ -48,18 +62,19 @@ close FL;
 
 my $cmd = 'cp '. join(' ', @TEXT_LIST)." $TEXT_DIR/";
 Run($cmd)
-    or die "error running: '$cmd': $!\n";
+    or unlink @TEXT_LIST &&
+       die "error running: '$cmd': $!\n";
 $cmd = 'cp '. join(' ', @HEADERS_LIST)." $HEADERS_DIR/";
 if (! Run($cmd)){
-    Run("rm $TEXT_DIR/{".join(',', @TEXT_LIST)."}");
-    Run("rm $HEADERS_DIR/{".join(',', @HEADERS_LIST)."}");
+    unlink @TEXT_LIST;
+    unlink @HEADERS_LIST;
     unlink($TEXT_LIST_FILE);
     die "error running: '$cmd': $!\n";
 }
 
 if (!chdir($IDX_BIN)){
-    Run("rm $TEXT_DIR/{".join(',', @TEXT_LIST)."}");
-    Run("rm $HEADERS_DIR/{".join(',', @HEADERS_LIST)."}");
+    unlink @TEXT_LIST;
+    unlink @HEADERS_LIST;
     unlink($TEXT_LIST_FILE);
     die "error running: 'chdir($IDX_BIN)': $!\n";
 }
@@ -68,15 +83,17 @@ print "Now at $IDX_BIN \n";
 
 $cmd = "./runidx.sh $INDEX_DIR $TEXT_LIST_FILE $HEADERS_DIR $HEADERS_URL";
 if (! Run($cmd)){
-    Run("rm $TEXT_DIR/{".join(',', @TEXT_LIST)."}");
-    Run("rm $HEADERS_DIR/{".join(',', @HEADERS_LIST)."}");
+    unlink @TEXT_LIST;
+    unlink @HEADERS_LIST;
     unlink($TEXT_LIST_FILE);
     die "error running: '$cmd': $!\n";
 }
 
 chdir($INCOMING_DIR);
-unlink @TEXT_LIST;
-unlink @HEADERS_LIST;
+unlink @TEXT_LIST
+    unless $dry_run;
+unlink @HEADERS_LIST
+    unless $dry_run;
 
 print 'Files '.join(', ',@TEXT_LIST)." + headers have been indexed and removed from incoming folder.\n";
 
@@ -88,4 +105,13 @@ sub Run {
         if $dry_run;
     
     return system($c) == 0 ; 
+}
+
+sub Remove {
+    my @toremove = @_;
+
+    foreach (@toremove){
+        unlink $_;
+    }
+
 }

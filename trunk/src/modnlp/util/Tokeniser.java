@@ -1,5 +1,5 @@
 /**
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +18,19 @@
 package modnlp.util;
 
 import modnlp.dstruct.TokenMap;
+import modnlp.dstruct.TokenIndex;
 
 import java.net.URL;
 import java.util.StringTokenizer;
-import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileInputStream;
 
 /**
  *  Tokenise a chunk of text and record the position of each token
@@ -127,6 +136,9 @@ public class Tokeniser {
     verbose = v;
   }
 
+  public void setIgnoredElements(String i) {
+  }
+
   public String getEncoding() {
     return encoding;
   }
@@ -153,7 +165,7 @@ public class Tokeniser {
    *  @see modnlp.idx.inverted.TokeniserRegex for a proper
    *  implementation.
    */
-  public void tokenise ()
+  public void tokenise () throws java.io.IOException
   {
     int ct = 0;
     StringTokenizer st = new StringTokenizer(originalText, SEPTOKEN, false);
@@ -164,6 +176,28 @@ public class Tokeniser {
     }
     if (verbose)
       PrintUtil.donePrinting();
+  }
+
+   public List<String> split (String str) {
+    Matcher bwre = Pattern.compile("[\\p{L}.]+|'s?").matcher(str);
+    ArrayList<String> ret = new ArrayList<String>();
+    while (bwre.find()) {
+      String word = bwre.group();
+      ret.add(word);
+    }
+    return ret;
+  }
+
+
+  public TokenIndex getTokenIndex (String str) {
+    Matcher bwre = Pattern.compile("[\\p{L}.]+|'s?").matcher(str);
+    TokenIndex ret = new TokenIndex();
+    while (bwre.find()) {
+      int s = bwre.start();
+      int e = bwre.end();
+      ret.add(s,e);
+    }
+    return ret;
   }
 
   /**
@@ -185,7 +219,7 @@ public class Tokeniser {
   }
 
   /**
-   * Check is token is a negated token (e.g '¬c' in p(t|¬c))
+   * Check is token is a negated token (e.g '-c' in p(t|-c))
    */
   public static boolean isBar(String token){
     return token.charAt(0) == '-';

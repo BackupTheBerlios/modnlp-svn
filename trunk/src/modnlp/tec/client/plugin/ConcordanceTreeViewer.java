@@ -1,5 +1,5 @@
 /**
- *  © 2008 S Luz <luzs@acm.org>
+ *  (c) 2008 S Luz <luzs@acm.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,7 +21,9 @@ import modnlp.tec.client.Plugin;
 import modnlp.tec.client.ConcordanceBrowser;
 import modnlp.tec.client.ConcordanceObject;
 import modnlp.tec.client.gui.SubcorpusCaseStatusPanel;
-import modnlp.idx.inverted.StringSplitter;
+import modnlp.idx.inverted.TokeniserRegex;
+import modnlp.idx.inverted.TokeniserJP;
+import modnlp.util.Tokeniser;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -111,8 +113,6 @@ public class ConcordanceTreeViewer extends JFrame
   private static String title = new String("MODNLP Plugin: ConcordanceTreeViewer 0.1"); 
   private ConcordanceBrowser parent = null;
   private boolean guiLayoutDone = false;
-
-
 
   public ConcordanceTreeViewer() {
     thisFrame = this;
@@ -224,35 +224,35 @@ public class ConcordanceTreeViewer extends JFrame
     // set visualisation display
     setDisplay(tree,1);
 
-        /*
-    conc_tree = new ConcordanceTree(tree, NAME);
-    conc_tree.setBackground(Color.WHITE);
-    conc_tree.setForeground(Color.BLACK);
-    conc_tree.setFont(FontLib.getFont("Tahoma", Font.PLAIN, 8));
-
-    final JFastLabel title = new JFastLabel("                 ");
-    title.setPreferredSize(new Dimension(350, 20));
-    title.setVerticalAlignment(SwingConstants.BOTTOM);
-    title.setBorder(BorderFactory.createEmptyBorder(3,0,0,0));
-    title.setFont(FontLib.getFont("Tahoma", Font.PLAIN, 16));
-    title.setBackground(Color.WHITE);
-    title.setForeground(Color.BLACK);
-    
-
-   conc_tree.addControlListener(new ControlAdapter() {
-        public void itemEntered(VisualItem item, MouseEvent e) {
-          if ( item.canGetString(NAME) )
-            title.setText(item.getString(NAME));
-        }
-        public void itemExited(VisualItem item, MouseEvent e) {
-          title.setText(null);
-        }
+    /*
+      conc_tree = new ConcordanceTree(tree, NAME);
+      conc_tree.setBackground(Color.WHITE);
+      conc_tree.setForeground(Color.BLACK);
+      conc_tree.setFont(FontLib.getFont("Tahoma", Font.PLAIN, 8));
+      
+      final JFastLabel title = new JFastLabel("                 ");
+      title.setPreferredSize(new Dimension(350, 20));
+      title.setVerticalAlignment(SwingConstants.BOTTOM);
+      title.setBorder(BorderFactory.createEmptyBorder(3,0,0,0));
+      title.setFont(FontLib.getFont("Tahoma", Font.PLAIN, 16));
+      title.setBackground(Color.WHITE);
+      title.setForeground(Color.BLACK);
+      
+      
+      conc_tree.addControlListener(new ControlAdapter() {
+      public void itemEntered(VisualItem item, MouseEvent e) {
+      if ( item.canGetString(NAME) )
+      title.setText(item.getString(NAME));
+      }
+      public void itemExited(VisualItem item, MouseEvent e) {
+      title.setText(null);
+      }
       });
-    tpanel.setBackground(Color.WHITE);
-    tpanel.setForeground(Color.BLACK);
-    tpanel.add(conc_tree, BorderLayout.CENTER);
+      tpanel.setBackground(Color.WHITE);
+      tpanel.setForeground(Color.BLACK);
+      tpanel.add(conc_tree, BorderLayout.CENTER);
     */
-
+    
     getContentPane().add(pas, BorderLayout.NORTH);
     getContentPane().add(tpanel, BorderLayout.CENTER);
     getContentPane().add(pabottom, BorderLayout.SOUTH);
@@ -309,7 +309,6 @@ public class ConcordanceTreeViewer extends JFrame
     }
   }
 
-
   public void pruneTree(){
     Tree pt = getPrunedTree(tree);
     setDisplay(pt,pt.getRoot().getInt(ROWCOUNT));
@@ -323,7 +322,20 @@ public class ConcordanceTreeViewer extends JFrame
         //ConcordanceObject[] va =  parent.getConcArray().concArray;
         String tknregexp  = parent.getClientProperties().getProperty("tokeniser.regexp");
         Vector columns = new Vector();
-        StringSplitter ss = new StringSplitter();
+        Tokeniser ss;
+        int la = parent.getLanguage();
+        switch (la) {
+        case modnlp.Constants.LANG_EN:
+          ss = new TokeniserRegex("");
+          break;
+        case modnlp.Constants.LANG_JP:
+          ss = new TokeniserJP("");
+            break;
+        default:
+          ss = new TokeniserRegex("");
+          break;
+        }
+
         //int[] colcounts = new int[MAXCOLS];
         //Arrays.fill(colcounts,0);
         int ct = 0;
@@ -382,8 +394,8 @@ public class ConcordanceTreeViewer extends JFrame
             boolean found = false;
             //colcounts[i]++;
 
-            for (Iterator<Node> children = cnode.children(); children.hasNext();){
-              Node n = children.next();
+            for (Iterator children = cnode.children(); children.hasNext();){
+              Node n = (Node)children.next();
               // --
               //System.err.println(new String(ch)+"c = "+n.getString(NAME));
               // ---
@@ -421,8 +433,8 @@ public class ConcordanceTreeViewer extends JFrame
 
 
   private Tree updateColCounts(Tree tree, int[] c) {
-    for (Iterator<Tuple> spant = tree.tuples(); spant.hasNext();) {
-      Tuple n = spant.next();
+    for (Iterator spant = tree.tuples(); spant.hasNext();) {
+      Tuple n = (Tuple)spant.next();
 
       if (!(n instanceof Node) )
         continue;
@@ -440,8 +452,8 @@ public class ConcordanceTreeViewer extends JFrame
    Node[] togo = new Node[r.getChildCount()];
    Arrays.fill(togo,null);
    int i = 0;
-   for (Iterator<Node> spant = r.children(); spant.hasNext();) {
-      Node n = spant.next();
+   for (Iterator spant = r.children(); spant.hasNext();) {
+     Node n = (Node)spant.next();
       System.err.println("n="+n.getString(NAME)+" nct="+n.getInt(NODECOUNT)+" cct="+n.getInt(ROWCOUNT)+" nrt="+((double)n.getInt(NODECOUNT)/n.getInt(ROWCOUNT)));
       if (((double)n.getInt(NODECOUNT)/n.getInt(ROWCOUNT)) < prune_cutoff){
         togo[i++] = n;
@@ -470,8 +482,8 @@ public class ConcordanceTreeViewer extends JFrame
        tree.removeChild(togo[k]);
      }
    System.err.println("-------------valid tree? "+tree.isValidTree());
-   for (Iterator<Node> spant = r.children(); spant.hasNext();) {
-     Node n = spant.next();
+   for (Iterator spant = r.children(); spant.hasNext();) {
+     Node n = (Node)spant.next();
      System.err.println("----------n="+n.getString(NAME)+" nct="+n.getInt(NODECOUNT));
    }
    
@@ -479,8 +491,8 @@ public class ConcordanceTreeViewer extends JFrame
  }
 
  private Tree getPrunedTreeTODO(Tree tree) {
-    for (Iterator<Tuple> spant = tree.tuples(); spant.hasNext();) {
-      Tuple t = spant.next();
+    for (Iterator spant = tree.tuples(); spant.hasNext();) {
+      Tuple t = (Tuple)spant.next();
 
       if (!(t instanceof Node) )
         continue;

@@ -19,6 +19,7 @@ package modnlp.idx;
 
 import modnlp.idx.inverted.SubcorpusIndexer;
 import modnlp.idx.inverted.TokeniserRegex;
+import modnlp.idx.inverted.TokeniserJP;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.SubcorpusDirectory;
 import modnlp.idx.database.DictProperties;
@@ -34,6 +35,7 @@ import modnlp.idx.gui.IndexManagerUI;
 import modnlp.idx.gui.IndexManagerCL;
 import modnlp.idx.gui.CorpusChooser;
 import modnlp.idx.gui.HeaderURLChooser;
+import modnlp.util.Tokeniser;
 
 import com.sleepycat.je.DatabaseNotFoundException;
 
@@ -215,7 +217,6 @@ public class IndexManager {
     deindexingThread.run();
   }
 
-
   public void exit(int c)
   {
     setStop(true);
@@ -312,8 +313,22 @@ public class IndexManager {
         }
         String fname = (String)e.nextElement();
         try {
-          TokeniserRegex tkr = new TokeniserRegex(new File(fname), 
-                                                  fenc);
+          //Tokeniser tkr = new TokeniserRegex(new File(fname), 
+          //                                        fenc);
+          int la = dictProps.getLanguage();
+          Tokeniser tkr;
+          switch (la) {
+          case modnlp.Constants.LANG_EN:
+            tkr = new TokeniserRegex(new File(fname), fenc);
+            break;
+          case modnlp.Constants.LANG_JP:
+            tkr = new TokeniserJP(new File(fname), fenc);
+            break;
+          default:
+            tkr = new TokeniserRegex(new File(fname), fenc);
+            break;
+          }
+
           tkr.setVerbose(debug);
           tkr.setIgnoredElements(ignElement);
           // if (debug) {

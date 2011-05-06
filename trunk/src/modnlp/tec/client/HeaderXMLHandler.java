@@ -47,6 +47,7 @@ public class HeaderXMLHandler extends DefaultHandler
   StringBuffer content = new StringBuffer(1000);
   int error = 0;
   private String elementName = "";
+  private String elementAttribs = "";
   private StringBuffer elementContent = new StringBuffer("");
   private int depthContext = -2;
   private static String[] ignorableArray =  {"","teiHeader"};
@@ -76,11 +77,22 @@ public class HeaderXMLHandler extends DefaultHandler
       {
         for (int i = 0; i < depthContext; i++)
           content.append("   ");
-        content.append(fixElementName(elementName) + ": " + elementContent + "\n");
+        String at = "";
+        if (elementAttribs != null) {
+          at = " "+"("+elementAttribs+") ";
+        }
+        content.append(fixElementName(elementName)+at + ": " + 
+                       elementContent + "\n");
         //System.out.println("Content: |" + elementContent + "|");
       } 
     depthContext++;
     elementName = name;
+    if (atts !=null && atts.getLength() > 0)
+      elementAttribs = formatAttributes(atts);
+    else {
+      elementAttribs = null;
+    }
+
     elementContent = new StringBuffer("");
   }
   
@@ -92,7 +104,12 @@ public class HeaderXMLHandler extends DefaultHandler
       {
         for (int i = 0; i < depthContext; i++)
           content.append("   ");
-        content.append(fixElementName(elementName) + ": " + elementContent + "\n");
+        String at = "";
+        if (elementAttribs != null) {
+          at = " "+"("+elementAttribs+") ";
+        }
+        content.append(fixElementName(elementName)+at+": " 
+                       + elementContent + "\n");
         //System.out.println("Content: |" + elementContent + "|");
       } 
     depthContext--;
@@ -214,5 +231,18 @@ public class HeaderXMLHandler extends DefaultHandler
   public StringBuffer getContent(){
     return content;
   }
+
+  private final String formatAttributes (Attributes atts){
+    int l = atts.getLength();
+    StringBuffer sb = new StringBuffer("");
+    if (l > 0) {
+      sb.append(atts.getLocalName(0)+": "+atts.getValue(0));
+    }
+    for (int i = 1; i < l; i++) {
+      sb.append(", "+atts.getLocalName(i)+": "+atts.getValue(i));
+    }
+    return sb.toString();
+  }
+
 }
 

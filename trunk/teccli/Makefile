@@ -6,13 +6,14 @@ LIBLICENSES=$(TOPDIR)lib/COPYING-libs
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
 MANIFEST=teccli-manifest.txt
-SOURCES:= $(shell find $(SOURCEDIR)modnlp/tec/client -name *.java) $(SOURCEDIR)modnlp/gui/WrapLayout.java
+SOURCES:=  $(SOURCEDIR)modnlp/Constants.java $(shell find $(SOURCEDIR)modnlp/tec/client -name *.java) $(SOURCEDIR)modnlp/gui/WrapLayout.java
 TARGETS=$(subst .java,.class,$(SOURCES))
-JARREDS=modnlp/tec/client/*.class \
+JARREDS=modnlp/*.class \
+	modnlp/gui/*.class \
+	modnlp/tec/client/*.class \
 	modnlp/tec/client/gui/*.class \
 	modnlp/tec/client/gui/event/*.class \
 	modnlp/tec/client/plugin/*.class \
-	modnlp/gui/*.class \
 	modnlp/tec/client/icons/*.gif \
 	modnlp/tec/client/icons/*.jpg \
 	modnlp/tec/client/icons/*.png \

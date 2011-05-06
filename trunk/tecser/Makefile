@@ -20,7 +20,7 @@ JAVAC=javac
 JAR=jar
 JARFLAGS= cvmf $(MANIFEST)
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
-JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
+JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)  -encoding UTF-8
 JARTARGET=$(TOPDIR)lib/tecser.jar
 BINDISTDIR=$(DISTDIR)-bin
 #VPATH=$(SOURCEDIR)
@@ -30,7 +30,7 @@ BINDISTDIR=$(DISTDIR)-bin
 all: build jar test 
 
 %.class: %.java
-		$(JAVAC) $(JAVAFLAGS) $?
+		$(JAVAC) $(JAVACFLAGS) $?
 
 build: $(TARGETS)
 

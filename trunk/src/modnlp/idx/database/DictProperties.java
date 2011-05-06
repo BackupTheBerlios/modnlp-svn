@@ -1,5 +1,5 @@
 /**
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -113,6 +113,25 @@ public class DictProperties extends java.util.Properties{
 
   public String getHeadURL () {
     return getProperty("headers.url");
+  }
+
+  public int getLanguage () {
+    
+    String p = getProperty("language");
+    if (p==null) {
+      return modnlp.Constants.LANG_EN;  // English is default
+    }
+    else {
+      p = p.toLowerCase();
+    }
+
+
+    if (p==null) 
+      return modnlp.Constants.LANG_EN;  // English is default
+    if (p.equals("jp"))
+      return modnlp.Constants.LANG_JP;
+
+    return modnlp.Constants.LANG_EN;  // English is default
   }
 
   public String getHeadDir () {

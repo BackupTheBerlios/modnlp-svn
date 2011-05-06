@@ -1,5 +1,5 @@
 /** 
- *  © 2006 S Luz <luzs@cs.tcd.ie>
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -61,7 +61,7 @@ public class PreferPanel extends JFrame
 
   private static final String COTXBT = "Concordance context ";
   private static final String EXTXBT = "File extract context ";
-  private static String [] fseltab = {"6","8","10", "12","14","16","18"};
+  private static String [] fseltab = {"6","8","10", "12","14","16"};
   private static  int FSELMAX = Array.getLength(fseltab);
   public int maxContext = 130;
   public int maxExtrCtx = 600;
@@ -70,7 +70,7 @@ public class PreferPanel extends JFrame
   private JPanel set2 = new JPanel();
 
   private JComboBox  fontsel;
-	private Vector defaultListeners = new Vector ();
+  private Vector <DefaultChangeListener> defaultListeners = new Vector<DefaultChangeListener> ();
   private String HIDESGML = "";//"Show markup along with text";
   private JTextField context = new JTextField(""+(maxContext/2)+"",3);
   private JTextField extrctx = new JTextField(""+(maxExtrCtx/2)+"",3);

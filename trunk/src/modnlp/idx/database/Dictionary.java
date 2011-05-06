@@ -707,6 +707,7 @@ public class Dictionary {
                 if (fh == null) {
                   fh = new CorpusFile(dictProps.getFullCorpusFileName(fn),
                                       dictProps.getProperty("file.encoding"));
+                  fh.setLanguage(dictProps.getLanguage());
                   fh.setIgnoreSGML(ignx);
                 } 
                 String ot = fh.getWordInContext(bp, key, ctx);

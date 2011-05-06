@@ -30,4 +30,7 @@ public class Constants {
   public static final String ATTRIBUTE_OPTION_SEP = "_,_";
   public static final String LINE_ITEM_SEP = "<sep/>";
 
+  public static final int LANG_EN = 0;
+  public static final int LANG_JP = 1;
+
 }

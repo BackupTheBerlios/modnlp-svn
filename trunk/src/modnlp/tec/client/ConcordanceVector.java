@@ -1,5 +1,5 @@
 /** 
- *  © 2008 S Luz <luzs@acm.org>
+ *  (c) 2008 S Luz <luzs@acm.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,6 +17,7 @@
 */
 package modnlp.tec.client;
 
+import modnlp.Constants;
 import java.util.StringTokenizer;
 import java.util.Iterator;
 import java.util.Vector;
@@ -48,7 +49,8 @@ public class ConcordanceVector extends Vector<ConcordanceObject> implements List
   private int lastindex = BUFFER_SIZE;
   private EventListenerList listenerList = new EventListenerList();
   private ListDataEvent ldEvent = null;
-  
+  private int language = Constants.LANG_EN;
+
   public ConcordanceVector (){
     super();
     sortContextHorizon = 0;
@@ -59,6 +61,14 @@ public class ConcordanceVector extends Vector<ConcordanceObject> implements List
     super(size);
     sortContextHorizon = 0;
     halfConcordance = 0;
+  }
+
+  public final void setLanguage(int l){
+    language = l;
+  }
+
+  public final int getLanguage(){
+    return language;
   }
 
   public final int getLengthLongestFname(){

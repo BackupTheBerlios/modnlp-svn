@@ -1,5 +1,5 @@
 /** 
- *  � 2006 S Luz <luzs@cs.tcd.ie>
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,7 +17,13 @@
  */
 package modnlp.tec.client;
 
+import modnlp.Constants;
 import modnlp.tec.client.gui.HighlightString;
+import modnlp.dstruct.TokenIndex;
+import modnlp.idx.inverted.TokeniserRegex;
+import modnlp.idx.inverted.TokeniserJP;
+import modnlp.util.Tokeniser;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +48,7 @@ public class ConcordanceObject {
   public static final Pattern WORD_PATTERN = Pattern.compile("[\\p{L}\\p{N}]+");
   public static final Pattern WORDPUNCT_PATTERN = Pattern.compile("[\\p{L}\\{N}]+|[.,;?]+");
   public static final ConcordanceObject RENDERER_PROTOTYPE = getRendererPrototype();
-
+  private static final int MAXFNSIZE = 13;
 
   /* store a pointer to the ConcordanceVector so that we can access
    * properties of shared by all ConcordanceObject's, such as
@@ -52,13 +58,25 @@ public class ConcordanceObject {
   private int indexOfSort = 0; 
   private int sortCtxHorizon = 0;
   private boolean punctuationOn = false;
+  private int language = Constants.LANG_EN;
+
+  private TokenIndex leftTokenIndex;
+  private TokenIndex rightTokenIndex;
+ 
   private SortContext leftSortContext;
   private SortContext rightSortContext;
 
+  private String keyword;
 
   public String concordance;
   public String filename;
   public String sfilename;
+  /*
+  public String padding = ""; // whitesapeces to make up for half-width
+                         // Japanese characters (e.g.'…') for
+                         // monospaced alignment purposes
+
+                         */
   public int filepos;
   public int index;
   public long bytepos;
@@ -85,6 +103,7 @@ public class ConcordanceObject {
           {
             filename = new String(data, start, i);
             sfilename =   (new File(filename)).getName();
+            setShortFilenameString();
             //  filename.substring(filename.lastIndexOf('/')+1);
             start = i + 1;
             break;
@@ -101,15 +120,50 @@ public class ConcordanceObject {
             break;
           }
       }
-    
-    coVector = cv;
+
     concordance = new String(data, start, (data.length - start));
     bytepos = filepos;
+
+    coVector = cv;
+    if (coVector==null)
+      return;
+
+    language = coVector.getLanguage();
+    Tokeniser tkr;
+    switch (language) {
+    case modnlp.Constants.LANG_EN:
+      tkr = new TokeniserRegex("");
+      break;
+    case modnlp.Constants.LANG_JP:
+      tkr = new TokeniserJP("");
+      break;
+    default:
+      tkr = new TokeniserRegex("");
+      break;
+    }
+
+    /*
+    StringBuffer pad = new StringBuffer("");
+    if (language==modnlp.Constants.LANG_JP){// create padding for 1/2-width JP characters 
+      for(int i = start; i < data.length ; i++)
+        if(data[i] == '…')
+          pad.append(' ');
+      padding = pad.toString();
+    }
+    */
+    leftTokenIndex = tkr.getTokenIndex(getLeftContext());
+    leftTokenIndex.reverse();
+      
+    String kwarc = getKeywordAndRightContext();
+    rightTokenIndex = tkr.getTokenIndex(kwarc);
+    TokenIndex.TokenCoordinates tc = rightTokenIndex.remove(0); 
+    keyword = kwarc.substring(tc.start, tc.end);
+
   }
 
   public static ConcordanceObject getRendererPrototype(){
     ConcordanceObject c = new ConcordanceObject("/tmp/idxtest/data/ep/EN20050127.xml|15914|ed responsibility is blurred again by the wording that has now been proposed. I do not wish to drag outxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                                            null);
+                                                null);
     c.setIndex(9999998);
     return c;
   }
@@ -119,23 +173,43 @@ public class ConcordanceObject {
     return new JLabel(filename+offset+concordance);
   }
 
+  public void setLanguage(int l){
+    language = l;
+  }
+
   public void setIndex(int i){
     index = i;
   }
 
-  public String textConcLine (int lfn_size){
+  public String textConcLine (){
+    return concordance+" ["+(index+1)+"]";
+  }
+
+  private void setShortFilenameString (){
+    String fn = sfilename.length() > MAXFNSIZE? 
+      sfilename.substring(0,MAXFNSIZE-1) : sfilename;
+    String offset = adjustOffSet(MAXFNSIZE,fn.length());
+    sfilename = fn == null ?  " " : fn+offset;
+  }
+
+  public String htmlConcLine (int lfn_size){
+    if (coVector==null)
+      return textConcLine();
+    StringBuffer html = new StringBuffer("<html><table><tr><td align='left' border=0>");
     String fn = sfilename.length() > lfn_size? 
       sfilename.substring(0,lfn_size-1) : sfilename;
-    String offset = adjustOffSet(lfn_size,fn.length());
-    sfilename = fn == null ?  " " : fn+offset;
-    return sfilename+""+concordance+" ["+(index+1)+"]";
+    //String offset = adjustOffSet(lfn_size,fn.length());
+    //sfilename = fn == null ?  " " : fn+offset;
+    html.append(fn+"</td><td align='rigth' border=0>"+getLeftContext()+"</td>");
+    html.append("<td align='center' border=0><font color='red'>"+keyword+"</td>");
+    html.append("<td align='center' border=0>"+getKeywordAndRightContext().replaceFirst(keyword,"")+"</td>");
+    html.append("</table></html>");
+    return html.toString();
   }
 
   public String csvConcLine (){
     return sfilename+"|"+coVector.getHalfConcordance()+"|"+concordance;
   }
-
-
 
   public int getFilenameLength() {
     return filename.length(); 
@@ -154,21 +228,8 @@ public class ConcordanceObject {
   }
 
   public String getLeftContext(){
+    //System.out.println("=='"+concordance+"'");
     return concordance.substring(0,coVector.getHalfConcordance());
-  }
-
-  public StringTokenizer getLeftContextTokens(){
-    return new StringTokenizer(getLeftContext(),
-                                SEPTOKEN,
-                                false);
-  }
-
-  public StringTokenizer getRightContextTokens(){
-    StringTokenizer s = new StringTokenizer(getKeywordAndRightContext(),
-                                            SEPTOKEN,
-                                            false);
-    s.nextToken();
-    return s;
   }
 
   public final String getKeywordAndRightContext(){
@@ -210,19 +271,8 @@ public class ConcordanceObject {
   // used by ListDisplayRenderer
   public HighlightString indexOfKeyword(){
     int hc = coVector.getHalfConcordance();
-    StringBuffer sb = new StringBuffer();
-    String s = concordance.substring(hc);
-    int l = s.length();
-    for (int i = 0; i < l; i++) {
-      char c = s.charAt(i);
-      if (Character.isLetterOrDigit(c))
-        sb.append(c);
-      else 
-        break;
-    }
-    return new HighlightString(hc , sb.toString());
+    return new HighlightString(hc , keyword);
   }
-
   
   public String[] getLeftSortArray (boolean punctuation){
     int sch = coVector.getSortContextHorizon(); 
@@ -239,7 +289,7 @@ public class ConcordanceObject {
     String s =  getLeftContext(); //concordance.substring(0,getIndexOfSort(punctuation));
     Pattern p = punctuation? WORDPUNCT_PATTERN : WORD_PATTERN;
     
-    leftSortContext = getLeftSortContext(s,p,sch);    
+    leftSortContext = getSortContext(getLeftContext(), leftTokenIndex, (sch*-1) - 1);
 
     //System.err.println("--->"+s);
     //System.err.println("===>"+leftSortContext.getWordList());
@@ -252,6 +302,7 @@ public class ConcordanceObject {
 
     if ( sch == 0) // no sort requested
       return new String[0];
+
     
     if (sortCtxHorizon == sch && punctuation == punctuationOn) // don't search if we have done it before
       return rightSortContext.getWordArray();    // and user-requested sort context and punctuation haven't
@@ -259,10 +310,12 @@ public class ConcordanceObject {
     sortCtxHorizon = sch;
     punctuationOn = punctuation;
 
-    String s =  getKeywordAndRightContext();
-    Pattern p = punctuation? WORDPUNCT_PATTERN : WORD_PATTERN;
+    // NB: puctuation flag has not been implemented yet
     
-    rightSortContext = getRightSortContext(s,p,sch);
+    //Pattern p = punctuation? WORDPUNCT_PATTERN : WORD_PATTERN;
+    
+    // String s =  getKeywordAndRightContext();
+    rightSortContext = getSortContext(getKeywordAndRightContext(), rightTokenIndex, sch-1);
     
     //System.err.println("--->"+s);
     //System.err.println("===>"+rightSortContext.getWordList());
@@ -270,6 +323,27 @@ public class ConcordanceObject {
     return rightSortContext.getWordArray();
   }
 
+
+  // NB: puctuation flag has not been implemented yet
+  private  SortContext getRightSortContext(int from){
+    SortContext sc = getSortContext(getKeywordAndRightContext(), rightTokenIndex, from);
+    return sc;
+  }
+
+  private static SortContext getSortContext(String str, TokenIndex ti, int from){
+    SortContext sc = new SortContext();
+    int tis = ti.size();
+    for (int i = from; i < tis ; i++) {
+      int s = ti.getStartPos(i);
+      sc.add(str.substring(s,ti.getEndPos(i)), s);
+    }
+    return sc;
+  }
+
+  // NB: puctuation flag has not been implemented yet these functions
+  // (getLeftSortContext(s,p,from), getRightSortContext(s,p,from))
+  // have been deprecated in order to allow non-western word encodings
+  // to be implemented. Use getLeftSortContext(from) instead.
   private static SortContext getLeftSortContext(String s, Pattern p, int from){
     SortContext sc = getSortContext(s,p, 0);
     sc.reverse();
@@ -280,11 +354,15 @@ public class ConcordanceObject {
     return sc;
   }
 
+  // NB: puctuation flag has not been implemented yet
   private static SortContext getRightSortContext(String s, Pattern p, int from){
     SortContext sc = getSortContext(s,p, from);
     return sc;
   }
 
+
+  // NB: puctuation flag has not been implemented yet.
+  // @deprecated use getSortContext(String str, TokenIndex ti, int from) instead.
   private static SortContext getSortContext(String s, Pattern p, int from){
     Matcher wre = p.matcher(s);
     SortContext sc = new SortContext();
@@ -298,6 +376,7 @@ public class ConcordanceObject {
     }
     return sc;
   }
+
 
   // not used at the moment
   private int getIndexOfSort (boolean punctuation){
@@ -348,9 +427,9 @@ public class ConcordanceObject {
 
 
   public static String adjustOffSet(int maxs, int size){
-		
-    char[] auxA = new char[maxs-size];
-    for(int i = 0; i < (maxs-size) ; i++)
+    int s = maxs-size;
+    char[] auxA = new char[s];
+    for(int i = 0; i < s ; i++)
       auxA[i] = ' ';
     
     return new String(auxA);

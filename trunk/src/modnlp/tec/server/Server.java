@@ -1,11 +1,7 @@
 /** 
- * Project: MODNLP/TEC/SERVER, Based on software developed for the
- * Translated English Corpora (TEC) project, from the Dept of Language
- * Engineering - UMIST (DLE-UMIST)
+ * Project: MODNLP/TEC/SERVER
  *
-
- * Copyright (c) 2006 S.Luz (TCD)
- *           (c) 1998 S.Luz (DLE-UMIST) 
+ * Copyright (c) 2006-2010 S.Luz (TCD)
  *           All Rights Reserved.
  *
  *   This program is free software; you can redistribute it and/or

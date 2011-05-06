@@ -43,6 +43,9 @@ public class SubtreeExpansionFilter extends GroupAction {
     private String m_sources;
     private Predicate m_groupP;    
     private NodeItem m_root;
+  // TO DO: the next two vars were set just so that the class compiles. 
+    private int m_threshold;
+    private int m_divisor;
     
     /**
      * Create a new SubtreeExpansionFilter that processes the given group.

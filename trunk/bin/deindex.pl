@@ -6,19 +6,15 @@
 use Cwd;
 use File::Basename;
 
-$IDX_BIN = shift @ARGV;
 $dry_run = 0;
 @TEXT_LIST = @ARGV;
 
-die "Usage: indexincoming.pl idx_binary_directory\n"
+
+require "config.pl";
+die "Usage: deindex.pl [file1 [file2 ...]]\n"
     unless $IDX_BIN;
 
-## set these variables to point to your corpus files
-$INDEX_DIR = '/home/luzs/corpora/indices/tec';
-$TEXT_DIR = '/home/luzs/corpora/tec/text';
-$HEADERS_DIR = '/home/luzs/corpora/tec/headers';
 @HEADERS_LIST=();
-$HEADERS_URL = 'http://ronaldo.cs.tcd.ie/tec2/headers/';
 $DATE = localtime();
 $DATE =~ tr/ /_/;
 

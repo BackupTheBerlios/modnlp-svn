@@ -17,6 +17,7 @@
  **/ 
 package modnlp.tec.client;
 
+import modnlp.Constants;
 import modnlp.tec.client.gui.GraphicalSubcorpusSelector;
 import modnlp.tec.client.gui.RemoteCorpusChooser;
 import modnlp.tec.client.gui.PreferPanel;
@@ -64,7 +65,7 @@ public class Browser
 {
 
   // constants
-  public static final String RELEASE = "0.6.1b1";
+  public static final String RELEASE = "0.7.0";
   public static final String REVISION = "$Revision: 1.9 $";
   String BRANDNAME = "MODNLP/TEC";
   private static final String PLGLIST = "teclipluginlist.txt";
@@ -84,6 +85,7 @@ public class Browser
   private String keywordString;
   private String encoding = null;
   private String xquerywhere = null;
+  private int language = Constants.LANG_EN;
 
   // GUI
   private SplashScreen splashScreen;
@@ -476,7 +478,6 @@ public class Browser
     advConcFlag = f;
   }
 
-
   public boolean isSubCorpusSelectionON (){
     return advConcFlag;
   }
@@ -502,6 +503,10 @@ public class Browser
     setLocalCorpus(cdir);
   }
 
+  public int getLanguage(){
+    return language;
+  }
+
   public void setLocalCorpus (String cdir) {
     DictProperties dictProps = new DictProperties(cdir);
     if (dictionary != null)
@@ -514,6 +519,7 @@ public class Browser
     dictionary.setVerbose(debug);
     setLocalHeadersDirectory(dictProps);
     encoding = dictProps.getProperty("file.encoding");
+    language = dictProps.getLanguage();
     if (guiSubcorpusSelector != null)
       stopSubCorpusSelectorGUI();
     guiSubcorpusSelector = null;
@@ -527,6 +533,7 @@ public class Browser
       System.err.println("Browser: error opening header DB: " + e);
       e.printStackTrace(System.err);
     }
+    concVector.setLanguage(language);
     guiSubcorpusSelector = new GraphicalSubcorpusSelector(this);
     concordanceProducer = new ConcordanceProducer(dictionary);
   }
@@ -601,6 +608,13 @@ public class Browser
         headerBaseURL = "http://"+remoteServer+"/tec/headers";
       preferenceFrame.setHeaderBaseURL(headerBaseURL);
       encoding = input.readLine();
+      String lg = input.readLine();
+      if (lg == null || lg.length() == 0) 
+        language = Constants.LANG_EN;
+      else
+        language = (new Integer(lg)).intValue();
+      concVector.setLanguage(language);
+      System.err.println("language=>>>>"+language);
       System.err.println("encoding=>>>>"+encoding);
       encoding = encoding == null? "---UTF8---" : encoding;
       clProperties.setProperty("tec.client.server",remoteServer);
@@ -617,6 +631,7 @@ public class Browser
         System.err.println("Exception: couldn't create URL input stream: "+e);
         headerBaseURL = "http://"+remoteServer+"/tec/headers";
         System.err.println("Setting URL to "+headerBaseURL);
+        language = Constants.LANG_EN;
         preferenceFrame.setHeaderBaseURL(headerBaseURL);
       }
     if (guiSubcorpusSelector.hasNetworkError())

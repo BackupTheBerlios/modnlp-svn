@@ -159,9 +159,17 @@ public class ConcordanceThread
                          " No concordances found");
       concVector.ensureCapacity(noFound);
       //System.out.println("_________context size: "+ctsz);
-      while (!stop && ctRead < noFound && 
-             (concordance = input.readLine()) != null &&
-             concVector.add(concordance)) {
+      while (!stop && ctRead < noFound ) {
+
+        if ((concordance = input.readLine()) == null ){
+          break;
+        }
+        if (concordance.length() > 0)
+          concVector.add(concordance); 
+        else {
+          System.out.println("__ConcordanceThread:skipped: "+ctRead);
+          continue;
+        }
         ctRead++;
         if ( ctRead > updateThreshold || ctRead >= noFound)
           if ( !fshow && noFound > 0)

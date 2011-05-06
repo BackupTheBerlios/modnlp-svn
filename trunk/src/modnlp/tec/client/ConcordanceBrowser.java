@@ -112,6 +112,8 @@ public interface ConcordanceBrowser {
 
   public String getBrowserName ();
 
+  public int getLanguage();
+
   public boolean isSubCorpusSelectionON ();
 
   public boolean subCorpusSelected();

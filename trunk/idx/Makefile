@@ -21,7 +21,9 @@ SOURCES=$(SOURCEDIR)modnlp/Constants.java \
 	$(SOURCEDIR)modnlp/dstruct/SubcorpusMap.java	\
 	$(SOURCEDIR)modnlp/dstruct/StopWordList.java \
 	$(SOURCEDIR)modnlp/dstruct/StringSet.java \
+	$(SOURCEDIR)modnlp/dstruct/Token.java \
 	$(SOURCEDIR)modnlp/dstruct/TokenMap.java \
+	$(SOURCEDIR)modnlp/dstruct/TokenIndex.java \
 	$(SOURCEDIR)modnlp/dstruct/WordForms.java \
 	$(SOURCEDIR)modnlp/dstruct/WordFrequencyPair.java \
 	$(SOURCEDIR)modnlp/idx/database/AlreadyIndexedException.java \
@@ -53,6 +55,12 @@ SOURCES=$(SOURCEDIR)modnlp/Constants.java \
 	$(SOURCEDIR)modnlp/idx/inverted/SubcorpusIndexer.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserGNU.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserRegex.java \
+	$(SOURCEDIR)modnlp/idx/inverted/TokeniserJP.java \
+	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/BasicCodePointReader.java \
+	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/CodePointReader.java \
+	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/PushbackCodePointReader.java \
+	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/TinySegmenterConstants.java \
+	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/TinySegmenter.java \
 	$(SOURCEDIR)modnlp/idx/ConsumerQuery.java \
 	$(SOURCEDIR)modnlp/idx/Dump.java \
 	$(SOURCEDIR)modnlp/idx/MakeTECIndex.java \
@@ -78,6 +86,9 @@ MAINJARS=$(subst $(SOURCEDIR),,$(TARGETS)) # doesn't work by itself: need to jar
 JARREDS=$(MAINJARS) \
 	eXistConf.xml \
 	'modnlp/dstruct/FrequencyHash$$ValueSorter.class' \
+	'modnlp/dstruct/TokenIndex$$TokenCoordinates.class' \
+	'modnlp/idx/inverted/jpsegmenter/TinySegmenter$$1.class' \
+	'modnlp/idx/inverted/jpsegmenter/TinySegmenter$$CharInfo.class' \
 	'modnlp/idx/ConsumerQuery$$ConcordanceProducer.class' \
 	'modnlp/idx/IndexManager$$DeindexingThread.class' \
 	'modnlp/idx/IndexManager$$IndexingThread.class'
@@ -87,7 +98,7 @@ BINDISTXTRAS=$(LIBLICENSES) TUTORIAL.txt
 DISTFILES=AUTHORS COPYING Makefile README TUTORIAL.txt VERSION BUGS INSTALL TODO exclude.txt bin/runidx.sh \
 	$(LIBS) $(DOCS) $(DATA) $(SOURCES) $(SOURCEDIR)modnlp/idx/prj.el $(SOURCEDIR)idx-manifest.txt
 #JAVA=jamvm
-JAVAC=javac -target 1.5
+JAVAC=javac -encoding UTF-8 #-target 1.5 
 #JAVAC=ecj -1.5
 #JAVAC=/usr/lib/jvm/java-1.5.0-sun-1.5.0.16/bin/javac
 #JAVAC=jikes -bootclasspath /usr/lib/jvm/java-1.5.0-sun/jre/lib/rt.jar -source 1.5

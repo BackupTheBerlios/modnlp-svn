@@ -229,9 +229,10 @@ public class HeaderDBManager {
   }
 
   public String[] getOptionSet(String attchsr){
+    String[] out = {};
     try {
       if (attchsr == null)
-        return null;
+        return out;
       XQueryService service =
         (XQueryService) collection.getService("XQueryService", "1.0");
       //service.setProperty("indent", "yes");
@@ -240,7 +241,7 @@ public class HeaderDBManager {
                         attchsr+") order by $s return data($s)");
       ResourceSet result = service.execute(compiled);
       int s = (int)result.getSize();
-      String[] out = new String[s];
+      out = new String[s];
       for (int i = 0; i < s; i++) {
         out[i] = (String)result.getResource(i).getContent();
       }
@@ -249,13 +250,14 @@ public class HeaderDBManager {
     catch (Exception ex){
       System.err.println("Error (HeaderDBManager.geSubcorpusConstrints): "+ex+" ATTCHRS: "+attchsr);
       ex.printStackTrace();
-      return null;
+      return out;
     }
   }
 
   public String getOptionSetString(String attchsr){
+    System.err.println(attchsr);
     String[] osa = getOptionSet(attchsr);
-    if (osa == null)
+    if (osa == null || osa.length==0)
       return null;
     StringBuffer sb = new StringBuffer(osa[0]);
     for (int i = 1; i < osa.length; i++) {
