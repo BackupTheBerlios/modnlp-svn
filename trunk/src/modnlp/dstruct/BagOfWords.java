@@ -1,3 +1,20 @@
+/**
+ *  (c) 2006 S Luz <luzs@cs.tcd.ie>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2,
+ * or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*/
 package modnlp.dstruct;
 
 import modnlp.util.Tokeniser;
@@ -25,54 +42,66 @@ public class BagOfWords extends HashMap{
     super(); 
   }
 
-  public BagOfWords (String text)
+  public BagOfWords (String text) 
   {
     super();
-    addTokens(text);
+      addTokens(text);
   }
 
-  public BagOfWords (String text, StopWordList swlist)
+  public BagOfWords (String text, StopWordList swlist) 
   {
     super();
-    addTokens(text, swlist);
+      addTokens(text, swlist);
   }
 
 
-  public void addTokens(String text){
+  public void addTokens(String text)  {
     Tokeniser tkzr = new Tokeniser(text);
-    tkzr.tokenise();
-    TokenMap tm = tkzr.getTokenMap();
-    for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
-			{
-        Map.Entry kv = (Map.Entry) e.next();
-        String t = (String) kv.getKey();
-        IntegerSet set = (IntegerSet) kv.getValue();
-        addToken(t,set.size());
-      } 
+    try {
+      tkzr.tokenise();
+      TokenMap tm = tkzr.getTokenMap();
+      for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
+        {
+          Map.Entry kv = (Map.Entry) e.next();
+          String t = (String) kv.getKey();
+          IntegerSet set = (IntegerSet) kv.getValue();
+          addToken(t,set.size());
+        } 
+    }
+    catch (java.io.IOException e){
+      System.err.println("Error adding tokens to BagOfWords:\n"+e);
+    }
     //putAll(tkzr.getTokenMap());
   }
 
-  public void addTokens(String text, StopWordList swlist){
+  public void addTokens(String text, StopWordList swlist) {
     Tokeniser tkzr = new Tokeniser(text);
-    tkzr.tokenise();
-    TokenMap tm = tkzr.getTokenMap();
-    for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
-			{
-        Map.Entry kv = (Map.Entry) e.next();
-        String t = (String) kv.getKey();
-        if (swlist.contains(t))
-          continue;
-        IntegerSet set = (IntegerSet) kv.getValue();
-        addToken(t,set.size());
-      } 
+       try {
+      tkzr.tokenise();
+      TokenMap tm = tkzr.getTokenMap();
+      for (Iterator e = tm.entrySet().iterator(); e.hasNext() ;)
+        {
+          Map.Entry kv = (Map.Entry) e.next();
+          String t = (String) kv.getKey();
+          if (swlist.contains(t))
+            continue;
+          IntegerSet set = (IntegerSet) kv.getValue();
+          addToken(t,set.size());
+        } 
+    }
+    catch (java.io.IOException e){
+      System.err.println("Error adding tokens to BagOfWords:\n"+e);
+    }
+
   }
+
 
 
   /**
    * addToFileCount: tokenize text and add 1 for each type (not token) 
    *     to the frequency list (text is assumed to be a single file)
    */
-  public void addTypesToFileCount (String text)
+  public void addTypesToFileCount (String text) throws java.io.IOException
   {
     Tokeniser tkzr = new Tokeniser(text);
     tkzr.tokenise();

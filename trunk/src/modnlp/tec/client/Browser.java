@@ -417,6 +417,7 @@ public class Browser
         headerBaseURL.startsWith("file://"))
       sep = "/";
     String tmp;
+    String img = headerBaseURL+sep+headerName.substring(0,headerName.indexOf('.'))+".jpg";
     
     StringBuffer content = new StringBuffer();
     System.err.println("URL--:"+headerBaseURL);
@@ -430,6 +431,7 @@ public class Browser
         is = new FileInputStream(headerBaseURL+
                                                  sep+
                                                  headerName);
+        img = "file://"+img;
       }
       else {
         headerURL = new URL(headerBaseURL+sep+headerName);
@@ -446,7 +448,9 @@ public class Browser
       else {
         HeaderXMLHandler parser =  new HeaderXMLHandler();
         parser.parse(is);
-        content = parser.getContent();
+
+        content = new StringBuffer("<html><img src='"+img+"' height=183 width=128 alt='Book Cover'><pre>"+parser.getContent()+"</pre></html>");
+        System.err.println(content+"");
       }
     }
     catch (Exception e) {
