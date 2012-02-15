@@ -1,5 +1,5 @@
-SRCCLASSPATH=.:../lib/MinML2.jar
-TOPCLASSPATH=src:lib/MinML2.jar
+SRCCLASSPATH=.
+TOPCLASSPATH=src
 SOURCES=modnlp/util/*.java modnlp/dstruct/*.java modnlp/tc/util/*.java modnlp/tc/dstruct/*.java modnlp/tc/parser/*.java modnlp/tc/tsr/*.java modnlp/tc/evaluation/*.java modnlp/tc/induction/*.java modnlp/tc/classify/*.java 
 DOCS=doc
 SOURCEDIR=src
@@ -12,7 +12,7 @@ DISTFILES=BUGS COPYING ChangeLog INSTALL Makefile README TODO VERSION AUTHORS\
 JAVA=java
 JAVAC=javac
 JAVAFLAGS=-classpath $(TOPCLASSPATH)
-JAVACFLAGS= -classpath $(SRCCLASSPATH)
+JAVACFLAGS= -classpath $(SRCCLASSPATH)  -encoding UTF8
 JARTARGET=$(TOPDIR)lib/tc.jar
 JAR=jar
 JARFLAGS= cvf 
@@ -23,6 +23,9 @@ build:
 
 jar: build
 	cd $(SOURCEDIR) && $(JAR) $(JARFLAGS) ../$(JARTARGET) $(JARREDS)
+
+clean:
+	find -L . -iregex '.*\(\.aux\|\.log\|\.dvi\|\.class\|~\|#.*#\b\)' -type f -print0 |xargs -0 -e rm -f
 
 test:
 	@echo "Testing TSR..."

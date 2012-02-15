@@ -46,6 +46,14 @@ foreach (@TEXT_LIST){
         Run($cmd) or
             die "XML parsing error: '$cmd': $!\n"; 
     }
+    if ($FILETYPE){
+        my $cmd = "$FILETYPE $_";
+        AcceptableEncoding($cmd) or
+            die "Error determining file type: '$cmd': $!\n"; 
+        my $cmd = "$FILETYPE $h";
+        AcceptableEncoding($cmd) or
+            die "Error determining file type: '$cmd': $!\n"; 
+    }
     (unlink($TEXT_LIST_FILE) &&
      die "Incoming headers list doesn't match incoming text file list: $_ != $h.\n")
         unless shift(@haux) eq $h;
@@ -106,6 +114,19 @@ sub Run {
     
     return system($c) == 0 ; 
 }
+
+sub AcceptableEncoding {
+    my $c = shift;
+
+    print "$c \n";
+    return 1
+        if $dry_run;
+    
+    my $enc = `$c`;
+    return $enc =~ /(charset=us-ascii|charset=utf-8)/;
+}
+
+
 
 sub Remove {
     my @toremove = @_;

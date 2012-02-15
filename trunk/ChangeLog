@@ -1,3 +1,14 @@
+2011-05-06  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* release 0.0.8: First step towards making modnlp truly
+	multilingual. Generalised display of concordances to deal with
+	non-latin scripts (tested on Japanese); incorporated simple
+	Japanese tokeniser (indexing now fully functional), adapted word
+	splitting for ListDisplay, ListDisplayRenderer and ConcordanceTree
+	etc. Added init.d scripts to start/stop tec server on Linux
+	machines. Added scripts for command line indexing
+	(indexincoming.pl) and deindexing (deindex.pl). Fixed minor bugs.
+
 2010-07-05  Saturnino Luz  <luzs@acm.org>
 
 	* release 0.0.7: Upgraded je.jar to version 4. This change affects
