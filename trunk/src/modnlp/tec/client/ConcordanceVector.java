@@ -50,6 +50,7 @@ public class ConcordanceVector extends Vector<ConcordanceObject> implements List
   private EventListenerList listenerList = new EventListenerList();
   private ListDataEvent ldEvent = null;
   private int language = Constants.LANG_EN;
+  private boolean punctuation = false;
 
   public ConcordanceVector (){
     super();
@@ -70,6 +71,15 @@ public class ConcordanceVector extends Vector<ConcordanceObject> implements List
   public final int getLanguage(){
     return language;
   }
+
+  public final void setPunctuation(boolean p){
+    this.punctuation = p;
+  }
+
+  public final boolean getPunctuation(){
+    return punctuation;
+  }
+
 
   public final int getLengthLongestFname(){
     return lengthLongestFname;
@@ -104,6 +114,7 @@ public class ConcordanceVector extends Vector<ConcordanceObject> implements List
     //System.out.println("HERE|"+inputString);
 
     ConcordanceObject co = new ConcordanceObject(inputString, this);
+    
     if( co.concordance.equals("null") || co.concordance.equals("") )
       {
         return false;

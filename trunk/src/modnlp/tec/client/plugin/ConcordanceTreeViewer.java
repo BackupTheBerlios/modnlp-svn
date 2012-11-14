@@ -320,7 +320,7 @@ public class ConcordanceTreeViewer extends JFrame
         tree = null;
         sccsPanel.updateStatus();
         //ConcordanceObject[] va =  parent.getConcArray().concArray;
-        String tknregexp  = parent.getClientProperties().getProperty("tokeniser.regexp");
+        //String tknregexp  = parent.getClientProperties().getProperty("tokeniser.regexp");
         Vector columns = new Vector();
         Tokeniser ss;
         int la = parent.getLanguage();

@@ -19,7 +19,8 @@ package modnlp.idx;
 
 import modnlp.idx.inverted.SubcorpusIndexer;
 import modnlp.idx.inverted.TokeniserRegex;
-import modnlp.idx.inverted.TokeniserJP;
+//import modnlp.idx.inverted.TokeniserJP;
+import modnlp.idx.inverted.TokeniserJPLucene;
 import modnlp.idx.database.Dictionary;
 import modnlp.idx.database.SubcorpusDirectory;
 import modnlp.idx.database.DictProperties;
@@ -322,13 +323,13 @@ public class IndexManager {
             tkr = new TokeniserRegex(new File(fname), fenc);
             break;
           case modnlp.Constants.LANG_JP:
-            tkr = new TokeniserJP(new File(fname), fenc);
+            tkr = new TokeniserJPLucene(new File(fname), fenc);
+            //tkr = new TokeniserJP(new File(fname), fenc);
             break;
           default:
             tkr = new TokeniserRegex(new File(fname), fenc);
             break;
           }
-
           tkr.setVerbose(debug);
           tkr.setIgnoredElements(ignElement);
           // if (debug) {
@@ -338,6 +339,10 @@ public class IndexManager {
             throw new AlreadyIndexedException(fname);
           }
           imui.print("-- Tokenising ...\n");
+          if (dictProps.getProperty("index.punctuation").equalsIgnoreCase("true")){
+            imui.print("-- (punctuation *will* count as tokens)\n");
+            tkr.setIndexPuntuation(true);
+          }
           tkr.tokenise();
           TokenMap tm = tkr.getTokenMap();
           //System.err.print(tm.toString());

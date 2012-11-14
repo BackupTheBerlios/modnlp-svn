@@ -37,6 +37,8 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import javax.swing.JFrame;
 import java.io.BufferedReader;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.Timer;
@@ -522,8 +524,9 @@ public class FqListBrowser extends JFrame
             {
               File file = filedial.getSelectedFile();
               //System.out.println(file.getName());
+              System.setProperty("file.encoding", "UTF8");
               PrintWriter dlf =
-                new PrintWriter(new BufferedWriter(new FileWriter(file)));
+                new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8")));
               Object[] va =  (model.getDataVector()).toArray();
               dlf.println("Rank order\tType\tFrequency");
               for (int i = 0; i < va.length ; i++) {

@@ -99,7 +99,7 @@ public class WordQuery {
    *
    * <p>Examples: 
    *
-   * <ul> 
+   * <ul> Combinations of words and wildcards are also allowed, so
    *
    * <li> Entering <code>seen+before</code> will find * <code>...never seen before...</code> etc;
    *
@@ -111,6 +111,11 @@ public class WordQuery {
    * <li> Combinations of words and wildcards are also allowed, so
    * entering <code>know+before*</code> will find <code>...know before...</code>, 
    * <code>...know beforehand</code>, etc.
+   *
+   * <li> Regular expressions can also be used. Double-quoted strings will be interpreted as regexps.
+   * E.g. <code>".*less.*"</code> will find <code>...less...</code>,
+   * <code>...hopeless, hopelessness</code>, etc.
+   *
    *
    *
    * N.B.: much (perhaps most) of the functionality in this class
@@ -509,7 +514,8 @@ public class WordQuery {
    * @return a <code>boolean</code> value
    */
   public static boolean isValidQuery(String q){
-    q.replaceAll("\".+?\"", REGEXPMARKER);
+    q = q.replaceAll("\".+?\"", REGEXPMARKER);
+    System.err.println("-----:"+q+"\n");
     // this is all too sophisticated for this method. the solution above is
     // faster and less complicated
     String separator = QSEPTOKEN;

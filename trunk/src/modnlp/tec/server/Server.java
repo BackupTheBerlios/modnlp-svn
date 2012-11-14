@@ -33,6 +33,8 @@ import java.util.Hashtable;
 import java.util.Vector; 
 import java.util.Enumeration;
 
+
+
 /** Streamserver for TEC clients. Initially, load a precompiled
  * serialized hashtable for stroring all the words in the corpus
  * and await client connections. Then deal with requests through
@@ -51,10 +53,10 @@ public class Server extends Thread {
   private static final boolean DEBUG = false;
   private static final int MAXCTX = 130;
   private static final int MAXEXT = 600;
-  private static final int  PORTNUM = 1240;
   // These are feaaults to be chaged in main() 
   private static ServerProperties sprop = new ServerProperties();
   private static String LOGF = sprop.getProperty("log.file");
+  private static final int  PORTNUM = new Integer(sprop.getProperty("port.number")).intValue();
   
   private static ServerSocket serverSocket;
   private static Dictionary dtab;

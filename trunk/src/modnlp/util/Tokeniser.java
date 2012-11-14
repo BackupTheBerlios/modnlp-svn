@@ -82,6 +82,9 @@ public class Tokeniser {
                                          ')' };
   public static final String SEPTOKEN = new String(SEPTKARR);
 
+  protected Boolean indexPuntuation = false;
+
+
 
   public Tokeniser (String text) {
     originalText = text;
@@ -114,6 +117,24 @@ public class Tokeniser {
     }
     originalText = sb.toString();
     tokenMap = new TokenMap();
+  }
+
+  /**
+   * Gets the value of indexPuntuation
+   *
+   * @return the value of indexPuntuation
+   */
+  public final Boolean getIndexPuntuation() {
+    return this.indexPuntuation;
+  }
+
+  /**
+   * Sets the value of indexPuntuation
+   *
+   * @param argIndexPuntuation Value to assign to this.indexPuntuation
+   */
+  public void setIndexPuntuation(final Boolean argIndexPuntuation) {
+    this.indexPuntuation = argIndexPuntuation;
   }
 
   public void setTokenMap(TokenMap t){

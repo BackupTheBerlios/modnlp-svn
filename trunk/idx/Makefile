@@ -1,6 +1,6 @@
 TOPDIR=
 SOURCEDIR=$(TOPDIR)src/
-LIBSPATH=$(TOPDIR)lib/gnu-regexp.jar:$(TOPDIR)lib/je.jar:$(TOPDIR)lib/antlr-2.7.6.jar:$(TOPDIR)lib/commons-pool-1.2.jar:$(TOPDIR)lib/exist-modules.jar:$(TOPDIR)lib/exist.jar:$(TOPDIR)lib/jgroups-all.jar:$(TOPDIR)lib/log4j-1.2.14.jar:$(TOPDIR)lib/resolver.jar:$(TOPDIR)lib/sunxacml.jar:$(TOPDIR)lib/xmldb.jar:$(TOPDIR)lib/xmlrpc-1.2-patched.jar
+LIBSPATH=$(TOPDIR)lib/gnu-regexp.jar:$(TOPDIR)lib/je.jar:$(TOPDIR)lib/antlr-2.7.6.jar:$(TOPDIR)lib/commons-pool-1.2.jar:$(TOPDIR)lib/exist-modules.jar:$(TOPDIR)lib/exist.jar:$(TOPDIR)lib/jgroups-all.jar:$(TOPDIR)lib/log4j-1.2.14.jar:$(TOPDIR)lib/resolver.jar:$(TOPDIR)lib/sunxacml.jar:$(TOPDIR)lib/xmldb.jar:$(TOPDIR)lib/xmlrpc-1.2-patched.jar:$(TOPDIR)lib/lucene-core-3.6.0.jar:$(TOPDIR)lib/lucene-analyzers-3.6.0.jar:$(TOPDIR)lib/lucene-kuromoji-3.6.0.jar
 LIBS=$(subst :, ,$(LIBSPATH))
 LIBLICENSES=$(TOPDIR)lib/COPYING-libs
 DOCS=$(TOPDIR)doc
@@ -56,6 +56,7 @@ SOURCES=$(SOURCEDIR)modnlp/Constants.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserGNU.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserRegex.java \
 	$(SOURCEDIR)modnlp/idx/inverted/TokeniserJP.java \
+	$(SOURCEDIR)modnlp/idx/inverted/TokeniserJPLucene.java \
 	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/BasicCodePointReader.java \
 	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/CodePointReader.java \
 	$(SOURCEDIR)modnlp/idx/inverted/jpsegmenter/PushbackCodePointReader.java \

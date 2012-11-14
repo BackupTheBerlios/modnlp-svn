@@ -34,7 +34,7 @@ JAVAC=javac -target 1.5
 JAR=jar
 JARFLAGS= cvmf $(MANIFEST)
 JAVAFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH)
-JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH) -encoding ISO-8859-1
+JAVACFLAGS=-classpath $(SOURCEDIR):$(LIBSPATH) -encoding UTF8 #ISO-8859-1
 JARTARGET=$(TOPDIR)lib/teccli.jar
 BINDISTDIR=$(DISTDIR)-bin
 BINDISTXTRAS=$(LIBLICENSES) $(TOPDIR)*COPYING*
@@ -93,5 +93,6 @@ bindistecpc: jar
 	cp src/teclipluginlist.txt $(BINDISTDIR)-ecpc/
 	cp $(LIBS) $(JARTARGET) $(LIBLICENSES) $(BINDISTDIR)-ecpc
 	cp src/tecli.properties.ecpc $(BINDISTDIR)-ecpc/tecli.properties
+	jar ufv $(BINDISTDIR)-ecpc/teccli.jar $(BINDISTDIR)-ecpc/tecli.properties
 	tar cfvz /tmp/$(BINDISTDIR)-ecpc.tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)-ecpc
 	rm -rf $(BINDISTDIR)-ecpc

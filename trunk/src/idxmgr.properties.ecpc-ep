@@ -1,7 +1,9 @@
 #modnlp.idx.IndexManager's properties (tailored to ECPC indexing)
 #Wed May 16 15:29:14 IST 2007
 tokeniser.ignore.elements=(omit|ignore)
-## index header files?
+## should punctuation count as tokens?
+index.punctuation=false
+## index metadata for subcorpus selection (header files)?
 index.headers=true
 ## which element should be indexed (i.e. text within elements
 ## specified here will be indexed and can form subcorpora if xquery
@@ -23,7 +25,7 @@ header.extension=hed
 ## the maximum number of subcorpus constraint query results to be stored (by HeaderDBManager)
 xquery.max.cache.size=23
 file.encoding=UTF8
-xquery.root.filedescription.path=/header
+xquery.root.filedescription.path=/ecpc_EP/header
 ## xquery expression that returns a (human-readable) file description (for the corpus description plugin)
 xquery.file.description.return={data($s/@filename)}<sep/>{data($s/@language)}<sep/>{data($s/index/label)}, {data($s/index/place)}, {data($s/index/date)}, {data($s/index/edition)}
 ## the language to be indexed (determines the choice of

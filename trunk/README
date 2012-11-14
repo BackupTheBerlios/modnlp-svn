@@ -33,7 +33,7 @@ svn checkout svn+ssh://yourloginname@svn.berlios.de/svnroot/repos/modnlp/trunk m
 (if you are a developer)
 
 
-
+svn co https://developername@svn.berlios.de/svnroot/repos/modnlp/trunk modnlp/
 
 -- S. Luz (luzs@cs.tcd.ie)
 

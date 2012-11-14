@@ -1,5 +1,8 @@
 #modnlp.idx.IndexManager's properties
 #Thu Sep 13 09:22:16 IST 2007
+## should punctuation count as tokens?
+index.punctuation=false
+## index metadata for subcorpus selection (header files)?
 index.headers=true
 xquery.return.attribute.path=(speech|writing)/@ref
 tokeniser.ignore.elements=(omit|ignore|header|chair|heading|post|name)

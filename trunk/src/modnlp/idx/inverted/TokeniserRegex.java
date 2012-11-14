@@ -40,8 +40,11 @@ import java.util.regex.Matcher;
 */
 public class TokeniserRegex extends Tokeniser {
 
-  public static final String bigWordRegexp = "\\p{L}[\\p{L}-.]*'?s?"; // include dots for abbrev. (e.g. U.S.A.)
-  public static final Pattern bigWordPattern = Pattern.compile(bigWordRegexp);
+  public static final String DEFAULTWORDREGEXP = "\\p{L}[\\p{L}-.]*'?s?"; // include dots for abbrev. (e.g. U.S.A.)
+  public static final String PUNCTUATIONWORDREGEXP = "\\p{L}[\\p{L}-.]*'?s?|[.?!;:,](?:\\s)"; // include dots for abbrev. (e.g. U.S.A.)
+
+  private String bigWordRegexp = DEFAULTWORDREGEXP; 
+  private Pattern bigWordPattern = Pattern.compile(bigWordRegexp);
 
   private String wordRegexp = "[\\p{L}.]+|'s?";
   private String ignoredElements = "(omit|ignore)";
@@ -75,6 +78,48 @@ public class TokeniserRegex extends Tokeniser {
   public final String getBigWordRegexp() {
     return bigWordRegexp;
   }
+
+
+  /**
+   * Sets the value of bigWordRegexp
+   *
+   * @param argBigWordRegexp Value to assign to this.bigWordRegexp
+   */
+  public final void setBigWordRegexp(final String argBigWordRegexp) {
+    this.bigWordRegexp = argBigWordRegexp;
+    this.bigWordPattern = Pattern.compile(this.bigWordRegexp);
+
+  }
+
+  /**
+   * Sets the value of indexPuntuation
+   *
+   * @param argIndexPuntuation Value to assign to this.indexPuntuation
+   */
+  public final void setIndexPuntuation(final Boolean argIndexPuntuation) {
+    indexPuntuation = argIndexPuntuation;
+    if (indexPuntuation)
+      setBigWordRegexp(PUNCTUATIONWORDREGEXP);
+  }
+
+  /**
+   * Gets the value of wordRegexp
+   *
+   * @return the value of wordRegexp
+   */
+  public final String getWordRegexp() {
+    return this.wordRegexp;
+  }
+
+  /**
+   * Sets the value of wordRegexp
+   *
+   * @param argWordRegexp Value to assign to this.wordRegexp
+   */
+  public final void setWordRegexp(final String argWordRegexp) {
+    this.wordRegexp = argWordRegexp;
+  }
+
 
   /**
    * Set the <code>IgnoredElements</code> value.
@@ -185,7 +230,7 @@ public class TokeniserRegex extends Tokeniser {
           ret.add(word+".");  // ... add missing dot and store acronym
       }
       else {
-        ret.add(word);      // word, hyphenated or genitive containing no dots 
+        ret.add(word);      // word, hyphenated or genitive, containing no dots 
       }
     }
     return ret;

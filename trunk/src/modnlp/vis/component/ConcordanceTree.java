@@ -1,5 +1,5 @@
 /**
- *  © 2008 S Luz <luzs@acm.org>
+ *  (c) 2008 S Luz <luzs@acm.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -105,7 +105,6 @@ import prefuse.action.filter.FisheyeTreeFilter;
 import prefuse.action.filter.VisibilityFilter;
 import prefuse.action.layout.CollapsedSubtreeLayout;
 import prefuse.action.layout.graph.NodeLinkTreeLayout;
-import prefuse.action.layout.graph.BalloonTreeLayout;
 import prefuse.activity.SlowInSlowOutPacer;
 import prefuse.controls.ControlAdapter;
 import prefuse.controls.FocusControl;
@@ -168,7 +167,7 @@ public class ConcordanceTree extends Display
   private Tree tree;
   private LabelRenderer m_nodeRenderer;
   private EdgeRenderer m_edgeRenderer;
-  FisheyeTreeFilter fisheyetreefilter = new FisheyeTreeFilter(TREE, 7);
+  FisheyeTreeFilter fisheyetreefilter = new FisheyeTreeFilter(TREE, 6);
   private static Font defaultTreeFont = FontLib.getFont("Tahoma", 16);
   private Display m_display_self;  // myself
   
@@ -267,15 +266,22 @@ public class ConcordanceTree extends Display
    // create the filtering and layout
    ActionList filter = new ActionList();
    filter.add(fna);
-   filter.add(fisheyetreefilter);
    //VisibilityFilter visibfilter = new VisibilityFilter(new WordCountPredicate());
    //filter.add(visibfilter);
    filter.add(treeLayout);
    filter.add(subLayout);
    filter.add(textColor);
-   filter.add(nodeColor);
+   //filter.add(nodeColor);
    filter.add(edgeColor);
    m_vis.putAction("filter", filter);
+
+   ActionList fishactlist = new ActionList(1000);
+   fishactlist.add(fisheyetreefilter);
+   fishactlist.setPacingFunction(new SlowInSlowOutPacer());
+   //fishactlist.add(new QualityControlAnimator());
+   //   fishactlist.add(new LocationAnimator(TREENODES));
+   // fishactlist.add(new RepaintAction());
+   //m_vis.putAction("fishactlist", fishactlist);
 
    // This doesn't quite work as expected; the layout is calculated
    //for the entire tree and low freq nodes are simply not shown,
@@ -499,8 +505,8 @@ public class ConcordanceTree extends Display
     }
     public void actionPerformed(ActionEvent evt) {
       fisheyetreefilter.setDistance(fisheyetreefilter.getDistance()+expand);
-      getVisualization().cancel("filter");
-      getVisualization().run("filter");
+      getVisualization().cancel("fishactlist");
+      getVisualization().run("fishactlist");
       getVisualization().run("treeLayout");
       System.err.println(fisheyetreefilter.getDistance());
     }
@@ -683,7 +689,7 @@ public class ConcordanceTree extends Display
           fs = fs*0.5f;
       
       Font font = defaultTreeFont.deriveFont(fs);
-      System.err.println("w="+item.getString(NAME)+" fs="+fs+" rc="+rowCount+" s="+s+" minFreqRatio="+minFreqRatio+" fn="+font);
+      //System.err.println("w="+item.getString(NAME)+" fs="+fs+" rc="+rowCount+" s="+s+" minFreqRatio="+minFreqRatio+" fn="+font);
       return font;
       //}
       //return defaultFont;
