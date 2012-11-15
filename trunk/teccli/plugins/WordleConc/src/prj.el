@@ -3,7 +3,7 @@
  '(jde-project-name "Wordleconc")
  '(jde-db-option-application-args nil)
  '(jde-db-read-app-args t)
- '(jde-global-classpath (quote ("." "../lib/WordCram.jar" "../lib/core.jar" "../lib/cue.language.jar" "../lib/firstnamesUsingWordProperties.jar" "../lib/gluegen-rt-natives-linux-i586.jar" "../lib/gluegen-rt.jar" "../lib/jogl-all-natives-linux-i586.jar" "../lib/jogl-all.jar" "../lib/jsoup-1.3.3.jar")))
+ '(jde-global-classpath (quote ("." "../lib/WordCram.jar" "../lib/core.jar" "../lib/cue.language.jar" "../lib/firstnamesUsingWordProperties.jar" "../lib/gluegen-rt-natives-linux-i586.jar" "../lib/gluegen-rt.jar" "../lib/jogl-all-natives-linux-i586.jar" "../lib/jogl-all.jar" "../lib/jsoup-1.3.3.jar" "../../../src/")))
  '(jde-run-working-directory ".")
  '(jde-run-option-application-args nil)
  '(jde-run-read-app-args t)

@@ -12,6 +12,8 @@ import java.awt.Frame;
 import java.awt.event.MouseEvent; 
 import java.awt.event.KeyEvent; 
 import java.awt.event.FocusEvent; 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.Image; 
 import java.io.*; 
 import java.net.*; 
@@ -20,86 +22,81 @@ import java.util.*;
 import java.util.zip.*; 
 import java.util.regex.*; 
 
-public class WordleConcPApplet extends PApplet
-{
+public class WordleConcPApplet extends PApplet implements ActionListener{
 
-WordCram wc;
-Word[] words;
 
-public void setup() {
-  colorMode(HSB);
-  size(800, 600);
-  background(255);
+  WordCram wc;
+  Word[] words;
+  int drawcount = 0;
+  WordleConc parent;
+  boolean waiting = true;
+
+  public WordleConcPApplet(WordleConc p){
+    super();
+    this.parent = p;
+  }
   
-  loadNames();
-  makeWordCram();
-}
-
-public void loadNames() { 
-  String[] nameData = loadStrings("/tmp/names.txt");
-  words = new Word[nameData.length];
-  for (int i = 0; i < words.length; i++) {
-    words[i] = parseName(nameData[i]);
-  }
-}
-
-public void makeWordCram() {
-  wc = new WordCram(this)
-    .fromWords(words)
-    //.withFont(createFont("../../MINYN___.TTF", 1))
-    .sizedByWeight(12, 60)
-    .withColorer(colorer());
-}
-
-public WordColorer colorer() {
-  return new WordColorer() {
-    public int colorFor(Word name) {
-      boolean isFemale = (Boolean)name.getProperty("isFemale");
-      
-      if (isFemale) {
-        return color(0xfff36d91); // pink
-      }
-      else {
-        return color(0xff476dd5); // blue
-      }
-    }
-  };
-}
-
-public void draw() {
-  if (wc.hasMore()) {
-    wc.drawNext();
-  }
-  else {
-    println("done");
+  public void setup() {
+    size(800, 600);
     noLoop();
+    background(255);
+    drawcount = 0;
+    this.setWords(parent.populateWordle());
+    
+    //frame.setResizable(true);
   }
-}
 
-public void mouseClicked() {
-  background(255);
-  makeWordCram();
-  loop();
-}
+  public void startLoop(){
+    background(255);
+    redraw();
+    loop();
+    waiting = false;
+  }
+
+  public void setWords(Word[] w){
+    words = w;
+    wc = new WordCram(this).fromWords(words); //.sizedByWeight(12, 60);
+  }
+
+  
+  public void draw() {
+    if (wc == null || waiting){
+      noLoop();
+      return;
+    }
+
+    if (wc.hasMore()) {
+      wc.drawNext();
+      print(","+drawcount++);
+    }
+    else {
+      println("=====done=====");
+      noLoop();
+      Word[] w = wc.getWords();
+      for (int i =0; i < w.length; i++)
+        System.out.println(w[i]);
+    }
+  }
+  
+  public void actionPerformed(ActionEvent evt) {
+    if (evt.getActionCommand().equals("Show")) {
+      println("=====start loop===");
+      startLoop();
+      redraw();
+    } else {
+      println("actionPerformed(): can't handle " +evt.getActionCommand());
+    }
+  }
 
 
-// Each row looks like:
-// Mary\t1.0\tf
-// ...or:
-// {name} {tab} {frequency} {tab} {'f' for females, 'm' for males}
-public Word parseName(String data) {
-  String[] parts = split(data, '\t');
+  /*public void mouseClicked() {
+    background(255);
+    redraw();
+    loop();
+    }*/
   
-  String name = parts[0];
-  float frequency = PApplet.parseFloat(parts[1]);
-  boolean isFemale = "f".equals(parts[2]);
   
-  Word word = new Word(name, frequency);
-  
-  word.setProperty("isFemale", isFemale);
-  
-  return word;
-}
+
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "org.modnlp.WordleConc.WordleConcPApplet" };
     if (passedArgs != null) {
@@ -109,3 +106,5 @@ public Word parseName(String data) {
     }
   }
 }
+
+
