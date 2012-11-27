@@ -79,6 +79,11 @@ abstract class Table  {
     } 
   }
 
+  public String toString(){
+    return "Name: "+dbname+"\nEnvironament: "+environment+"\nDatabese: "+database+"\nLog: "+logf;
+
+  }
+
   public static boolean exists(Environment env, String fn){
     Database d;
     try {

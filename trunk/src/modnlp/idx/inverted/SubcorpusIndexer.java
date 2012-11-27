@@ -111,6 +111,7 @@ public class SubcorpusIndexer {
     verbose = v;
   }
 
+  // (section v.): get section delimiters
   public void section ()  {
     //verbose = false;
     //System.out.println("-->"+text+"<--");
@@ -124,6 +125,7 @@ public class SubcorpusIndexer {
       int st = bwre.start();
       int ed = bwre.end();
       String id = bwre.group(2);
+      System.err.println("st="+st+"ed="+ed);
       tokenMap.putDelimPair(id, new SubcorpusDelimPair(st, ed));
     }
     if (verbose)

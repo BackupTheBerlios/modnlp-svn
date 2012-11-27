@@ -120,10 +120,18 @@ public class AttributeChooser extends JPanel implements ListSelectionListener{
   public String getBooleanExpression () {
     StringBuffer sb = new StringBuffer();
     Object[] sel = valueList.getSelectedValues();
+    String empty = "";
     if (sel.length == 0) 
       return "";
+    // handle anomaly of empty values as selections (the header files
+    // shouldn't really contain any) empty strings mess up the layout
+    // of JComboBox so they need to show as " " (see
+    // modnlp/idx/headers/HeaderDBManager#getOptionSet)
+    sel[0] = sel[0].equals(" ") ? empty : sel[0];
     sb.append(attributePath+"='"+sel[0]+"'");
     for (int i = 1; i < sel.length; i++) {
+    // handle anomaly of empty values as selections (the header files shouldn't really contain any)
+      sel[i] = sel[i].equals(" ") ? empty : sel[i];
       sb.append(" or "+attributePath+"='"+sel[i]+"'");
     }
     if (excludeValues.isSelected())

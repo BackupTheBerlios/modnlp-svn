@@ -170,7 +170,7 @@ bindist: jar
 	cp  $(TOPDIR)data/eph/* $(BINDISTDIR)/data/eph
 	cp README.bin $(BINDISTDIR)/README
 	cp bin/runidx.sh $(BINDISTDIR)
-	cp $(TOPDIR)src/idxmgr.properties.ecpc-ep $(BINDISTDIR)/idxmgr.properties.PLEASEEDIT
+	cp $(TOPDIR)src/idxmgr.properties.PLEASEEDIT $(BINDISTDIR)/idxmgr.properties.PLEASEEDIT
 	cp $(LIBS) $(JARTARGET) $(BINDISTXTRAS) $(BINDISTDIR)
 	tar cfvz /tmp/$(BINDISTDIR).tar.gz  --exclude-from=exclude.txt $(BINDISTDIR)
 	rm -rf $(BINDISTDIR)

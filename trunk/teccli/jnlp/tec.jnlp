@@ -18,9 +18,12 @@
   </security>
   <resources>
     <property name="tec.client.runmode" value="jnlp"/>
-    <j2se version="1.5+" initial-heap-size="256m" max-heap-size="528m"/>
+    <j2se version="1.6" initial-heap-size="256m" max-heap-size="528m"/>
+    <j2se version="1.5" initial-heap-size="256m" max-heap-size="528m"/>
     <jar href="teccli.jar" download="eager"/>
     <jar href="idx.jar" download="eager"/>
+    <!-- plug-ins -->
+    <jar href="wordleconc.jar" download="eager"/>
     <!-- other support libs needed by je.jar and exist.jar -->
     <!-- Databases: je.jar (Berkeley) and exist.jar (XML native, XQuery support) -->
     <jar href="je.jar" download="lazy"/>

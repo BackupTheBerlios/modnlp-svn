@@ -107,6 +107,7 @@ public class SubcorpusConstraints extends HashMap {
     
     int inCount = 0; // count tokens WITHIN the named sections
     SubcorpusDelimPair[] dps = sbct.getSubcorpusDelimPairs(hs);
+    //System.out.println("SBCT: "+sbct+"\nDPS: "+Arrays.toString(dps));
     Arrays.sort(dps);
     int j = 0; // in
     int bs = dps[j].getBegin();

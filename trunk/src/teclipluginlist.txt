@@ -3,3 +3,4 @@ modnlp.tec.client.plugin.CorpusDescriptionBrowser:Corpus description browser:Dis
 modnlp.tec.client.plugin.SubcorpusSelection:Subcorpus selector:Select subcorpus according to header file elements
 modnlp.tec.client.plugin.ConcordanceTreeViewer:Concordance tree viewer:Visualise a concordance tree
 modnlp.tec.client.plugin.ConcordanceMosaic:Concordance mosaic:Display a concordance mosaic
+org.modnlp.wordleconc.WordleConc:Corcordance Wordle:Display a Concordance Wordle Diagram

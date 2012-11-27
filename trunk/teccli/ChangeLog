@@ -1,3 +1,10 @@
+2012-11-27  Saturnino Luz  <luzs@cs.tcd.ie>
+
+	* release 0.7.1: Bug-fixing release: fixed subcorpus selection bug
+	  (added workaround for empty string elements in header files)
+	  (e.g. <name></name>). Added experimental WordleConc plugin as
+	  external package (see plugins/ subdirectory)
+
 2011-05-06  Saturnino Luz  <luzs@cs.tcd.ie>
 
 	* release 0.7.0: Added supported for  Japanese; incorporated simple

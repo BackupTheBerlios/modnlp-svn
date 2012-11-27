@@ -215,7 +215,7 @@ public class GraphicalSubcorpusSelector extends JFrame {
         else {
           o = hdbm.getOptionSet(attChsrSpecs[i+1]);
         }
-        //System.err.println(o);
+        //System.err.println(java.util.Arrays.toString(o));
         mas.add(new AttributeChooser(attChsrSpecs[i], attChsrSpecs[++i],o));
       }
       loadingDone = true;

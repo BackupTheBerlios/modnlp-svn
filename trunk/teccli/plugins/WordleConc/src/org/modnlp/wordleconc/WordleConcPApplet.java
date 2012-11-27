@@ -1,4 +1,4 @@
-package org.modnlp.WordleConc;
+package org.modnlp.wordleconc;
 
 import processing.core.*; 
 import processing.data.*; 
@@ -55,7 +55,7 @@ public class WordleConcPApplet extends PApplet implements ActionListener{
 
   public void setWords(Word[] w){
     words = w;
-    wc = new WordCram(this).fromWords(words); //.sizedByWeight(12, 60);
+    wc = new WordCram(this).fromWords(words);//.sizedByWeight(12, 60);
   }
 
   
@@ -65,22 +65,34 @@ public class WordleConcPApplet extends PApplet implements ActionListener{
       return;
     }
 
+    if (drawcount == 0){
+      drawcount++;
+      //System.out.println(java.util.Arrays.toString(PFont.list()));
+      
+      PFont f = createFont("Tahoma",32,true);
+      textFont(f);
+      fill(0);
+      textAlign(LEFT,TOP);
+      text("Wordle for '"+parent.getKeyword()+"':",10,20);
+    }
     if (wc.hasMore()) {
       wc.drawNext();
-      print(","+drawcount++);
+      //print(","+drawcount++);
     }
     else {
-      println("=====done=====");
+      println("WordleConcPApplet: =====done=====");
       noLoop();
-      Word[] w = wc.getWords();
-      for (int i =0; i < w.length; i++)
-        System.out.println(w[i]);
+      // dump word list (for debugging)
+      //Word[] w = wc.getWords();
+      //for (int i =0; i < w.length; i++)
+      //   System.out.println(w[i]);
     }
   }
   
   public void actionPerformed(ActionEvent evt) {
     if (evt.getActionCommand().equals("Show")) {
-      println("=====start loop===");
+      this.setWords(parent.populateWordle());
+      println("WordleConcPApplet: =====start loop===");
       startLoop();
       redraw();
     } else {

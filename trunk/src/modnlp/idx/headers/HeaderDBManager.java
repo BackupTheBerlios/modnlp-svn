@@ -242,8 +242,15 @@ public class HeaderDBManager {
       ResourceSet result = service.execute(compiled);
       int s = (int)result.getSize();
       out = new String[s];
+      String tmp = null;
       for (int i = 0; i < s; i++) {
-        out[i] = (String)result.getResource(i).getContent();
+        tmp = (String)result.getResource(i).getContent();
+        // '' messes up JComboBox in AttributeChooser
+        if (tmp == null || tmp.length() == 0){
+          System.err.println("HeaderDBManager: Empty value detected for "+attchsr+"\n  Setting it to ' '");
+          tmp = " ";
+        }
+        out[i] = tmp;
       }
       return out;
     }

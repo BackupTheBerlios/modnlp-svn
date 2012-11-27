@@ -392,6 +392,10 @@ public class IndexManager {
           imui.print("Warning: "+ex+"\n");
           imui.print("Ignoring this entry.\n");
         }
+        catch (Exception ex){
+          imui.print("Warning: "+ex+"\n");
+          ex.printStackTrace();
+        }
       } // end for 
       long tsec = ((new java.util.Date()).getTime()-stt)/1000;
       if (tsec > 60)

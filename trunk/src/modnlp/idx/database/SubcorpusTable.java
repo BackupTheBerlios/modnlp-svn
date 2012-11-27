@@ -175,8 +175,10 @@ public class SubcorpusTable extends Table {
     SubcorpusDelimPair dlm = null;
     StringBinding.stringToEntry(sik, key);
     try {
-      if (database.get(null,key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) 
+      if (database.get(null,key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS){ 
         dlm = (SubcorpusDelimPair)isb.entryToObject(data);
+        //System.out.println("SubcorpusTable---->"+dlm);
+      }
     } catch(DeadlockException e) {
       logf.logMsg("Deadlock reading from dbname:"+e);
     }
@@ -190,7 +192,9 @@ public class SubcorpusTable extends Table {
     SubcorpusDelimPair[] scdps = new SubcorpusDelimPair[ids.size()];
     int i = 0;
     for (Iterator p = ids.iterator(); p.hasNext(); ) {
-      scdps[i++] = fetch((String)p.next());
+      String id = (String)p.next();
+      //System.out.println("SID---->"+id+"---"+i);
+      scdps[i++] = fetch(id);
     }
     return scdps;
   }

@@ -597,6 +597,7 @@ public class Dictionary {
             //System.err.println("-------------------SKIP:"+word); 
             continue;
           }
+          //System.err.println("-------------------Looking at file: "+getIndexedFileName(Integer.parseInt(fno))); 
           WordPositionTable wpt = new WordPositionTable(environment, 
                                                         fno,
                                                         false);
@@ -610,6 +611,7 @@ public class Dictionary {
           if (sbc != null){
             try {
               sbct = new SubcorpusTable(environment, fno, false, false);
+              //System.err.println("-------------------Counting SBC freq of:"+word+" in "+fno); 
               nooc = sbc.getTokenCount(fno,pos,sbct);
               sbct.close();
             } catch(DatabaseNotFoundException e ) { sbct = null;}

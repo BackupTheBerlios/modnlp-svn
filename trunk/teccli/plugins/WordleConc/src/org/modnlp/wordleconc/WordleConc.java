@@ -16,25 +16,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-package org.modnlp.WordleConc;
+package org.modnlp.wordleconc;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Dimension;
-import java.awt.event.*;
-import javax.swing.*;
 import java.util.Iterator;
 
-import java.util.*;
 import java.util.Map.Entry;
 
 
 import cue.lang.Counter;
 import cue.lang.WordIterator;
 import cue.lang.stop.StopWords;
-
-import wordcram.*;
-import wordcram.text.*;
 
 import processing.core.PApplet;
 
@@ -45,6 +39,17 @@ import modnlp.tec.client.gui.SubcorpusCaseStatusPanel;
 import modnlp.idx.inverted.TokeniserRegex;
 import modnlp.idx.inverted.TokeniserJP;
 import modnlp.util.Tokeniser;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import wordcram.Word;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JFrame;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import modnlp.Constants;
 
 
 /**
@@ -75,7 +80,8 @@ Plugin
   Word[] words;
   JButton dismissButton = new JButton("Quit");
   JButton growTreeButton = new JButton("Show");
-  
+  String keyword;
+
   public WordleConc() {
     super(title);
     thisFrame = this;
@@ -188,7 +194,7 @@ Plugin
 
     StringBuffer lc = new StringBuffer("");
     StringBuffer rc = new StringBuffer("");
-    String keyword = parent.getKeywordString().toLowerCase();
+    keyword = parent.getKeywordString().toLowerCase();
     int keywdlength = keyword.length();
 
     for (Iterator<ConcordanceObject> p = parent.getConcordanceVector().iterator(); p.hasNext(); ){
@@ -229,6 +235,10 @@ Plugin
 
   }
 
+  public String getKeyword(){
+    return keyword;
+  }
+
 
   private Word[] countWords(String text, int colour) {
     Counter<String> counter = new Counter<String>();
@@ -262,5 +272,7 @@ Plugin
       return false;
     }
   }
+
+
 
 }
