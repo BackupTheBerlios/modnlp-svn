@@ -1,6 +1,6 @@
 2012-11-27  Saturnino Luz  <luzs@acm.org>
 
-	* release 0.0.9: Bug-fixing release: fixed subcorpus selection bug
+	* release 0.1.0: Bug-fixing release: fixed subcorpus selection bug
 	  (added workaround for empty string elements in header files)
 	  (e.g. <name></name>). Added experimental WordleConc plugin as
 	  external package (see plugins/ subdirectory)
