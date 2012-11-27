@@ -1,0 +1,21 @@
+;; Object classify/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "classify/"
+  :tables (list 
+   (semanticdb-table "BVBayes.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.classify" package nil nil [1 21]) ("tc.parser.*" include nil (dependency-file none) [22 41]) ("tc.dstruct.*" include nil (dependency-file none) [42 62]) ("tc.evaluation.*" include nil (dependency-file none) [63 86]) ("tc.util.*" include nil (dependency-file none) [87 104]) ("java.util.Set" include nil (dependency-file none) [105 126]) ("java.util.Enumeration" include nil (dependency-file none) [127 156]) ("java.util.Iterator" include nil (dependency-file none) [157 183]) ("BVBayes" type (:typemodifiers ("public") :members (("clist" variable (:typemodifiers ("private") :type "CorpusList") (reparse-symbol class_member_declaration) [1283 1315]) ("pm" variable (:typemodifiers ("private") :type "ProbabilityModel") (reparse-symbol class_member_declaration) [1318 1353]) ("BVBayes" function (:constructor-flag t :typemodifiers ("public") :arguments (("clist" variable (:type "String") (reparse-symbol formal_parameters) [1428 1440]) ("pmfile" variable (:type "String") (reparse-symbol formal_parameters) [1442 1455]))) (reparse-symbol class_member_declaration) [1412 1578]) ("parse" function (:throws ("Exception") :typemodifiers ("public") :arguments (("filename" variable (:type "String") (reparse-symbol formal_parameters) [1912 1927]) ("plugin" variable (:type "String") (reparse-symbol formal_parameters) [1929 1942])) :type "ParsedCorpus") (reparse-symbol class_member_declaration) [1885 2182]) ("computeCSV" function (:typemodifiers ("public") :arguments (("cat" variable (:type "String") (reparse-symbol formal_parameters) [2855 2865]) ("pni" variable (:type "ParsedDocument") (reparse-symbol formal_parameters) [2867 2885])) :type "double") (reparse-symbol class_member_declaration) [2830 3938]) ("main" function (:typemodifiers ("public" "static") :arguments (("args" variable (:type "String[]") (reparse-symbol formal_parameters) [3968 3981])) :type "void") (reparse-symbol class_member_declaration) [3944 8441])) :type "class") nil [1258 8443]))
+    :file "BVBayes.java"
+    :pointmax 8444
+    )
+   (semanticdb-table "DSNormalisedBayes.java"
+    :major-mode 'jde-mode
+    :tags '(("tc.classify" package nil nil [1 21]) ("tc.parser.*" include nil nil [22 41]) ("tc.dstruct.*" include nil nil [42 62]) ("tc.evaluation.*" include nil nil [63 86]) ("tc.util.*" include nil nil [87 104]) ("java.util.Set" include nil nil [105 126]) ("java.util.Enumeration" include nil nil [127 156]) ("java.util.Iterator" include nil nil [157 183]) ("DSNormalisedBayes" type (:typemodifiers ("public") :members (("clist" variable (:typemodifiers ("private") :type "CorpusList") (reparse-symbol class_member_declaration) [1851 1883]) ("pm" variable (:typemodifiers ("private") :type "ProbabilityModel") (reparse-symbol class_member_declaration) [1886 1921]) ("DSNormalisedBayes" function (:constructor-flag t :typemodifiers ("public") :arguments (("clist" variable (:type "String") (reparse-symbol formal_parameters) [2006 2018]) ("pmfile" variable (:type "String") (reparse-symbol formal_parameters) [2020 2033]))) (reparse-symbol class_member_declaration) [1980 2156]) ("parse" function (:throws ("Exception") :typemodifiers ("public") :arguments (("filename" variable (:type "String") (reparse-symbol formal_parameters) [2490 2505]) ("plugin" variable (:type "String") (reparse-symbol formal_parameters) [2507 2520])) :type "ParsedCorpus") (reparse-symbol class_member_declaration) [2463 2760]) ("computeCSV" function (:typemodifiers ("public") :arguments (("cat" variable (:type "String") (reparse-symbol formal_parameters) [3055 3065]) ("pni" variable (:type "ParsedDocument") (reparse-symbol formal_parameters) [3067 3085])) :type "double") (reparse-symbol class_member_declaration) [3030 4039]) ("main" function (:typemodifiers ("public" "static") :arguments (("args" variable (:type "String[]") (reparse-symbol formal_parameters) [4069 4082])) :type "void") (reparse-symbol class_member_declaration) [4045 7061])) :type "class") nil [1816 7063]))
+    :file "DSNormalisedBayes.java"
+    :pointmax 7064
+    )
+   )
+  :file "semantic.cache"
+  :semantic-tag-version "2.0pre1"
+  :semanticdb-version "2.0pre1"
+  )
