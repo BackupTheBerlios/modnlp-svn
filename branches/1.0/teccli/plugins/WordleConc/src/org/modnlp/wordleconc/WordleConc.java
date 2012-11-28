@@ -81,6 +81,7 @@ Plugin
   JButton dismissButton = new JButton("Quit");
   JButton growTreeButton = new JButton("Show");
   String keyword;
+  int max_count = 0;
 
   public WordleConc() {
     super(title);
@@ -178,6 +179,7 @@ Plugin
 
   public Word[] populateWordle() {
     Tokeniser ss;
+    max_count = 0;
     int la = parent.getLanguage();
     switch (la) {
     case modnlp.Constants.LANG_EN:
@@ -209,7 +211,7 @@ Plugin
 
     Word[] lwa = countWords(lc+"",wapplet.color(255,0,0));//left_colour));
     Word[] rwa = countWords(rc+"",wapplet.color(0,0,0));//right_colour));
-    int tlength = lwa.length+rwa.length;
+    int tlength = lwa.length+rwa.length+1;
     words = new Word[tlength];
 
     
@@ -255,7 +257,10 @@ Plugin
     List<Word> words = new ArrayList<Word>();
     
     for (Entry<String, Integer> entry : counter.entrySet()) {
-      Word w = new Word(entry.getKey(), (int)entry.getValue());
+      int count = (int)entry.getValue();
+      if (count > max_count)
+        max_count = count;
+      Word w = new Word(entry.getKey(), count);
       w.setColor(colour);
       words.add(w);
     }
