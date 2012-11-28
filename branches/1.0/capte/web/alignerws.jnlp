@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" 
+    codebase="http://localhost/~luzs/capte" 
+    href="alignerws.jnlp">
+    <information>
+        <title>Aligner Web Service</title>
+        <vendor>G Lynch and S Luz</vendor>
+    </information>
+    <resources>
+        <!-- Application Resources -->
+        <property name="capte.runmode" value="jnlp"/>
+        <property name="capte.align.server" value="http://localhost/~luzs/capte/aling.cgi"/>
+        <jar href="capte.jar" main = "true"/>
+        <jar href="httpclient-3.0.1.jar" download="eager"/>
+        <jar href="commons-logging-1.1.1.jar" download="eager"/>
+        <jar href="commons-codec-1.2.jar" download="eager"/>
+        <jar href="commons-io-2.0.1.jar" download="eager"/>
+        <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    </resources> 
+   <security>
+   <all-permissions/>
+   </security>
+    <application-desc main-class="modnlp.capte.AlignmentInterfaceWS">
+     </application-desc>   
+</jnlp>
