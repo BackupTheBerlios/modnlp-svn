@@ -34,33 +34,37 @@ import java.util.Set;
 import java.util.Enumeration;
 import java.util.Iterator;
 /**
- *  Naive Bayes classifier for documents represented as Boolean
- *  vectors. This class uses the CSV described in (Sebastiani, 2002).
- *  CSV values are not probabilities but the function is monotonically
+ *  Naive Bayes classifier for  multivariate Bernoulli models (documents represented as Boolean
+ *  vectors). This class uses the CSV described in (Sebastiani, 2002).
+ *  CSV values are not actual probabilities but the function is monotonically
  *  increasing on the estimated probability function.
  *
  * Categorise each news item in corpus_list according to categ using
- * Boolean Vector Naive Bayes (see lecture notes ctinduction.pdf, p 7)
+ * a Multivariate Bernoulli model and Naive Bayes.
  *
- * Usage:
- * <pre>
- BVBayes corpus_list categ prob_model [parser [smoothing]]
+ * USAGE:
+<pre>
+   BVBayes corpus_list categ prob_model threshold [parser [smoothing]]
+ 
+   SYNOPSIS:"
+     Categorise each news item in corpus_list according to categ using
+     Boolean Vector Naive Bayes (see lecture notes ctinduction.pdf, p 7)
 
-SYNOPSIS:
-  Categorise each news item in corpus_list according to categ using
-  Boolean Vector Naive Bayes (see lecture notes ctinduction.pdf, p 7)
+   ARGUMENTS:
+    corpus_list: list of files to be classified
+    categ: target category (e.g. 'acq'.) The classifier will define CSV 
+           as CSV_{categ}
+    pmfile: file containing a  probability model generated via, say, 
+            modnlp.tc.induction.MakeProbabilityModel.
+    threshold: a real number (for RCut thresholding) or the name of a 
+              thresholding strategy. Currently supported strategies:
+              - 'proportional': choose threshold s.t. that g_Tr(ci) is
+                 closest to g_Tv(ci). [DEFAULT]
+             - ...
+    parser: parser to be used [default: 'NewsParser']
+           see modnlp.tc.parser.* for other options 
 
-ARGUMENTS
- corpus_list: list of files to be classified
-
- categ:       target category (e.g. 'acq'.) The classifier will define CSV 
-              as CSV_{categ}
-
- pmfile:      file containing a  probability model generated via, say, 
-              modnlp.tc.induction.MakeProbabilityModel.
-
- parser:      LingspamEmailParser, NewsParser [default: NewsParser]
- smoothing:   0: MLE (no smoothing), 1: Laplace, ...
+    smoothing: 0: MLE (no smoothing), 1: Laplace, ...  [default: 0]
   </pre>
  * @author  Saturnino Luz &#60;luzs@acm.org&#62;
  * @version <font size=-1>$Id: BVBayes.java,v 1.1.1.1 2005/05/26 13:59:30 amaral Exp $</font>
