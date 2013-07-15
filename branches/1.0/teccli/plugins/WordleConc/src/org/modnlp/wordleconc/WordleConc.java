@@ -65,6 +65,9 @@ public class WordleConc  extends JFrame
 Plugin 
 {
 
+  public static final int LEFT_CONTEXT = -1;
+  public static final int RIGHT_CONTEXT = 1;
+
   SubcorpusCaseStatusPanel sccsPanel;
   private static String title = new String("MODNLP Plugin: WordleConc v 0.1"); 
   JLabel statsLabel = new JLabel("                            ");
@@ -82,6 +85,7 @@ Plugin
   JButton growTreeButton = new JButton("Show");
   String keyword;
   int max_count = 0;
+  int keyword_frequency = 0; 
 
   public WordleConc() {
     super(title);
@@ -119,26 +123,6 @@ Plugin
 
     growTreeButton.addActionListener(wapplet);
 
-    /*
-   growTreeButton.addActionListener(new ActionListener() {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-          //stop();
-          //current_action = GROW;
-          //start(); 
-
-          //javax.swing.SwingUtilities.invokeLater(new Runnable() {
-          //  public void run() {
-              papplet.remove(wapplet);
-              wapplet.dispose();
-              wapplet = new WordleConcPApplet(thisFrame);
-              papplet.add(wapplet,BorderLayout.CENTER);
-              validate();
-              populateWordle();
-              //   }
-              // });
-        }});
-    */
-
     JPanel pas = new JPanel();
     pas.add(growTreeButton);
     pas.add(dismissButton);
@@ -161,8 +145,6 @@ Plugin
     pabottom.add(pa2,BorderLayout.WEST);
     pabottom.add(pa3,BorderLayout.EAST);
 
-    
-    //wapplet.setup();
     getContentPane().add(pas, BorderLayout.NORTH);
     papplet.setPreferredSize(new Dimension(800, 600));
     papplet.add(wapplet,BorderLayout.CENTER);
@@ -173,7 +155,6 @@ Plugin
     pack();
     setVisible(true);
     guiLayoutDone = true;
-    //    growTree(); 
 
   }
 
@@ -197,6 +178,7 @@ Plugin
     StringBuffer lc = new StringBuffer("");
     StringBuffer rc = new StringBuffer("");
     keyword = parent.getKeywordString().toLowerCase();
+    keyword_frequency = parent.getNoOfConcordancesReadSoFar();
     int keywdlength = keyword.length();
 
     for (Iterator<ConcordanceObject> p = parent.getConcordanceVector().iterator(); p.hasNext(); ){
@@ -209,21 +191,31 @@ Plugin
     }
 
 
-    Word[] lwa = countWords(lc+"",wapplet.color(255,0,0));//left_colour));
-    Word[] rwa = countWords(rc+"",wapplet.color(0,0,0));//right_colour));
+    Word[] lwa = countWords(lc+"",LEFT_CONTEXT);
+    Word[] rwa = countWords(rc+"",RIGHT_CONTEXT);
     int tlength = lwa.length+rwa.length+1;
     words = new Word[tlength];
 
-    
+
     for (int i = 0; i < lwa.length; i++) {
       words[i] = lwa[i];
     }
 
-    //System.out.println("\n---\n");
     for (int i = 0; i < rwa.length; i++) {
       //System.out.println(rwa[i]);
       words[i+lwa.length] = rwa[i];
     } 
+
+    Word kw = new Word(keyword, (float)(max_count*1));
+    kw.setColor(getKeywordColour());
+    kw.setAngle(0);
+    kw.setProperty("count", getKeywordFrequency());
+    int x = wapplet.getSize().width/2;
+    int y = wapplet.getSize().height/2;
+    kw.setPlace(x,y);
+
+    System.out.println("\n--"+kw);    
+    words[tlength-1] =  kw;
 
     return words;
 
@@ -241,8 +233,54 @@ Plugin
     return keyword;
   }
 
+  public int getKeywordFrequency(){
+    return keyword_frequency;
+  }
 
-  private Word[] countWords(String text, int colour) {
+
+  public int getKeywordColour () {
+    return wapplet.color(0,0,0);
+  }
+
+  public int getLeftContextColour () {
+    return wapplet.color(255,0,0);
+  }
+
+  public int getRightContextColour () {
+    return wapplet.color(0,0,255);
+  }
+
+  public void setStatsLabel (String s){
+    statsLabel.setText(s);
+  }
+
+  public int getColourContext(int colour){
+    if (colour == getLeftContextColour())
+      return LEFT_CONTEXT;
+    else if (colour == getRightContextColour())
+      return RIGHT_CONTEXT;
+
+    // keyword code
+    return 0;
+  }
+
+
+  private Word[] countWords(String text, int side) {
+
+    int colour; 
+
+    switch (side) {
+    case LEFT_CONTEXT:
+      colour = getLeftContextColour();
+      break;
+    case RIGHT_CONTEXT:
+      colour = getRightContextColour();
+      break;
+    default:
+      colour = 0;
+      break;
+    }
+
     Counter<String> counter = new Counter<String>();
     
     for (String word : new WordIterator(text)) {
@@ -262,6 +300,7 @@ Plugin
         max_count = count;
       Word w = new Word(entry.getKey(), count);
       w.setColor(colour);
+      w.setProperty("count", count);
       words.add(w);
     }
     

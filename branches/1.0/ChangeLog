@@ -1,3 +1,11 @@
+2013-07-15  Saturnino Luz  <luzs@acm.org>
+
+	* release 0.1.1: maintenance release: included capte source code
+	but prevented it from compiling for the moment (in top level
+	Makefile); need to rethink the apache commons httpclient
+	code. Preparing to fix the tecser code related to java 7 http
+	response issue.
+
 2012-11-27  Saturnino Luz  <luzs@acm.org>
 
 	* release 0.1.0: Bug-fixing release: fixed subcorpus selection bug
@@ -5,7 +13,7 @@
 	  (e.g. <name></name>). Added experimental WordleConc plugin as
 	  external package (see plugins/ subdirectory)
 
-2011-05-06  Saturnino Luz  <luzs@acm.orgx>
+2011-05-06  Saturnino Luz  <luzs@acm.org>
 
 	* release 0.0.8: First step towards making modnlp truly
 	multilingual. Generalised display of concordances to deal with

@@ -1,6 +1,6 @@
 SRCCLASSPATH=.
 TOPCLASSPATH=src
-SOURCES=modnlp/util/*.java modnlp/dstruct/*.java modnlp/tc/util/*.java modnlp/tc/dstruct/*.java modnlp/tc/parser/*.java modnlp/tc/tsr/*.java modnlp/tc/evaluation/*.java modnlp/tc/induction/*.java modnlp/tc/classify/*.java 
+SOURCES=modnlp/*.java modnlp/util/*.java modnlp/dstruct/*.java modnlp/tc/util/*.java modnlp/tc/dstruct/*.java modnlp/tc/parser/*.java modnlp/tc/tsr/*.java modnlp/tc/evaluation/*.java modnlp/tc/induction/*.java modnlp/tc/classify/*.java 
 DOCS=doc
 SOURCEDIR=src
 DISTDIR:=modnlp-tc-`cat VERSION`
@@ -12,7 +12,7 @@ DISTFILES=BUGS COPYING ChangeLog INSTALL Makefile README TODO VERSION AUTHORS\
 JAVA=java
 JAVAC=javac
 JAVAFLAGS=-classpath $(TOPCLASSPATH)
-JAVACFLAGS= -classpath $(SRCCLASSPATH)  -encoding UTF8
+JAVACFLAGS= -classpath $(SRCCLASSPATH)  -encoding UTF-8 -target 1.5
 JARTARGET=$(TOPDIR)lib/tc.jar
 JAR=jar
 JARFLAGS= cvf 
@@ -62,3 +62,4 @@ dist: docs
 	cp -aL --parents $(DISTFILES) $(DISTDIR)
 	tar cfvz /tmp/$(DISTDIR).tar.gz  --exclude-from=exclude.txt $(DISTDIR)
 	rm -rf $(DISTDIR)
+

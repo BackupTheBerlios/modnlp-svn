@@ -151,7 +151,7 @@ test: $(TARGETS)
 	@echo "** Testing completed"
 
 docs: $(TARGETS)
-	javadoc -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp.idx
+	javadoc -encoding UTF-8 -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp.idx
 
 dist: clean
 	rm -rf $(DISTDIR)

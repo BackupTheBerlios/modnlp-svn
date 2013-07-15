@@ -4,7 +4,7 @@ LIBSPATH=$(TOPDIR)lib/gnu-regexp.jar:$(TOPDIR)lib/je.jar:$(TOPDIR)lib/jung.jar:$
 LIBS=$(subst :, ,$(LIBSPATH))
 DOCS=$(TOPDIR)doc
 DATA=$(TOPDIR)data
-SOURCES:= $(shell find $(SOURCEDIR) -name *.java)
+SOURCES:= $(shell find $(SOURCEDIR) \( -name *.java -not -wholename 'src/modnlp/capte/*.java' \) )
 TARGETS=$(subst .java,.class,$(SOURCES))
 JARREDS=$(subst $(SOURCEDIR),,$(TARGETS))
 PRJFILES:=`find $(SOURCEDIR) -name prj.el`
@@ -45,7 +45,7 @@ jar: $(TARGETS)
 	cd $(SOURCEDIR) && $(JAR) cfv ../$(TOPDIR)lib/modnlp.jar $(JARREDS)
 
 docs: $(TARGETS)
-	javadoc -encoding "ISO-8859-1" -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp
+	javadoc -encoding UTF-8 -docencoding "ISO-8859-1" -d $(DOCS) -sourcepath $(SOURCEDIR) -classpath $(SOURCEDIR):$(LIBSPATH) -subpackages modnlp
 
 dist: clean
 	rm -rf $(DISTDIR)

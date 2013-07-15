@@ -239,10 +239,10 @@ public class ConcordanceTree extends Display
    m_vis.putAction("animatePaint", animatePaint);
    
    // create the tree layout action
-   NodeLinkTreeLayout treeLayout = new NodeLinkTreeLayout(TREE,m_orientation, 10, 0, 0);
+   NodeLinkTreeLayout treeLayout = new NodeLinkTreeLayout(TREE,m_orientation, 2, 0, 0);
 
-   Point2D anchor = new Point2D.Double(25,HEIGHT/2);
-   treeLayout.setLayoutAnchor(anchor);
+   //Point2D anchor = new Point2D.Double(25,HEIGHT/2);
+   //treeLayout.setLayoutAnchor(anchor);
    m_vis.putAction("treeLayout", treeLayout);
    
    CollapsedSubtreeLayout subLayout = 

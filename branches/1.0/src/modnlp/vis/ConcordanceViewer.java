@@ -81,7 +81,7 @@ public class ConcordanceViewer extends JFrame
   implements Runnable
 {
   
-  //String tknregexp  = "\\p{L}[\\p{L}-.]*'?s?";
+  //String tknregexp  = "\\{L}[\\p{L}-.]*'?s?";
 
   public static final int GROW = 1;
   public static final int PRUNE = 2;
@@ -101,6 +101,7 @@ public class ConcordanceViewer extends JFrame
 
 
   private JProgressBar progressBar;
+
   JPanel tpanel = new JPanel(new BorderLayout());
 
   private ConcordanceVector concVector =  null;
