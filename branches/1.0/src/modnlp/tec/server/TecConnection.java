@@ -101,7 +101,8 @@ public class TecConnection extends Thread {
       inaddrr = cSokt.getInetAddress();
       String inLine, outLine;
       if ((inLine = is.readLine()) != null) 
-        {		    
+        {		 
+          os.println("HTTP/1.0 200 OK\n");
           //logf.logMsg("->"+inLine+"<-");
           processInput(inLine, os);	    
           logf.logMsg("["+inaddrr.getHostName()+"] "+inLine);

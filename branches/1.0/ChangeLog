@@ -1,4 +1,10 @@
 2013-07-15  Saturnino Luz  <luzs@acm.org>
+	* release 0.1.2: Maintanence release. Modified teccer's
+	TecConnection.java to respond with an HTTP/1.0 OK status line to
+	inital URLConnect requests so as to comply with JDK 1.7 (update
+	25)
+
+2013-07-15  Saturnino Luz  <luzs@acm.org>
 
 	* release 0.1.1: maintenance release: included capte source code
 	but prevented it from compiling for the moment (in top level
